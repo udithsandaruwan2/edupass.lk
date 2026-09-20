@@ -1,0 +1,28 @@
+---
+description: Git workflow — feature branch, push, merge to development only (never main)
+alwaysApply: true
+---
+
+# Git delivery workflow (edupass / lanka-event-hub)
+
+After every meaningful implementation chunk (or when the user asks to ship work):
+
+1. **Feature branch** — create/use `feat/...` (or `fix/...`). Never commit unfinished work directly on `main`.
+2. **Commit** — stage relevant files and commit with a clear message (why, not only what).
+3. **Push** — `git push -u origin HEAD` for the feature branch.
+4. **Merge into `development` only** — update local `development` from origin if it exists, merge the feature branch into `development`, push `development`.
+5. **Never merge to `main`** unless the user explicitly says to. `main` is production.
+
+## Branch roles
+
+| Branch | Role |
+|--------|------|
+| `main` | Production — do not merge here without explicit user approval |
+| `development` | Integration / staging for ongoing work |
+| `feat/*` | Short-lived feature work; merge into `development` when ready |
+
+## Notes
+
+- Prefer merge commits (or a normal merge) into `development`; do not force-push `main` or rewrite Lovable history.
+- If `development` does not exist yet, create it from current `main` once, push it, then merge the feature branch into it.
+- Keep the feature branch pushed so GitHub history stays clear.

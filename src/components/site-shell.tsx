@@ -1,73 +1,89 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { useAuth } from "@/hooks/use-auth";
+import { DevToolbar } from "@/components/dev-toolbar";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Toaster } from "@/components/ui/sonner";
 
 export function SiteShell({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-background font-sans text-foreground antialiased">
-      <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute -top-40 -left-32 size-[520px] rounded-full bg-accent/10 blur-3xl" />
-        <div className="absolute top-24 right-[-120px] size-[460px] rounded-full bg-accent/15 blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 size-[520px] rounded-full bg-chart-5/20 blur-3xl" />
-      </div>
-
+    <div className="paper-texture min-h-screen font-sans text-foreground antialiased">
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-5">{children}</main>
       <SiteFooter />
+      <DevToolbar />
+      <Toaster />
     </div>
   );
 }
 
 function SiteHeader() {
+  const { user, role } = useAuth();
+  const path = useRouterState({ select: (s) => s.location.pathname });
+
+  const accountHref =
+    role === "admin"
+      ? "/admin"
+      : role === "organizer" || role === "lecturer"
+        ? "/institute"
+        : role === "scanner"
+          ? "/scan"
+          : user
+            ? "/account"
+            : "/auth/login";
+
   return (
-    <header className="sticky top-0 z-20 border-b border-card/50 bg-card/55 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
+    <header className="sticky top-0 z-20 border-b border-border/70 bg-card/80 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5">
         <Link to="/" className="flex items-baseline gap-2">
-          <span className="font-mono text-sm font-medium tracking-tight text-foreground">
-            pass<span className="text-accent">.lk</span>
-          </span>
-          <span className="hidden text-[11px] text-muted-foreground sm:inline">
-            O/L &amp; A/L seminar passes
+          <span className="font-display text-xl font-semibold tracking-tight text-ink">
+            edu<span className="text-primary">pass</span>
+            <span className="text-muted-foreground">.lk</span>
           </span>
         </Link>
-        <nav className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
-          <Link to="/seminars" activeProps={{ className: "text-foreground" }}>
+        <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
+          <NavLink to="/seminars" current={path}>
             Seminars
-          </Link>
-          <Link to="/pricing" activeProps={{ className: "text-foreground" }}>
-            Pricing
-          </Link>
-          <Link to="/dashboard" activeProps={{ className: "text-foreground" }}>
-            Institutions
-          </Link>
+          </NavLink>
+          <NavLink to="/lecturers" current={path}>
+            Lecturers
+          </NavLink>
+          <NavLink to="/pricing" current={path}>
+            For institutes
+          </NavLink>
         </nav>
         <div className="flex items-center gap-2">
-          <Link
-            to="/dashboard"
-            className="rounded-lg px-3 py-2 text-sm text-muted-foreground"
-          >
-            Log in
-          </Link>
-          <Link
-            to="/seminars"
-            className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground"
-          >
-            Get a pass
-          </Link>
+          <Button variant="ghost" size="sm" asChild>
+            <Link to={accountHref}>{user ? user.name.split(" ")[0] : "Log in"}</Link>
+          </Button>
+          <Button size="sm" asChild>
+            <Link to="/seminars">Get a pass</Link>
+          </Button>
         </div>
       </div>
     </header>
   );
 }
 
+function NavLink({ to, current, children }: { to: string; current: string; children: ReactNode }) {
+  const active = current === to || current.startsWith(`${to}/`);
+  return (
+    <Link to={to} className={cn(active && "font-medium text-foreground")}>
+      {children}
+    </Link>
+  );
+}
+
 function SiteFooter() {
   return (
-    <footer className="mt-10 border-t border-card/50 bg-card/40 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 py-8 text-sm text-muted-foreground md:flex-row">
-        <span className="font-mono text-foreground">
-          pass<span className="text-accent">.lk</span>
+    <footer className="mt-16 border-t border-border/70 bg-card/50">
+      <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-4 px-5 py-10 text-sm text-muted-foreground md:flex-row md:items-center">
+        <span className="font-display text-base text-foreground">
+          edu<span className="text-primary">pass</span>.lk
         </span>
-        <span>Seminars · Passes · Fee handling for Sri Lankan institutes</span>
-        <span>© 2025</span>
+        <span>O/L &amp; A/L seminar passes · tuition class ops for Sri Lanka</span>
+        <span>© {new Date().getFullYear()}</span>
       </div>
     </footer>
   );

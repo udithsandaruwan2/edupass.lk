@@ -10,14 +10,51 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AccountRouteImport } from './routes/account'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as InstituteRouteImport } from './routes/institute'
+import { Route as LecturersRouteImport } from './routes/lecturers'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as ScanRouteImport } from './routes/scan'
 import { Route as SeminarsRouteImport } from './routes/seminars'
+import { Route as AccountIndexRouteImport } from './routes/account.index'
+import { Route as AccountAttendanceRouteImport } from './routes/account.attendance'
+import { Route as AccountFeesRouteImport } from './routes/account.fees'
+import { Route as AccountPassesRouteImport } from './routes/account.passes'
+import { Route as AccountPaymentsRouteImport } from './routes/account.payments'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminAttendanceRouteImport } from './routes/admin.attendance'
+import { Route as AdminLecturersRouteImport } from './routes/admin.lecturers'
+import { Route as AdminPassesRouteImport } from './routes/admin.passes'
+import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
+import { Route as AdminSeminarsRouteImport } from './routes/admin.seminars'
+import { Route as AuthLoginRouteImport } from './routes/auth.login'
+import { Route as AuthSignupRouteImport } from './routes/auth.signup'
+import { Route as AuthVerifyRouteImport } from './routes/auth.verify'
 import { Route as CheckoutSeminarIdRouteImport } from './routes/checkout.$seminarId'
+import { Route as InstituteIndexRouteImport } from './routes/institute.index'
+import { Route as InstituteAttendanceRouteImport } from './routes/institute.attendance'
+import { Route as InstituteClassesRouteImport } from './routes/institute.classes'
+import { Route as InstituteFeesRouteImport } from './routes/institute.fees'
+import { Route as InstitutePaymentsRouteImport } from './routes/institute.payments'
+import { Route as InstituteStudentsRouteImport } from './routes/institute.students'
+import { Route as LecturersSlugRouteImport } from './routes/lecturers.$slug'
+import { Route as SeminarsIdRouteImport } from './routes/seminars.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -25,9 +62,24 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InstituteRoute = InstituteRouteImport.update({
+  id: '/institute',
+  path: '/institute',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LecturersRoute = LecturersRouteImport.update({
+  id: '/lecturers',
+  path: '/lecturers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScanRoute = ScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SeminarsRoute = SeminarsRouteImport.update({
@@ -35,54 +87,337 @@ const SeminarsRoute = SeminarsRouteImport.update({
   path: '/seminars',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountIndexRoute = AccountIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AccountRoute,
+} as any)
+const AccountAttendanceRoute = AccountAttendanceRouteImport.update({
+  id: '/attendance',
+  path: '/attendance',
+  getParentRoute: () => AccountRoute,
+} as any)
+const AccountFeesRoute = AccountFeesRouteImport.update({
+  id: '/fees',
+  path: '/fees',
+  getParentRoute: () => AccountRoute,
+} as any)
+const AccountPassesRoute = AccountPassesRouteImport.update({
+  id: '/passes',
+  path: '/passes',
+  getParentRoute: () => AccountRoute,
+} as any)
+const AccountPaymentsRoute = AccountPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AccountRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAttendanceRoute = AdminAttendanceRouteImport.update({
+  id: '/attendance',
+  path: '/attendance',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLecturersRoute = AdminLecturersRouteImport.update({
+  id: '/lecturers',
+  path: '/lecturers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPassesRoute = AdminPassesRouteImport.update({
+  id: '/passes',
+  path: '/passes',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSeminarsRoute = AdminSeminarsRouteImport.update({
+  id: '/seminars',
+  path: '/seminars',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthSignupRoute = AuthSignupRouteImport.update({
+  id: '/auth/signup',
+  path: '/auth/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthVerifyRoute = AuthVerifyRouteImport.update({
+  id: '/auth/verify',
+  path: '/auth/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CheckoutSeminarIdRoute = CheckoutSeminarIdRouteImport.update({
   id: '/checkout/$seminarId',
   path: '/checkout/$seminarId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InstituteIndexRoute = InstituteIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => InstituteRoute,
+} as any)
+const InstituteAttendanceRoute = InstituteAttendanceRouteImport.update({
+  id: '/attendance',
+  path: '/attendance',
+  getParentRoute: () => InstituteRoute,
+} as any)
+const InstituteClassesRoute = InstituteClassesRouteImport.update({
+  id: '/classes',
+  path: '/classes',
+  getParentRoute: () => InstituteRoute,
+} as any)
+const InstituteFeesRoute = InstituteFeesRouteImport.update({
+  id: '/fees',
+  path: '/fees',
+  getParentRoute: () => InstituteRoute,
+} as any)
+const InstitutePaymentsRoute = InstitutePaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => InstituteRoute,
+} as any)
+const InstituteStudentsRoute = InstituteStudentsRouteImport.update({
+  id: '/students',
+  path: '/students',
+  getParentRoute: () => InstituteRoute,
+} as any)
+const LecturersSlugRoute = LecturersSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => LecturersRoute,
+} as any)
+const SeminarsIdRoute = SeminarsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => SeminarsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRouteWithChildren
+  '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/institute': typeof InstituteRouteWithChildren
+  '/lecturers': typeof LecturersRouteWithChildren
   '/pricing': typeof PricingRoute
-  '/seminars': typeof SeminarsRoute
+  '/scan': typeof ScanRoute
+  '/seminars': typeof SeminarsRouteWithChildren
+  '/account/attendance': typeof AccountAttendanceRoute
+  '/account/fees': typeof AccountFeesRoute
+  '/account/passes': typeof AccountPassesRoute
+  '/account/payments': typeof AccountPaymentsRoute
+  '/admin/attendance': typeof AdminAttendanceRoute
+  '/admin/lecturers': typeof AdminLecturersRoute
+  '/admin/passes': typeof AdminPassesRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/seminars': typeof AdminSeminarsRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/signup': typeof AuthSignupRoute
+  '/auth/verify': typeof AuthVerifyRoute
   '/checkout/$seminarId': typeof CheckoutSeminarIdRoute
+  '/institute/attendance': typeof InstituteAttendanceRoute
+  '/institute/classes': typeof InstituteClassesRoute
+  '/institute/fees': typeof InstituteFeesRoute
+  '/institute/payments': typeof InstitutePaymentsRoute
+  '/institute/students': typeof InstituteStudentsRoute
+  '/lecturers/$slug': typeof LecturersSlugRoute
+  '/seminars/$id': typeof SeminarsIdRoute
+  '/account/': typeof AccountIndexRoute
+  '/admin/': typeof AdminIndexRoute
+  '/institute/': typeof InstituteIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/lecturers': typeof LecturersRouteWithChildren
   '/pricing': typeof PricingRoute
-  '/seminars': typeof SeminarsRoute
+  '/scan': typeof ScanRoute
+  '/seminars': typeof SeminarsRouteWithChildren
+  '/account/attendance': typeof AccountAttendanceRoute
+  '/account/fees': typeof AccountFeesRoute
+  '/account/passes': typeof AccountPassesRoute
+  '/account/payments': typeof AccountPaymentsRoute
+  '/admin/attendance': typeof AdminAttendanceRoute
+  '/admin/lecturers': typeof AdminLecturersRoute
+  '/admin/passes': typeof AdminPassesRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/seminars': typeof AdminSeminarsRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/signup': typeof AuthSignupRoute
+  '/auth/verify': typeof AuthVerifyRoute
   '/checkout/$seminarId': typeof CheckoutSeminarIdRoute
+  '/institute/attendance': typeof InstituteAttendanceRoute
+  '/institute/classes': typeof InstituteClassesRoute
+  '/institute/fees': typeof InstituteFeesRoute
+  '/institute/payments': typeof InstitutePaymentsRoute
+  '/institute/students': typeof InstituteStudentsRoute
+  '/lecturers/$slug': typeof LecturersSlugRoute
+  '/seminars/$id': typeof SeminarsIdRoute
+  '/account': typeof AccountIndexRoute
+  '/admin': typeof AdminIndexRoute
+  '/institute': typeof InstituteIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRouteWithChildren
+  '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/institute': typeof InstituteRouteWithChildren
+  '/lecturers': typeof LecturersRouteWithChildren
   '/pricing': typeof PricingRoute
-  '/seminars': typeof SeminarsRoute
+  '/scan': typeof ScanRoute
+  '/seminars': typeof SeminarsRouteWithChildren
+  '/account/attendance': typeof AccountAttendanceRoute
+  '/account/fees': typeof AccountFeesRoute
+  '/account/passes': typeof AccountPassesRoute
+  '/account/payments': typeof AccountPaymentsRoute
+  '/admin/attendance': typeof AdminAttendanceRoute
+  '/admin/lecturers': typeof AdminLecturersRoute
+  '/admin/passes': typeof AdminPassesRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/seminars': typeof AdminSeminarsRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/signup': typeof AuthSignupRoute
+  '/auth/verify': typeof AuthVerifyRoute
   '/checkout/$seminarId': typeof CheckoutSeminarIdRoute
+  '/institute/attendance': typeof InstituteAttendanceRoute
+  '/institute/classes': typeof InstituteClassesRoute
+  '/institute/fees': typeof InstituteFeesRoute
+  '/institute/payments': typeof InstitutePaymentsRoute
+  '/institute/students': typeof InstituteStudentsRoute
+  '/lecturers/$slug': typeof LecturersSlugRoute
+  '/seminars/$id': typeof SeminarsIdRoute
+  '/account/': typeof AccountIndexRoute
+  '/admin/': typeof AdminIndexRoute
+  '/institute/': typeof InstituteIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/dashboard' | '/pricing' | '/seminars' | '/checkout/$seminarId'
+    | '/'
+    | '/account'
+    | '/admin'
+    | '/dashboard'
+    | '/institute'
+    | '/lecturers'
+    | '/pricing'
+    | '/scan'
+    | '/seminars'
+    | '/account/attendance'
+    | '/account/fees'
+    | '/account/passes'
+    | '/account/payments'
+    | '/admin/attendance'
+    | '/admin/lecturers'
+    | '/admin/passes'
+    | '/admin/payments'
+    | '/admin/seminars'
+    | '/auth/login'
+    | '/auth/signup'
+    | '/auth/verify'
+    | '/checkout/$seminarId'
+    | '/institute/attendance'
+    | '/institute/classes'
+    | '/institute/fees'
+    | '/institute/payments'
+    | '/institute/students'
+    | '/lecturers/$slug'
+    | '/seminars/$id'
+    | '/account/'
+    | '/admin/'
+    | '/institute/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/pricing' | '/seminars' | '/checkout/$seminarId'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/lecturers'
+    | '/pricing'
+    | '/scan'
+    | '/seminars'
+    | '/account/attendance'
+    | '/account/fees'
+    | '/account/passes'
+    | '/account/payments'
+    | '/admin/attendance'
+    | '/admin/lecturers'
+    | '/admin/passes'
+    | '/admin/payments'
+    | '/admin/seminars'
+    | '/auth/login'
+    | '/auth/signup'
+    | '/auth/verify'
+    | '/checkout/$seminarId'
+    | '/institute/attendance'
+    | '/institute/classes'
+    | '/institute/fees'
+    | '/institute/payments'
+    | '/institute/students'
+    | '/lecturers/$slug'
+    | '/seminars/$id'
+    | '/account'
+    | '/admin'
+    | '/institute'
   id:
     | '__root__'
     | '/'
+    | '/account'
+    | '/admin'
     | '/dashboard'
+    | '/institute'
+    | '/lecturers'
     | '/pricing'
+    | '/scan'
     | '/seminars'
+    | '/account/attendance'
+    | '/account/fees'
+    | '/account/passes'
+    | '/account/payments'
+    | '/admin/attendance'
+    | '/admin/lecturers'
+    | '/admin/passes'
+    | '/admin/payments'
+    | '/admin/seminars'
+    | '/auth/login'
+    | '/auth/signup'
+    | '/auth/verify'
     | '/checkout/$seminarId'
+    | '/institute/attendance'
+    | '/institute/classes'
+    | '/institute/fees'
+    | '/institute/payments'
+    | '/institute/students'
+    | '/lecturers/$slug'
+    | '/seminars/$id'
+    | '/account/'
+    | '/admin/'
+    | '/institute/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRouteWithChildren
+  AdminRoute: typeof AdminRouteWithChildren
   DashboardRoute: typeof DashboardRoute
+  InstituteRoute: typeof InstituteRouteWithChildren
+  LecturersRoute: typeof LecturersRouteWithChildren
   PricingRoute: typeof PricingRoute
-  SeminarsRoute: typeof SeminarsRoute
+  ScanRoute: typeof ScanRoute
+  SeminarsRoute: typeof SeminarsRouteWithChildren
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthSignupRoute: typeof AuthSignupRoute
+  AuthVerifyRoute: typeof AuthVerifyRoute
   CheckoutSeminarIdRoute: typeof CheckoutSeminarIdRoute
 }
 
@@ -95,11 +430,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/institute': {
+      id: '/institute'
+      path: '/institute'
+      fullPath: '/institute'
+      preLoaderRoute: typeof InstituteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lecturers': {
+      id: '/lecturers'
+      path: '/lecturers'
+      fullPath: '/lecturers'
+      preLoaderRoute: typeof LecturersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -109,11 +472,116 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/scan': {
+      id: '/scan'
+      path: '/scan'
+      fullPath: '/scan'
+      preLoaderRoute: typeof ScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/seminars': {
       id: '/seminars'
       path: '/seminars'
       fullPath: '/seminars'
       preLoaderRoute: typeof SeminarsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/': {
+      id: '/account/'
+      path: '/'
+      fullPath: '/account/'
+      preLoaderRoute: typeof AccountIndexRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/account/attendance': {
+      id: '/account/attendance'
+      path: '/attendance'
+      fullPath: '/account/attendance'
+      preLoaderRoute: typeof AccountAttendanceRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/account/fees': {
+      id: '/account/fees'
+      path: '/fees'
+      fullPath: '/account/fees'
+      preLoaderRoute: typeof AccountFeesRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/account/passes': {
+      id: '/account/passes'
+      path: '/passes'
+      fullPath: '/account/passes'
+      preLoaderRoute: typeof AccountPassesRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/account/payments': {
+      id: '/account/payments'
+      path: '/payments'
+      fullPath: '/account/payments'
+      preLoaderRoute: typeof AccountPaymentsRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/attendance': {
+      id: '/admin/attendance'
+      path: '/attendance'
+      fullPath: '/admin/attendance'
+      preLoaderRoute: typeof AdminAttendanceRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/lecturers': {
+      id: '/admin/lecturers'
+      path: '/lecturers'
+      fullPath: '/admin/lecturers'
+      preLoaderRoute: typeof AdminLecturersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/passes': {
+      id: '/admin/passes'
+      path: '/passes'
+      fullPath: '/admin/passes'
+      preLoaderRoute: typeof AdminPassesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/seminars': {
+      id: '/admin/seminars'
+      path: '/seminars'
+      fullPath: '/admin/seminars'
+      preLoaderRoute: typeof AdminSeminarsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/signup': {
+      id: '/auth/signup'
+      path: '/auth/signup'
+      fullPath: '/auth/signup'
+      preLoaderRoute: typeof AuthSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/verify': {
+      id: '/auth/verify'
+      path: '/auth/verify'
+      fullPath: '/auth/verify'
+      preLoaderRoute: typeof AuthVerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout/$seminarId': {
@@ -123,14 +591,163 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutSeminarIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/institute/': {
+      id: '/institute/'
+      path: '/'
+      fullPath: '/institute/'
+      preLoaderRoute: typeof InstituteIndexRouteImport
+      parentRoute: typeof InstituteRoute
+    }
+    '/institute/attendance': {
+      id: '/institute/attendance'
+      path: '/attendance'
+      fullPath: '/institute/attendance'
+      preLoaderRoute: typeof InstituteAttendanceRouteImport
+      parentRoute: typeof InstituteRoute
+    }
+    '/institute/classes': {
+      id: '/institute/classes'
+      path: '/classes'
+      fullPath: '/institute/classes'
+      preLoaderRoute: typeof InstituteClassesRouteImport
+      parentRoute: typeof InstituteRoute
+    }
+    '/institute/fees': {
+      id: '/institute/fees'
+      path: '/fees'
+      fullPath: '/institute/fees'
+      preLoaderRoute: typeof InstituteFeesRouteImport
+      parentRoute: typeof InstituteRoute
+    }
+    '/institute/payments': {
+      id: '/institute/payments'
+      path: '/payments'
+      fullPath: '/institute/payments'
+      preLoaderRoute: typeof InstitutePaymentsRouteImport
+      parentRoute: typeof InstituteRoute
+    }
+    '/institute/students': {
+      id: '/institute/students'
+      path: '/students'
+      fullPath: '/institute/students'
+      preLoaderRoute: typeof InstituteStudentsRouteImport
+      parentRoute: typeof InstituteRoute
+    }
+    '/lecturers/$slug': {
+      id: '/lecturers/$slug'
+      path: '/$slug'
+      fullPath: '/lecturers/$slug'
+      preLoaderRoute: typeof LecturersSlugRouteImport
+      parentRoute: typeof LecturersRoute
+    }
+    '/seminars/$id': {
+      id: '/seminars/$id'
+      path: '/$id'
+      fullPath: '/seminars/$id'
+      preLoaderRoute: typeof SeminarsIdRouteImport
+      parentRoute: typeof SeminarsRoute
+    }
   }
 }
 
+interface AccountRouteChildren {
+  AccountAttendanceRoute: typeof AccountAttendanceRoute
+  AccountFeesRoute: typeof AccountFeesRoute
+  AccountPassesRoute: typeof AccountPassesRoute
+  AccountPaymentsRoute: typeof AccountPaymentsRoute
+  AccountIndexRoute: typeof AccountIndexRoute
+}
+
+const AccountRouteChildren: AccountRouteChildren = {
+  AccountAttendanceRoute: AccountAttendanceRoute,
+  AccountFeesRoute: AccountFeesRoute,
+  AccountPassesRoute: AccountPassesRoute,
+  AccountPaymentsRoute: AccountPaymentsRoute,
+  AccountIndexRoute: AccountIndexRoute,
+}
+
+const AccountRouteWithChildren =
+  AccountRoute._addFileChildren(AccountRouteChildren)
+
+interface AdminRouteChildren {
+  AdminAttendanceRoute: typeof AdminAttendanceRoute
+  AdminLecturersRoute: typeof AdminLecturersRoute
+  AdminPassesRoute: typeof AdminPassesRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminSeminarsRoute: typeof AdminSeminarsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAttendanceRoute: AdminAttendanceRoute,
+  AdminLecturersRoute: AdminLecturersRoute,
+  AdminPassesRoute: AdminPassesRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminSeminarsRoute: AdminSeminarsRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+interface InstituteRouteChildren {
+  InstituteAttendanceRoute: typeof InstituteAttendanceRoute
+  InstituteClassesRoute: typeof InstituteClassesRoute
+  InstituteFeesRoute: typeof InstituteFeesRoute
+  InstitutePaymentsRoute: typeof InstitutePaymentsRoute
+  InstituteStudentsRoute: typeof InstituteStudentsRoute
+  InstituteIndexRoute: typeof InstituteIndexRoute
+}
+
+const InstituteRouteChildren: InstituteRouteChildren = {
+  InstituteAttendanceRoute: InstituteAttendanceRoute,
+  InstituteClassesRoute: InstituteClassesRoute,
+  InstituteFeesRoute: InstituteFeesRoute,
+  InstitutePaymentsRoute: InstitutePaymentsRoute,
+  InstituteStudentsRoute: InstituteStudentsRoute,
+  InstituteIndexRoute: InstituteIndexRoute,
+}
+
+const InstituteRouteWithChildren = InstituteRoute._addFileChildren(
+  InstituteRouteChildren,
+)
+
+interface LecturersRouteChildren {
+  LecturersSlugRoute: typeof LecturersSlugRoute
+}
+
+const LecturersRouteChildren: LecturersRouteChildren = {
+  LecturersSlugRoute: LecturersSlugRoute,
+}
+
+const LecturersRouteWithChildren = LecturersRoute._addFileChildren(
+  LecturersRouteChildren,
+)
+
+interface SeminarsRouteChildren {
+  SeminarsIdRoute: typeof SeminarsIdRoute
+}
+
+const SeminarsRouteChildren: SeminarsRouteChildren = {
+  SeminarsIdRoute: SeminarsIdRoute,
+}
+
+const SeminarsRouteWithChildren = SeminarsRoute._addFileChildren(
+  SeminarsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRouteWithChildren,
+  AdminRoute: AdminRouteWithChildren,
   DashboardRoute: DashboardRoute,
+  InstituteRoute: InstituteRouteWithChildren,
+  LecturersRoute: LecturersRouteWithChildren,
   PricingRoute: PricingRoute,
-  SeminarsRoute: SeminarsRoute,
+  ScanRoute: ScanRoute,
+  SeminarsRoute: SeminarsRouteWithChildren,
+  AuthLoginRoute: AuthLoginRoute,
+  AuthSignupRoute: AuthSignupRoute,
+  AuthVerifyRoute: AuthVerifyRoute,
   CheckoutSeminarIdRoute: CheckoutSeminarIdRoute,
 }
 export const routeTree = rootRouteImport
