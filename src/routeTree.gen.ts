@@ -10,33 +10,80 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as SeminarsRouteImport } from './routes/seminars'
+import { Route as CheckoutSeminarIdRouteImport } from './routes/checkout.$seminarId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SeminarsRoute = SeminarsRouteImport.update({
+  id: '/seminars',
+  path: '/seminars',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutSeminarIdRoute = CheckoutSeminarIdRouteImport.update({
+  id: '/checkout/$seminarId',
+  path: '/checkout/$seminarId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
+  '/pricing': typeof PricingRoute
+  '/seminars': typeof SeminarsRoute
+  '/checkout/$seminarId': typeof CheckoutSeminarIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
+  '/pricing': typeof PricingRoute
+  '/seminars': typeof SeminarsRoute
+  '/checkout/$seminarId': typeof CheckoutSeminarIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
+  '/pricing': typeof PricingRoute
+  '/seminars': typeof SeminarsRoute
+  '/checkout/$seminarId': typeof CheckoutSeminarIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    '/' | '/dashboard' | '/pricing' | '/seminars' | '/checkout/$seminarId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/dashboard' | '/pricing' | '/seminars' | '/checkout/$seminarId'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/pricing'
+    | '/seminars'
+    | '/checkout/$seminarId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRoute
+  PricingRoute: typeof PricingRoute
+  SeminarsRoute: typeof SeminarsRoute
+  CheckoutSeminarIdRoute: typeof CheckoutSeminarIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +95,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/seminars': {
+      id: '/seminars'
+      path: '/seminars'
+      fullPath: '/seminars'
+      preLoaderRoute: typeof SeminarsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout/$seminarId': {
+      id: '/checkout/$seminarId'
+      path: '/checkout/$seminarId'
+      fullPath: '/checkout/$seminarId'
+      preLoaderRoute: typeof CheckoutSeminarIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRoute: DashboardRoute,
+  PricingRoute: PricingRoute,
+  SeminarsRoute: SeminarsRoute,
+  CheckoutSeminarIdRoute: CheckoutSeminarIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
