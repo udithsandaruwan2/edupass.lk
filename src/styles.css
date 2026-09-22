@@ -238,3 +238,40 @@
   object-fit: cover;
   object-position: center;
 }
+
+/* Stable full-screen hero: svh fits mobile with toolbars visible */
+@utility hero-viewport {
+  min-height: 100vh;
+  min-height: 100svh;
+  height: 100vh;
+  height: 100svh;
+}
+
+@keyframes ken-slow {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.06);
+  }
+}
+
+@utility ken-burns {
+  animation: ken-slow 22s ease-out forwards;
+}
+
+@keyframes scroll-cue {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(6px);
+  }
+}
+
+@utility scroll-cue {
+  animation: scroll-cue 1.8s ease-in-out infinite;
+}

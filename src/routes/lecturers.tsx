@@ -37,10 +37,10 @@ function LecturersPage() {
 
   return (
     <SiteShell>
-      <section className="ambient-grid mx-auto max-w-6xl px-5 py-12">
+      <section className="ambient-grid mx-auto max-w-6xl px-5 py-8 sm:py-12">
         <Reveal>
           <SectionHeader title="Lecturers" />
-          <p className="-mt-4 mb-8 max-w-[46ch] text-muted-foreground">
+          <p className="-mt-4 mb-6 max-w-[46ch] text-sm text-muted-foreground sm:mb-8 sm:text-base">
             Trusted O/L and A/L masters — open a profile to see their seminar schedule.
           </p>
         </Reveal>

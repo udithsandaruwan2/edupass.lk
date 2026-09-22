@@ -35,15 +35,22 @@ function SeminarDetailPage() {
 
   return (
     <SiteShell>
-      <section className="relative isolate h-52 overflow-hidden md:h-64">
-        <img src={cover} alt="" className="absolute inset-0 size-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-navy/80 via-navy/40 to-navy/20" />
-        <div className="relative mx-auto flex h-full max-w-6xl items-end px-5 pb-6">
+      <section className="relative isolate min-h-[min(36svh,220px)] overflow-hidden sm:min-h-[min(32svh,260px)] md:min-h-[280px]">
+        <img
+          src={cover}
+          alt=""
+          className="absolute inset-0 size-full object-cover object-[center_30%]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-navy/85 via-navy/40 to-navy/25" />
+        <div className="relative mx-auto flex h-full min-h-[inherit] max-w-6xl items-end px-5 pb-6 pt-4 sm:pb-8">
           <div className="flex flex-wrap gap-2">
             <Badge className="bg-card/95 text-foreground">{seminar.level}</Badge>
             <Badge className="bg-card/80 text-foreground">{seminar.medium} medium</Badge>
             {seminar.stream ? (
-              <Badge variant="outline" className="border-primary-foreground/40 text-primary-foreground">
+              <Badge
+                variant="outline"
+                className="border-primary-foreground/40 text-primary-foreground"
+              >
                 {seminar.stream}
               </Badge>
             ) : null}
@@ -51,9 +58,9 @@ function SeminarDetailPage() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-6xl gap-10 px-5 py-10 lg:grid-cols-[1.15fr_0.85fr]">
+      <section className="mx-auto grid max-w-6xl gap-8 px-5 py-8 sm:gap-10 sm:py-10 lg:grid-cols-[1.15fr_0.85fr]">
         <Reveal>
-          <h1 className="font-display text-3xl font-semibold tracking-tight text-ink md:text-4xl">
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-ink sm:text-3xl md:text-4xl">
             {seminar.subject}
           </h1>
           <p className="mt-3 max-w-[52ch] leading-relaxed text-muted-foreground">
