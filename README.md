@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-Open the app, then append `?dev=1` once to show the **Dev role** toolbar (role switcher + reset data).
+Open the app — the bottom **Dev role** toolbar is always visible (role switcher + reset data).
 
 ## Demo accounts
 
@@ -39,6 +39,6 @@ New signups use verification code **123456**.
 - Mock store: `src/mocks/store.ts` (localStorage)
 - Domain types: `src/domain/types.ts`
 - Services: `src/services/api.ts`
-- Brand: teal/emerald paper theme — **edupass.lk**
+- Brand: royal-blue LMS theme — **edupass.lk**
 
 This project syncs with [Lovable](https://lovable.dev). Prefer feature branches; do not force-push rewritten history on the connected branch.

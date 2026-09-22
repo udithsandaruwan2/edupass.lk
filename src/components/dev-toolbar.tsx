@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import type { UserRole } from "@/domain/types";
 import { useAuth } from "@/hooks/use-auth";
 import { resetStore } from "@/mocks/store";
@@ -13,23 +13,20 @@ import {
 
 const ROLES: UserRole[] = ["guest", "student", "admin", "scanner", "organizer", "lecturer"];
 
+/** Always-on role switcher for demos — no hide control. */
 export function DevToolbar() {
   const { role, switchRole } = useAuth();
-  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    // Persist so deep links with ?dev=1 still mark the session
     const params = new URLSearchParams(window.location.search);
-    const flag = params.get("dev") === "1" || localStorage.getItem("edupass.dev") === "1";
-    setVisible(flag);
     if (params.get("dev") === "1") localStorage.setItem("edupass.dev", "1");
   }, []);
 
-  if (!visible) return null;
-
   return (
-    <div className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full border border-border bg-card px-3 py-2 shadow-lg">
-      <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+    <div className="fixed bottom-4 left-1/2 z-50 flex max-w-[calc(100vw-1.5rem)] -translate-x-1/2 items-center gap-2 rounded-full border border-border bg-card/95 px-3 py-2 shadow-lg backdrop-blur-md">
+      <span className="hidden text-[10px] font-medium tracking-wider text-muted-foreground uppercase sm:inline">
         Dev role
       </span>
       <Select
@@ -52,24 +49,13 @@ export function DevToolbar() {
       <Button
         size="sm"
         variant="outline"
-        className="h-8 rounded-full"
+        className="h-8 shrink-0 rounded-full"
         onClick={() => {
           resetStore();
           window.location.reload();
         }}
       >
         Reset data
-      </Button>
-      <Button
-        size="sm"
-        variant="ghost"
-        className="h-8 rounded-full"
-        onClick={() => {
-          localStorage.removeItem("edupass.dev");
-          setVisible(false);
-        }}
-      >
-        Hide
       </Button>
     </div>
   );

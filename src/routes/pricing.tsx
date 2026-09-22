@@ -91,8 +91,8 @@ function PricingPage() {
             </Button>
           </div>
           <p className="mt-4 text-xs text-muted-foreground">
-            Demo organizer: organizer@lankavidya.lk (any password). Or append{" "}
-            <code className="font-mono">?dev=1</code> and switch role to organizer.
+            Demo organizer: organizer@lankavidya.lk (any password). Use the bottom Dev role
+            switcher to jump to organizer without logging in.
           </p>
         </Reveal>
       </section>
