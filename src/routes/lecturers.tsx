@@ -3,7 +3,9 @@ import { useState } from "react";
 import { SiteShell } from "@/components/site-shell";
 import { EmptyState } from "@/components/empty-state";
 import { SectionHeader } from "@/components/section-header";
+import { Reveal } from "@/components/reveal";
 import { useLecturers } from "@/hooks/use-api";
+import { lecturerPhoto } from "@/lib/images";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -35,22 +37,24 @@ function LecturersPage() {
 
   return (
     <SiteShell>
-      <section className="mx-auto max-w-6xl px-5 py-12">
-        <SectionHeader title="Lecturers" />
-        <p className="-mt-4 mb-8 max-w-[48ch] text-muted-foreground">
-          Find trusted O/L and A/L masters, then open their seminar schedule.
-        </p>
+      <section className="ambient-grid mx-auto max-w-6xl px-5 py-12">
+        <Reveal>
+          <SectionHeader title="Lecturers" />
+          <p className="-mt-4 mb-8 max-w-[46ch] text-muted-foreground">
+            Trusted O/L and A/L masters — open a profile to see their seminar schedule.
+          </p>
+        </Reveal>
 
         <div className="flex flex-col gap-3 sm:flex-row">
           <Input
-            className="rounded-xl sm:max-w-xs"
+            className="rounded-xl border-border bg-card sm:max-w-xs"
             placeholder="Search name or subject"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             aria-label="Search lecturers"
           />
           <Select value={level} onValueChange={setLevel}>
-            <SelectTrigger className="rounded-xl sm:w-40" aria-label="Exam level">
+            <SelectTrigger className="rounded-xl bg-card sm:w-40" aria-label="Exam level">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -66,41 +70,40 @@ function LecturersPage() {
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {isLoading ? (
             <>
-              <Skeleton className="h-48 rounded-2xl" />
-              <Skeleton className="h-48 rounded-2xl" />
-              <Skeleton className="h-48 rounded-2xl" />
+              <Skeleton className="h-52 rounded-2xl" />
+              <Skeleton className="h-52 rounded-2xl" />
+              <Skeleton className="h-52 rounded-2xl" />
             </>
           ) : data && data.length > 0 ? (
             data.map((lec, i) => (
-              <Link
-                key={lec.id}
-                to="/lecturers/$slug"
-                params={{ slug: lec.slug }}
-                className="rise card-lift card-lift-hover block rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]"
-                style={{ animationDelay: `${i * 50}ms` }}
-              >
-                <div
-                  className="flex size-14 items-center justify-center rounded-full font-display text-lg font-semibold text-primary-foreground"
-                  style={{ background: `oklch(0.55 0.14 ${lec.photoHue})` }}
-                  aria-hidden
+              <Reveal key={lec.id} delay={40 * i}>
+                <Link
+                  to="/lecturers/$slug"
+                  params={{ slug: lec.slug }}
+                  className="card-lift card-lift-hover block overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]"
                 >
-                  {lec.name
-                    .split(" ")
-                    .map((p) => p[0])
-                    .join("")
-                    .slice(0, 2)}
-                </div>
-                <h2 className="mt-4 font-display text-xl font-semibold">{lec.name}</h2>
-                <p className="text-sm text-muted-foreground">{lec.title}</p>
-                <p className="mt-2 text-xs text-muted-foreground">{lec.city}</p>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {lec.levels.map((l) => (
-                    <Badge key={l} variant="secondary">
-                      {l}
-                    </Badge>
-                  ))}
-                </div>
-              </Link>
+                  <div className="flex gap-4 p-5">
+                    <img
+                      src={lecturerPhoto(i)}
+                      alt=""
+                      className="size-16 shrink-0 rounded-full object-cover ring-2 ring-border"
+                      loading="lazy"
+                    />
+                    <div className="min-w-0">
+                      <h2 className="font-display text-lg font-semibold text-ink">{lec.name}</h2>
+                      <p className="text-sm text-muted-foreground">{lec.title}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{lec.city}</p>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {lec.levels.map((l) => (
+                          <Badge key={l} variant="secondary">
+                            {l}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </Reveal>
             ))
           ) : (
             <div className="sm:col-span-2 lg:col-span-3">

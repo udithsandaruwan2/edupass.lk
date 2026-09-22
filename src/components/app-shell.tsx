@@ -85,7 +85,7 @@ export function AppShell({
             <p className="text-[10px] text-muted-foreground">{title}</p>
           </div>
         </div>
-        <nav className="flex-1 space-y-1 overflow-y-auto p-3">
+        <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
           {navWithBrowse.map((item) => {
             const active =
               path === item.to ||
@@ -101,7 +101,7 @@ export function AppShell({
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
                   active
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
@@ -172,7 +172,9 @@ export function AppShell({
           </div>
         ) : null}
 
-        <main className="flex-1 px-4 py-6 md:px-8 md:py-8">{children ?? <Outlet />}</main>
+        <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
+          <div className="mx-auto max-w-5xl">{children ?? <Outlet />}</div>
+        </main>
       </div>
 
       <DevToolbar />
