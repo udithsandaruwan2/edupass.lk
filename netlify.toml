@@ -1,0 +1,13 @@
+# edupass.lk — Netlify (TanStack Start + Nitro)
+# Publish dir is `dist` (NOT dist/client). SSR lands in .netlify/functions-internal.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Prefer npm (repo has package-lock.json). Do not set bun in the Netlify UI.
+
+# If Site settings still show dist/client or `bun run build`, clear those UI
+# overrides so this file wins — then trigger a new deploy.
