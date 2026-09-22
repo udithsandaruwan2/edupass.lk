@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { SiteShell } from "@/components/site-shell";
 import { EmptyState } from "@/components/empty-state";
+import { SectionHeader } from "@/components/section-header";
 import { useLecturers } from "@/hooks/use-api";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,7 +21,7 @@ export const Route = createFileRoute("/lecturers")({
       { title: "Lecturers | edupass.lk" },
       {
         name: "description",
-        content: "Browse O/L and A/L tuition lecturers and their upcoming seminars.",
+        content: "Browse O/L and A/L tuition lecturers and their upcoming seminar passes.",
       },
     ],
   }),
@@ -34,24 +35,22 @@ function LecturersPage() {
 
   return (
     <SiteShell>
-      <section className="py-12">
-        <h1 className="font-display text-3xl font-semibold tracking-tight md:text-4xl">
-          Lecturers
-        </h1>
-        <p className="mt-2 max-w-[48ch] text-muted-foreground">
+      <section className="mx-auto max-w-6xl px-5 py-12">
+        <SectionHeader title="Lecturers" />
+        <p className="-mt-4 mb-8 max-w-[48ch] text-muted-foreground">
           Find trusted O/L and A/L masters, then open their seminar schedule.
         </p>
 
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <Input
-            className="sm:max-w-xs"
+            className="rounded-xl sm:max-w-xs"
             placeholder="Search name or subject"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             aria-label="Search lecturers"
           />
           <Select value={level} onValueChange={setLevel}>
-            <SelectTrigger className="sm:w-40" aria-label="Exam level">
+            <SelectTrigger className="rounded-xl sm:w-40" aria-label="Exam level">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -64,12 +63,12 @@ function LecturersPage() {
           </Select>
         </div>
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {isLoading ? (
             <>
-              <Skeleton className="h-40" />
-              <Skeleton className="h-40" />
-              <Skeleton className="h-40" />
+              <Skeleton className="h-48 rounded-2xl" />
+              <Skeleton className="h-48 rounded-2xl" />
+              <Skeleton className="h-48 rounded-2xl" />
             </>
           ) : data && data.length > 0 ? (
             data.map((lec, i) => (
@@ -77,12 +76,12 @@ function LecturersPage() {
                 key={lec.id}
                 to="/lecturers/$slug"
                 params={{ slug: lec.slug }}
-                className="rise block rounded-2xl border border-border bg-card p-5 transition-shadow hover:shadow-md"
+                className="rise card-lift card-lift-hover block rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]"
                 style={{ animationDelay: `${i * 50}ms` }}
               >
                 <div
-                  className="flex size-12 items-center justify-center rounded-full font-display text-lg font-semibold text-primary-foreground"
-                  style={{ background: `oklch(0.55 0.1 ${lec.photoHue})` }}
+                  className="flex size-14 items-center justify-center rounded-full font-display text-lg font-semibold text-primary-foreground"
+                  style={{ background: `oklch(0.55 0.14 ${lec.photoHue})` }}
                   aria-hidden
                 >
                   {lec.name

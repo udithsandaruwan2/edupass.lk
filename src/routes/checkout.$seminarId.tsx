@@ -95,8 +95,8 @@ function CheckoutPage() {
 
   return (
     <SiteShell>
-      <section className="grid gap-8 py-12 lg:grid-cols-[1fr_0.9fr]">
-        <div className="rise space-y-6">
+      <section className="mx-auto grid max-w-6xl gap-8 px-5 py-12 lg:grid-cols-[1fr_0.9fr]">
+        <div className="rise space-y-6 rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
           <div>
             <h1 className="font-display text-2xl font-semibold tracking-tight">Checkout</h1>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -213,7 +213,12 @@ function CheckoutPage() {
             </div>
           )}
 
-          <Button className="w-full" size="lg" disabled={busy} onClick={() => void onSubmit()}>
+          <Button
+            className="w-full rounded-full"
+            size="lg"
+            disabled={busy}
+            onClick={() => void onSubmit()}
+          >
             {busy ? "Processing…" : method === "card" ? "Pay & issue pass" : "Submit slip"}
           </Button>
           <Link

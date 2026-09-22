@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { SiteShell } from "@/components/site-shell";
+import { AppShell } from "@/components/app-shell";
 import { RequireRole } from "@/components/require-role";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DashboardCard } from "@/components/section-header";
 import { checkInPass, getPassByCode } from "@/services/api";
 import { getStore } from "@/mocks/store";
 import { formatSeminarWhen } from "@/lib/format";
@@ -18,9 +19,9 @@ export const Route = createFileRoute("/scan")({
 function ScanPage() {
   return (
     <RequireRole roles={["scanner", "admin"]}>
-      <SiteShell>
+      <AppShell title="Gate scanner" nav={[{ to: "/scan", label: "Check in" }]}>
         <Scanner />
-      </SiteShell>
+      </AppShell>
     </RequireRole>
   );
 }
@@ -62,39 +63,47 @@ function Scanner() {
   }
 
   return (
-    <section className="mx-auto max-w-md py-12">
-      <h1 className="font-display text-3xl font-semibold tracking-tight">Gate scanner</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Enter or paste the pass code from the QR (camera scanning can plug in later). Demo: buy a
-        pass first, then paste its code here.
-      </p>
-      <form onSubmit={(e) => void onCheckIn(e)} className="mt-8 space-y-4">
-        <div>
-          <Label htmlFor="code">Pass code</Label>
-          <Input
-            id="code"
-            className="mt-1 font-mono text-lg tracking-wide"
-            value={code}
-            onChange={(e) => setCode(e.target.value.toUpperCase())}
-            placeholder="EDU-XXX-XXXX"
-            required
-            autoFocus
-          />
-        </div>
-        <div className="flex gap-2">
-          <Button type="submit" className="flex-1" size="lg" disabled={busy}>
-            {busy ? "Checking…" : "Check in"}
-          </Button>
-          <Button type="button" variant="outline" size="lg" onClick={() => void preview()}>
-            Preview
-          </Button>
-        </div>
-      </form>
-      {last ? (
-        <div className="mt-8 rounded-xl border border-success/40 bg-success/10 p-4 text-sm">
-          Last check-in: {last}
-        </div>
-      ) : null}
-    </section>
+    <div className="mx-auto max-w-md">
+      <DashboardCard>
+        <h2 className="font-display text-xl font-semibold">Pass check-in</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Enter or paste the pass code from the QR. Demo: buy a pass first, then paste its code
+          here.
+        </p>
+        <form onSubmit={(e) => void onCheckIn(e)} className="mt-6 space-y-4">
+          <div>
+            <Label htmlFor="code">Pass code</Label>
+            <Input
+              id="code"
+              className="mt-1 rounded-xl font-mono text-lg tracking-wide"
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              placeholder="EDU-XXX-XXXX"
+              required
+              autoFocus
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button type="submit" className="flex-1 rounded-full" size="lg" disabled={busy}>
+              {busy ? "Checking…" : "Check in"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="rounded-full"
+              onClick={() => void preview()}
+            >
+              Preview
+            </Button>
+          </div>
+        </form>
+        {last ? (
+          <div className="mt-6 rounded-xl border border-success/40 bg-success/10 p-4 text-sm">
+            Last check-in: {last}
+          </div>
+        ) : null}
+      </DashboardCard>
+    </div>
   );
 }

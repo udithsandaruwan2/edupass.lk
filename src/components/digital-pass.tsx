@@ -30,7 +30,7 @@ export function DigitalPass({
     QRCode.toDataURL(code, {
       width: 160,
       margin: 1,
-      color: { dark: "#1a332e", light: "#ffffff" },
+      color: { dark: "#1e3a5f", light: "#ffffff" },
     }).then((url) => {
       if (!cancelled) setQr(url);
     });
@@ -42,7 +42,7 @@ export function DigitalPass({
   return (
     <div
       className={cn(
-        "pass-reveal relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-[oklch(0.42_0.09_175)] p-5 text-primary-foreground shadow-lg",
+        "pass-reveal relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-[oklch(0.38_0.14_255)] p-5 text-primary-foreground shadow-[var(--shadow-card)]",
         className,
       )}
     >

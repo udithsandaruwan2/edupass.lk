@@ -35,7 +35,8 @@ function SignupPage() {
 
   return (
     <SiteShell>
-      <section className="mx-auto max-w-md py-16">
+      <section className="mx-auto flex max-w-md justify-center px-5 py-16">
+        <div className="w-full rounded-2xl border border-border bg-card p-8 shadow-[var(--shadow-card)]">
         <h1 className="font-display text-3xl font-semibold tracking-tight">Create account</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           We&apos;ll send a verification code to your email (simulated in this demo).
@@ -45,7 +46,7 @@ function SignupPage() {
             <Label htmlFor="name">Full name</Label>
             <Input
               id="name"
-              className="mt-1"
+              className="mt-1 rounded-xl"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -57,7 +58,7 @@ function SignupPage() {
             <Input
               id="email"
               type="email"
-              className="mt-1"
+              className="mt-1 rounded-xl"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -69,7 +70,7 @@ function SignupPage() {
             <Input
               id="password"
               type="password"
-              className="mt-1"
+              className="mt-1 rounded-xl"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -77,7 +78,7 @@ function SignupPage() {
               autoComplete="new-password"
             />
           </div>
-          <Button type="submit" className="w-full" disabled={busy}>
+          <Button type="submit" className="w-full rounded-full" disabled={busy}>
             {busy ? "Creating…" : "Sign up"}
           </Button>
         </form>
@@ -87,6 +88,7 @@ function SignupPage() {
             Log in
           </Link>
         </p>
+        </div>
       </section>
     </SiteShell>
   );

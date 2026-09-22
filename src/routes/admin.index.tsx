@@ -43,16 +43,25 @@ function AdminHome() {
 function Stat({ label, value, href }: { label: string; value: number; href?: string }) {
   const inner = (
     <>
-      <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
-      <p className="mt-2 font-mono text-3xl font-semibold">{value}</p>
+      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-2 font-display text-3xl font-semibold text-ink">{value}</p>
     </>
   );
   if (href) {
     return (
-      <Link to={href} className="rounded-xl border border-border bg-card p-4 hover:shadow-md">
+      <Link
+        to={href}
+        className="card-lift card-lift-hover rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]"
+      >
         {inner}
       </Link>
     );
   }
-  return <div className="rounded-xl border border-border bg-card p-4">{inner}</div>;
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
+      {inner}
+    </div>
+  );
 }
