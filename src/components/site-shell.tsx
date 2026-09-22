@@ -3,6 +3,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { GraduationCap, Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { DevToolbar } from "@/components/dev-toolbar";
+import { StudioBot } from "@/components/studio-bot";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,7 @@ export function SiteShell({
       <FloatingNav heroOverlay={heroOverlay} />
       <main className={cn(!heroOverlay && "pt-[4.75rem] sm:pt-[5.25rem]")}>{children}</main>
       <SiteFooter />
+      <StudioBot />
       <DevToolbar />
       <Toaster />
     </div>
