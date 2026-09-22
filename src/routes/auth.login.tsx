@@ -50,9 +50,9 @@ function LoginPage() {
 
   return (
     <SiteShell>
-      <section className="mx-auto flex max-w-md justify-center px-5 py-16">
-        <div className="w-full rounded-2xl border border-border bg-card p-8 shadow-[var(--shadow-card)]">
-        <h1 className="font-display text-3xl font-semibold tracking-tight">Log in</h1>
+      <section className="mx-auto flex max-w-md justify-center px-5 py-10 sm:py-16">
+        <div className="w-full rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:p-8">
+        <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">Log in</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Demo accounts: student@example.com, admin@edupass.lk, scan@edupass.lk,
           organizer@lankavidya.lk — any password.

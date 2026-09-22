@@ -46,16 +46,16 @@ function SeminarsPage() {
   return (
     <SiteShell>
       <section className="ambient-grid">
-        <div className="mx-auto max-w-6xl px-5 py-12">
+        <div className="mx-auto max-w-6xl px-5 py-8 sm:py-12">
           <Reveal>
             <SectionHeader title="Seminar passes" />
-            <p className="-mt-4 mb-8 max-w-[48ch] text-muted-foreground">
+            <p className="-mt-4 mb-6 max-w-[48ch] text-sm text-muted-foreground sm:mb-8 sm:text-base">
               Filter by exam level, medium and city. Every pass includes a QR code for gate
               check-in.
             </p>
           </Reveal>
 
-          <div className="grid gap-3 rounded-2xl border border-border bg-card/90 p-4 shadow-[var(--shadow-card)] backdrop-blur-sm sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 rounded-2xl border border-border bg-card/90 p-3 shadow-[var(--shadow-card)] backdrop-blur-sm sm:grid-cols-2 sm:p-4 lg:grid-cols-4">
             <Input
               placeholder="Search subject or venue"
               value={q}
@@ -101,15 +101,15 @@ function SeminarsPage() {
             </Select>
           </div>
 
-          <div className="mt-10">
+          <div className="mt-8 sm:mt-10">
             {isLoading ? (
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
                 <Skeleton className="h-80 rounded-2xl" />
                 <Skeleton className="h-80 rounded-2xl" />
                 <Skeleton className="h-80 rounded-2xl" />
               </div>
             ) : data && data.length > 0 ? (
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
                 {data.map((seminar, i) => (
                   <Reveal key={seminar.id} delay={35 * i}>
                     <SeminarCard seminar={seminar} />
