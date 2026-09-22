@@ -34,11 +34,11 @@ export function HeroPass3D({ className }: { className?: string }) {
       <div className="hero-ring hero-ring-c pointer-events-none absolute inset-[22%] rounded-full" />
 
       {/* Soft floor glow */}
-      <div className="pointer-events-none absolute bottom-[12%] left-1/2 h-16 w-[70%] -translate-x-1/2 rounded-[100%] bg-primary/35 blur-2xl" />
+      <div className="pointer-events-none absolute bottom-[12%] left-1/2 h-20 w-[75%] -translate-x-1/2 rounded-[100%] bg-primary/30 blur-3xl" />
 
       <div className="hero-pass-orbit relative z-10 w-[72%] max-w-[280px] sm:max-w-[300px] lg:max-w-[320px]">
         <div className="hero-pass-wiggle">
-          <div className="hero-pass-card relative overflow-hidden rounded-2xl border border-white/20 bg-gradient-to-br from-[oklch(0.52_0.17_255)] via-[oklch(0.42_0.15_255)] to-[oklch(0.28_0.08_255)] p-5 text-primary-foreground shadow-[0_30px_60px_-20px_rgba(15,28,61,0.65),0_0_40px_-10px_oklch(0.55_0.18_255_/_0.45)]">
+          <div className="hero-pass-card relative overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-br from-[oklch(0.55_0.17_255)] via-[oklch(0.45_0.16_255)] to-[oklch(0.32_0.1_255)] p-5 text-primary-foreground shadow-[0_28px_55px_-18px_oklch(0.45_0.14_255_/_0.45),0_0_36px_-8px_oklch(0.55_0.18_255_/_0.35)]">
             <div className="pointer-events-none absolute -right-8 -top-10 size-36 rounded-full bg-white/10 blur-2xl" />
             <div className="pointer-events-none absolute -bottom-12 -left-6 size-28 rounded-full bg-primary/40 blur-2xl" />
 
