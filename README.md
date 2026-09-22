@@ -1,24 +1,44 @@
-# Lanka Event Hub
+# edupass.lk
 
-design a web that is like selling event passes , i want to develop a website to sell OL AL semibnar passes in sri lanka , also alss fees handlins and also with a dashbord with handling classes for institutaions , so i want a combined platform frontend with simplicity simple light theme
+Frontend for Sri Lanka O/L & A/L **seminar passes** plus **institute tuition** tools (classes, attendance, monthly fees). Built with TanStack Start, React 19, Tailwind, and typed mock services (API-ready).
 
-This project was built with [Lovable](https://lovable.dev).
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/c15d49f4-e216-4caf-85e7-8611ca385488).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+## Quick start
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+npm install
 npm run dev
 ```
+
+Open the app — the bottom **Dev role** toolbar is always visible (role switcher + reset data).
+
+## Demo accounts
+
+Any password works.
+
+| Email                   | Role                  |
+| ----------------------- | --------------------- |
+| student@example.com     | Student (Amaya Silva) |
+| nimal@example.com       | Student               |
+| admin@edupass.lk        | Platform admin        |
+| scan@edupass.lk         | Gate scanner          |
+| organizer@lankavidya.lk | Institute organizer   |
+| k.perera@edupass.lk     | Lecturer              |
+
+New signups use verification code **123456**.
+
+## Main flows
+
+1. **Browse** `/seminars` or `/lecturers` → seminar detail with countdown → `/checkout/:id`
+2. **Pay** by card (instant pass) or bank slip (admin approves at `/admin/payments`)
+3. **Pass** lives in `/account/passes` with a real QR payload
+4. **Scan** at `/scan` with the pass code to mark attendance
+5. **Institute** console at `/institute` — classes, roster, attendance, fees, fee-slip approval
+
+## Stack notes
+
+- Mock store: `src/mocks/store.ts` (localStorage)
+- Domain types: `src/domain/types.ts`
+- Services: `src/services/api.ts`
+- Brand: royal-blue LMS theme — **edupass.lk**
+
+This project syncs with [Lovable](https://lovable.dev). Prefer feature branches; do not force-push rewritten history on the connected branch.

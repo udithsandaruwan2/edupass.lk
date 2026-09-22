@@ -1,130 +1,257 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { toast } from "sonner";
 import { SiteShell } from "@/components/site-shell";
 import { DigitalPass } from "@/components/digital-pass";
-import { lkr, seminars } from "@/data/seminars";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Input } from "@/components/ui/input";
+import {
+  BANK_DETAILS,
+  formatLkr,
+  getLecturer,
+  getSeminar,
+  payWithCard,
+  submitBankSlip,
+} from "@/services/api";
+import { formatSeminarWhen, readFileAsDataUrl } from "@/lib/format";
+import { hydrateStore } from "@/mocks/store";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/checkout/$seminarId")({
-  loader: ({ params }) => {
-    const seminar = seminars.find((s) => s.id === params.seminarId);
+  loader: async ({ params }) => {
+    hydrateStore();
+    const seminar = await getSeminar(params.seminarId);
     if (!seminar) throw notFound();
-    return { seminar };
+    const lecturer = await getLecturer(seminar.lecturerId);
+    return { seminar, lecturer };
   },
-  head: ({ loaderData }) => {
-    if (!loaderData) {
-      return {
-        meta: [{ title: "Unavailable | pass.lk" }, { name: "robots", content: "noindex" }],
-      };
-    }
-    const title = `Book ${loaderData.seminar.subject} pass | pass.lk`;
-    return {
-      meta: [
-        { title },
-        {
-          name: "description",
-          content: `Reserve your seat for the ${loaderData.seminar.level} ${loaderData.seminar.subject} seminar with ${loaderData.seminar.teacher}.`,
-        },
-        { property: "og:title", content: title },
-        {
-          property: "og:description",
-          content: `${loaderData.seminar.date} · ${loaderData.seminar.venue} · ${lkr(loaderData.seminar.price)}`,
-        },
-        { property: "og:type", content: "website" },
-        { name: "twitter:card", content: "summary_large_image" },
-      ],
-    };
-  },
+  head: ({ loaderData }) => ({
+    meta: [
+      {
+        title: loaderData
+          ? `Checkout · ${loaderData.seminar.subject} | edupass.lk`
+          : "Checkout | edupass.lk",
+      },
+    ],
+  }),
   component: CheckoutPage,
 });
 
 function CheckoutPage() {
-  const { seminar } = Route.useLoaderData();
+  const { seminar, lecturer } = Route.useLoaderData();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [seats, setSeats] = useState(1);
-  const [paid, setPaid] = useState(false);
+  const [method, setMethod] = useState<"card" | "bank_slip">("card");
+  const [slipFile, setSlipFile] = useState<File | null>(null);
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [issuedCode, setIssuedCode] = useState<string | null>(null);
 
-  const instituteFee = 1000 * seats;
-  const levy = 250 * seats;
-  const total = seminar.price * seats + instituteFee + levy;
+  const total = seminar.price * seats;
+
+  async function onSubmit() {
+    if (!user) {
+      toast.error("Please sign in first");
+      void navigate({ to: "/auth/login", search: { redirect: `/checkout/${seminar.id}` } });
+      return;
+    }
+    if (!user.verified) {
+      toast.error("Verify your email before purchasing");
+      void navigate({ to: "/auth/verify" });
+      return;
+    }
+    setBusy(true);
+    try {
+      if (method === "card") {
+        const { pass } = await payWithCard({ seminarId: seminar.id, seats });
+        setIssuedCode(pass.code);
+        toast.success("Payment received — pass issued");
+      } else {
+        if (!slipFile) {
+          toast.error("Upload your bank slip image");
+          setBusy(false);
+          return;
+        }
+        const slipDataUrl = await readFileAsDataUrl(slipFile);
+        await submitBankSlip({
+          seminarId: seminar.id,
+          seats,
+          slipDataUrl,
+          note: note || undefined,
+        });
+        toast.success("Slip submitted — awaiting admin approval");
+        void navigate({ to: "/account/payments" });
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Checkout failed");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <SiteShell>
-      <section className="grid gap-6 py-12 lg:grid-cols-[1fr_0.9fr]">
-        <div className="rise rounded-2xl border border-card/60 bg-card/70 p-6 backdrop-blur-xl">
-          <h1 className="text-xl font-bold tracking-tight">Booking summary</h1>
-          <div className="mt-5 space-y-3">
-            <div className="flex items-center justify-between rounded-xl bg-accent-soft/70 px-4 py-3">
-              <div>
-                <p className="text-sm font-semibold">{seminar.subject} · Tier I</p>
-                <p className="text-xs text-muted-foreground">
-                  {seats} seat{seats > 1 ? "s" : ""} · {seminar.date} · {seminar.venue}
-                </p>
-              </div>
-              <span className="font-mono text-sm">{lkr(seminar.price * seats)}</span>
-            </div>
+      <section className="mx-auto grid max-w-6xl gap-8 px-5 py-12 lg:grid-cols-[1fr_0.9fr]">
+        <div className="rise space-y-6 rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+          <div>
+            <h1 className="font-display text-2xl font-semibold tracking-tight">Checkout</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {seminar.subject} · {seminar.level} · {formatSeminarWhen(seminar.startsAt)}
+            </p>
+          </div>
 
-            <div className="flex items-center justify-between px-1 py-1 text-sm">
-              <span className="text-muted-foreground">Seats</span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setSeats((s) => Math.max(1, s - 1))}
-                  className="size-7 rounded-lg border border-border bg-card/70 font-mono"
-                >
-                  −
-                </button>
-                <span className="w-6 text-center font-mono">{seats}</span>
-                <button
-                  onClick={() => setSeats((s) => Math.min(seminar.seatsLeft, s + 1))}
-                  className="size-7 rounded-lg border border-border bg-card/70 font-mono"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between px-1 py-1 text-sm">
-              <span className="text-muted-foreground">Institute fee</span>
-              <span className="font-mono">{lkr(instituteFee)}</span>
-            </div>
-            <div className="flex items-center justify-between px-1 py-1 text-sm">
-              <span className="text-muted-foreground">Governing body levy</span>
-              <span className="font-mono">{lkr(levy)}</span>
-            </div>
-            <div className="flex items-center justify-between border-t border-dashed border-border px-1 pt-4">
-              <span className="font-semibold">Total</span>
-              <span className="font-mono text-lg font-medium">{lkr(total)}</span>
+          <div className="flex items-center justify-between border-b border-border py-3 text-sm">
+            <span className="text-muted-foreground">Seats</span>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                className="size-8"
+                onClick={() => setSeats((s) => Math.max(1, s - 1))}
+                aria-label="Decrease seats"
+              >
+                −
+              </Button>
+              <span className="w-6 text-center font-mono">{seats}</span>
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                className="size-8"
+                onClick={() => setSeats((s) => Math.min(seminar.seatsLeft, s + 1))}
+                aria-label="Increase seats"
+              >
+                +
+              </Button>
             </div>
           </div>
 
-          <button
-            onClick={() => setPaid(true)}
-            className="mt-5 w-full rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground ring-1 ring-foreground/5 transition-opacity hover:opacity-90"
+          <div className="flex justify-between border-b border-border py-3">
+            <span className="font-medium">Total</span>
+            <span className="font-mono text-lg">{formatLkr(total)}</span>
+          </div>
+
+          <div>
+            <Label className="mb-3 block">Payment method</Label>
+            <RadioGroup
+              value={method}
+              onValueChange={(v) => setMethod(v as "card" | "bank_slip")}
+              className="gap-3"
+            >
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-card p-4">
+                <RadioGroupItem value="card" id="card" className="mt-0.5" />
+                <div>
+                  <div className="font-medium">Card payment</div>
+                  <p className="text-xs text-muted-foreground">
+                    Simulated card charge — pass issued immediately.
+                  </p>
+                </div>
+              </label>
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-card p-4">
+                <RadioGroupItem value="bank_slip" id="bank" className="mt-0.5" />
+                <div>
+                  <div className="font-medium">Bank transfer / deposit</div>
+                  <p className="text-xs text-muted-foreground">
+                    Transfer to our account, upload the slip, wait for admin approval.
+                  </p>
+                </div>
+              </label>
+            </RadioGroup>
+          </div>
+
+          {method === "bank_slip" ? (
+            <div className="space-y-3 rounded-xl border border-border bg-muted/40 p-4 text-sm">
+              <p className="font-medium">Transfer to</p>
+              <dl className="grid gap-1 text-muted-foreground">
+                <div>
+                  {BANK_DETAILS.bankName} · {BANK_DETAILS.branch}
+                </div>
+                <div>
+                  {BANK_DETAILS.accountName} · {BANK_DETAILS.accountNumber}
+                </div>
+              </dl>
+              <div>
+                <Label htmlFor="slip">Upload slip</Label>
+                <Input
+                  id="slip"
+                  type="file"
+                  accept="image/*,.pdf"
+                  className="mt-1"
+                  onChange={(e) => setSlipFile(e.target.files?.[0] ?? null)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="note">Note (optional)</Label>
+                <Textarea
+                  id="note"
+                  className="mt-1"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="Reference number or depositor name"
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <Label htmlFor="card-num">Card number</Label>
+                <Input id="card-num" className="mt-1" placeholder="4242 4242 4242 4242" />
+              </div>
+              <div>
+                <Label htmlFor="exp">Expiry</Label>
+                <Input id="exp" className="mt-1" placeholder="12/28" />
+              </div>
+              <div>
+                <Label htmlFor="cvc">CVC</Label>
+                <Input id="cvc" className="mt-1" placeholder="123" />
+              </div>
+            </div>
+          )}
+
+          <Button
+            className="w-full rounded-full"
+            size="lg"
+            disabled={busy}
+            onClick={() => void onSubmit()}
           >
-            {paid ? "Payment received" : "Pay with eZ Cash / card"}
-          </button>
-          <p className="mt-2 text-center text-xs text-muted-foreground">
-            {paid
-              ? "Your pass is issued — show the QR at the gate."
-              : "Digital pass + QR delivered instantly"}
-          </p>
-          <Link to="/seminars" className="mt-4 block text-center text-sm text-accent">
-            ← Back to seminars
+            {busy ? "Processing…" : method === "card" ? "Pay & issue pass" : "Submit slip"}
+          </Button>
+          <Link
+            to="/seminars/$id"
+            params={{ id: seminar.id }}
+            className="block text-center text-sm text-primary"
+          >
+            ← Back to seminar
           </Link>
         </div>
 
-        <div className="rise" style={{ animationDelay: "120ms" }}>
+        <div className="rise" style={{ animationDelay: "100ms" }}>
           <DigitalPass
             subject={seminar.subject}
             level={seminar.level}
             medium={seminar.medium}
-            teacher={seminar.teacher}
-            date={seminar.date}
-            venue={seminar.venue}
+            teacher={lecturer?.name ?? "Lecturer"}
+            date={formatSeminarWhen(seminar.startsAt)}
+            venue={`${seminar.venue}, ${seminar.city}`}
             seats={`${seats} of ${seminar.seats}`}
-            code={`PSS-${seminar.id.slice(0, 3).toUpperCase()}-44${seats}1`}
+            code={issuedCode ?? "PENDING"}
           />
-          <p className="mt-3 text-center text-xs text-muted-foreground">
-            Scan at the gate · valid for Tier I &amp; II sessions
-          </p>
+          {issuedCode ? (
+            <p className="mt-4 text-center text-sm">
+              <Link to="/account/passes" className="font-medium text-primary">
+                View in My passes →
+              </Link>
+            </p>
+          ) : (
+            <p className="mt-3 text-center text-xs text-muted-foreground">
+              Preview — QR activates after payment or slip approval
+            </p>
+          )}
         </div>
       </section>
     </SiteShell>

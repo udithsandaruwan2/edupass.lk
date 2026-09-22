@@ -1,81 +1,121 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { SiteShell } from "@/components/site-shell";
+import { Reveal } from "@/components/reveal";
+import { Button } from "@/components/ui/button";
+import { BookOpen, ClipboardCheck, Banknote, ArrowRight } from "lucide-react";
+import { images } from "@/lib/images";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "Pricing — pass tiers & institute fees | pass.lk" },
+      { title: "For institutes | edupass.lk" },
       {
         name: "description",
         content:
-          "Transparent pass tiers for students and a simple per-payment fee for Sri Lankan institutes.",
+          "Institute tools for classes, attendance and monthly fee collection on edupass.lk.",
       },
-      { property: "og:title", content: "Pricing — pass tiers & institute fees" },
-      {
-        property: "og:description",
-        content: "Student pass tiers in LKR and low-cost fee handling for institutes.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: PricingPage,
 });
 
-const tiers = [
-  {
-    name: "Tier I · Single seminar",
-    price: "LKR 3,000 – 4,500",
-    points: ["One session", "Digital pass + QR", "Printed notes at gate"],
-  },
-  {
-    name: "Tier II · Term pass",
-    price: "LKR 12,500",
-    points: ["All sessions of one subject", "Seat held till start", "Recording access 7 days"],
-  },
-  {
-    name: "Institute plan",
-    price: "2.9% per payment",
-    points: ["Class & schedule console", "Fee tracking and reminders", "Payouts twice a month"],
-  },
-];
-
 function PricingPage() {
   return (
     <SiteShell>
-      <section className="py-12">
-        <h1 className="text-3xl font-extrabold tracking-tight">Pricing</h1>
-        <p className="mt-2 max-w-[48ch] text-muted-foreground">
-          Students pay per pass. Institutes pay only when a fee is collected.
-        </p>
-
-        <div className="mt-8 grid gap-5 md:grid-cols-3">
-          {tiers.map((tier, i) => (
-            <div
-              key={tier.name}
-              className="rise flex flex-col rounded-2xl border border-card/60 bg-card/60 p-6 backdrop-blur-xl"
-              style={{ animationDelay: `${60 * i}ms` }}
-            >
-              <p className="text-sm font-semibold">{tier.name}</p>
-              <p className="mt-3 font-mono text-xl font-medium">{tier.price}</p>
-              <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-                {tier.points.map((p) => (
-                  <li key={p} className="flex gap-2">
-                    <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-success" />
-                    {p}
-                  </li>
-                ))}
-              </ul>
-              <Link
-                to="/seminars"
-                className="mt-6 rounded-xl bg-accent px-4 py-2.5 text-center text-sm font-semibold text-accent-foreground ring-1 ring-foreground/5"
-              >
-                Choose
-              </Link>
-            </div>
-          ))}
+      <section className="relative isolate min-h-[min(42svh,280px)] overflow-hidden sm:min-h-[min(38svh,320px)]">
+        <img
+          src={images.students}
+          alt="Students collaborating"
+          className="absolute inset-0 size-full object-cover object-[center_35%]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-navy/90 via-navy/65 to-navy/45" />
+        <div className="relative mx-auto flex h-full min-h-[inherit] max-w-6xl items-end px-5 pb-8 pt-6 sm:pb-10">
+          <div>
+            <p className="text-xs font-semibold tracking-[0.16em] text-primary-foreground/70 uppercase">
+              Institutes
+            </p>
+            <h1 className="mt-2 max-w-[18ch] font-display text-3xl font-semibold text-primary-foreground sm:text-4xl md:text-[2.75rem] md:leading-tight">
+              Built for tuition institutes
+            </h1>
+          </div>
         </div>
       </section>
+
+      <section className="mx-auto max-w-6xl px-5 py-10 sm:py-14">
+        <Reveal>
+          <p className="max-w-[48ch] text-sm text-muted-foreground sm:text-base">
+            Run weekly classes without the public seminar home — manage rosters, mark attendance,
+            and collect monthly fees by cash, card or bank slip.
+          </p>
+        </Reveal>
+
+        <div className="mt-8 grid gap-5 sm:mt-10 sm:gap-6 md:grid-cols-3">
+          <Reveal delay={0}>
+            <Feature
+              icon={<BookOpen className="size-5" />}
+              title="Classes & roster"
+              body="Create batches for O/L and A/L subjects, enrol students, and keep schedules clear."
+            />
+          </Reveal>
+          <Reveal delay={80}>
+            <Feature
+              icon={<ClipboardCheck className="size-5" />}
+              title="Attendance"
+              body="Mark present or absent each session. Students see the same records in their account."
+            />
+          </Reveal>
+          <Reveal delay={160}>
+            <Feature
+              icon={<Banknote className="size-5" />}
+              title="Monthly fees"
+              body="Record cash at the desk, or let students pay by card / upload a bank slip for approval."
+            />
+          </Reveal>
+        </div>
+
+        <Reveal delay={100}>
+          <div className="mt-10 flex flex-col gap-3 sm:mt-12 sm:flex-row sm:flex-wrap">
+            <Button size="lg" className="h-12 w-full rounded-full px-6 sm:w-auto" asChild>
+              <Link to="/auth/login">
+                Open institute console <ArrowRight className="ml-1 size-4" />
+              </Link>
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="h-12 w-full rounded-full px-6 sm:w-auto"
+              asChild
+            >
+              <Link to="/seminars">Browse public seminars</Link>
+            </Button>
+          </div>
+          <p className="mt-4 text-xs text-muted-foreground">
+            Demo organizer: organizer@lankavidya.lk (any password). Use the bottom Dev role
+            switcher to jump to organizer without logging in.
+          </p>
+        </Reveal>
+      </section>
     </SiteShell>
+  );
+}
+
+function Feature({
+  icon,
+  title,
+  body,
+}: {
+  icon: ReactNode;
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="h-full rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
+      <div className="flex size-11 items-center justify-center rounded-2xl bg-accent-soft text-primary">
+        {icon}
+      </div>
+      <h2 className="mt-4 font-display text-lg font-semibold text-ink sm:text-xl">{title}</h2>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{body}</p>
+    </div>
   );
 }

@@ -1,10 +1,6 @@
-const QR_GRID = [
-  [1, 1, 0, 1, 1],
-  [1, 0, 1, 0, 1],
-  [0, 1, 1, 1, 0],
-  [1, 1, 0, 1, 1],
-  [1, 0, 1, 0, 1],
-];
+import { useEffect, useState } from "react";
+import QRCode from "qrcode";
+import { cn } from "@/lib/utils";
 
 export function DigitalPass({
   subject,
@@ -15,6 +11,7 @@ export function DigitalPass({
   venue,
   seats,
   code,
+  className,
 }: {
   subject: string;
   level: string;
@@ -24,44 +21,64 @@ export function DigitalPass({
   venue: string;
   seats: string;
   code: string;
+  className?: string;
 }) {
+  const [qr, setQr] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    QRCode.toDataURL(code, {
+      width: 160,
+      margin: 1,
+      color: { dark: "#1e3a5f", light: "#ffffff" },
+    }).then((url) => {
+      if (!cancelled) setQr(url);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [code]);
+
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-accent to-chart-4 p-5 text-accent-foreground ring-1 ring-card/20">
-      <div className="flex items-start justify-between">
+    <div
+      className={cn(
+        "pass-reveal relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-[oklch(0.38_0.14_255)] p-5 text-primary-foreground shadow-[var(--shadow-card)]",
+        className,
+      )}
+    >
+      <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-accent-foreground/70">
-            Digital pass
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-primary-foreground/70">
+            edupass.lk digital pass
           </p>
-          <p className="mt-1 text-lg font-semibold">{subject}</p>
-          <p className="text-xs text-accent-foreground/70">
-            {level} · {medium}
+          <p className="mt-1 font-display text-xl font-semibold">{subject}</p>
+          <p className="text-xs text-primary-foreground/75">
+            {level} · {medium} medium
           </p>
         </div>
         <span className="rounded-md bg-card/15 px-2 py-1 font-mono text-[10px] uppercase tracking-wider">
-          Tier I
+          Gate entry
         </span>
       </div>
 
-      <div className="my-4 flex items-center gap-2">
-        <span className="size-4 shrink-0 -translate-y-4 rounded-full bg-gradient-to-br from-accent to-chart-4" />
-        <span className="perf h-px w-full border-t border-dashed border-card/40" />
-        <span className="size-4 shrink-0 -translate-y-4 rounded-full bg-gradient-to-br from-accent to-chart-4" />
-      </div>
+      <div className="my-4 h-px w-full border-t border-dashed border-primary-foreground/35" />
 
       <div className="flex items-end justify-between gap-4">
         <div className="space-y-2 text-xs">
-          <Row label="Teacher" value={teacher} />
-          <Row label="Date" value={date} />
+          <Row label="Lecturer" value={teacher} />
+          <Row label="When" value={date} />
           <Row label="Venue" value={venue} />
           <Row label="Seats" value={seats} />
         </div>
         <div className="shrink-0">
-          <div className="grid aspect-square w-24 grid-cols-5 grid-rows-5 gap-0.5 rounded-md bg-card p-2">
-            {QR_GRID.flat().map((cell, i) => (
-              <span key={i} className={cell ? "bg-foreground" : "bg-card"} />
-            ))}
+          <div className="rounded-md bg-card p-2">
+            {qr ? (
+              <img src={qr} alt={`QR for ${code}`} className="size-24" />
+            ) : (
+              <div className="size-24 animate-pulse bg-muted" />
+            )}
           </div>
-          <p className="mt-1 text-center font-mono text-[10px] tracking-wider text-accent-foreground/80">
+          <p className="mt-1 text-center font-mono text-[10px] tracking-wider text-primary-foreground/85">
             {code}
           </p>
         </div>
@@ -73,7 +90,7 @@ export function DigitalPass({
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex gap-2">
-      <span className="w-14 text-accent-foreground/60">{label}</span>
+      <span className="w-16 text-primary-foreground/60">{label}</span>
       <span className="font-medium">{value}</span>
     </div>
   );

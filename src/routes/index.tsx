@@ -1,24 +1,25 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
+import { ArrowRight, ChevronDown, Ticket, CreditCard, QrCode } from "lucide-react";
 import { SiteShell } from "@/components/site-shell";
-import { DigitalPass } from "@/components/digital-pass";
 import { SeminarCard } from "@/components/seminar-card";
-import { seminars } from "@/data/seminars";
+import { SectionHeader } from "@/components/section-header";
+import { Reveal } from "@/components/reveal";
+import { Button } from "@/components/ui/button";
+import { useSeminars, useLecturers } from "@/hooks/use-api";
+import { Skeleton } from "@/components/ui/skeleton";
+import { images, lecturerPhoto } from "@/lib/images";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "pass.lk — O/L & A/L seminar passes in Sri Lanka" },
+      { title: "edupass.lk — O/L & A/L seminar passes" },
       {
         name: "description",
         content:
-          "Book O/L and A/L seminar passes, pay fees online in LKR, and manage classes and fee collection from one institution console.",
+          "Book Sri Lanka O/L and A/L seminar passes, pay by card or bank slip, and check in with a QR code.",
       },
-      { property: "og:title", content: "pass.lk — O/L & A/L seminar passes" },
-      {
-        property: "og:description",
-        content:
-          "One pass for every seminar. Online fee handling and a class console for Sri Lankan institutes.",
-      },
+      { property: "og:title", content: "edupass.lk — Seminar passes for O/L & A/L" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -27,191 +28,220 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const { data: seminars, isLoading } = useSeminars();
+  const { data: lecturers } = useLecturers();
+  const featured = (seminars ?? []).slice(0, 4);
+
   return (
-    <SiteShell>
-      <section className="grid gap-8 py-14 md:grid-cols-[1.05fr_0.95fr] md:py-20">
-        <div className="rise">
-          <span className="inline-flex items-center gap-2 rounded-full border border-card/60 bg-card/60 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
-            <span className="size-1.5 rounded-full bg-success" /> Term II 2025 · Registration
-            open
-          </span>
-          <h1 className="mt-5 max-w-[16ch] text-balance text-4xl font-extrabold leading-[1.05] tracking-tight md:text-5xl">
-            One pass. Every seminar.
-          </h1>
-          <p className="mt-4 max-w-[42ch] text-pretty text-muted-foreground">
-            Book O/L and A/L seminar passes, pay fees in one tap, and hand your institution a
-            clean console for classes, schedules and fee tracking.
-          </p>
-          <div className="mt-7 flex flex-wrap items-center gap-3">
-            <Link
-              to="/seminars"
-              className="rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground ring-1 ring-foreground/5 transition-opacity hover:opacity-90"
+    <SiteShell heroOverlay>
+      {/* True full-viewport hero — fills mobile/tablet/desktop safely via svh */}
+      <section className="hero-viewport relative isolate overflow-hidden">
+        <img
+          src={images.hero}
+          alt=""
+          className="ken-burns absolute inset-0 size-full object-cover object-[center_30%]"
+          fetchPriority="high"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-navy/55 via-navy/50 to-navy/85" />
+        <div className="absolute inset-0 bg-gradient-to-r from-navy/70 via-transparent to-navy/30" />
+
+        <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[5.5rem] sm:pt-28 md:pt-32">
+          <div className="flex flex-1 flex-col justify-center py-8 sm:py-10">
+            <p className="rise text-xs font-semibold tracking-[0.2em] text-primary-foreground/75 uppercase sm:text-sm">
+              edupass.lk
+            </p>
+            <h1
+              className="rise mt-3 max-w-[14ch] font-display text-[2.35rem] font-semibold leading-[1.05] text-primary-foreground sm:text-5xl md:text-6xl lg:text-[4rem]"
+              style={{ animationDelay: "70ms" }}
             >
-              Browse seminars
-            </Link>
-            <Link
-              to="/dashboard"
-              className="rounded-xl border border-border bg-card/70 px-5 py-3 text-sm font-medium text-foreground backdrop-blur"
+              Your seat at the next seminar
+            </h1>
+            <p
+              className="rise mt-4 max-w-[34ch] text-[0.95rem] leading-relaxed text-primary-foreground/85 sm:text-lg"
+              style={{ animationDelay: "130ms" }}
             >
-              Open institution console
-            </Link>
-          </div>
-          <dl className="mt-9 grid max-w-md grid-cols-3 gap-4">
-            <Stat label="SEMINARS" value="1,240" />
-            <Stat label="INSTITUTES" value="86" />
-            <Stat label="COLLECTED" value="LKR 38.4M" />
-          </dl>
-        </div>
-
-        <div className="rise" style={{ animationDelay: "120ms" }}>
-          <DigitalPass
-            subject="Combined Mathematics"
-            level="A/L"
-            medium="Sinhala Medium"
-            teacher="K. Perera"
-            date="Sat · 12 Apr"
-            venue="Colombo 07"
-            seats="1 of 40"
-            code="PSS-9K2-4471"
-          />
-          <p className="mt-3 text-center text-xs text-muted-foreground">
-            Scan at the gate · valid for Tier I &amp; II sessions
-          </p>
-        </div>
-      </section>
-
-      <section className="py-10">
-        <div className="flex items-end justify-between">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">Upcoming seminars</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Selected sessions for Term II</p>
-          </div>
-          <Link to="/seminars" className="text-sm font-medium text-accent">
-            View all →
-          </Link>
-        </div>
-
-        <div className="mt-6 grid gap-5 md:grid-cols-3">
-          {seminars.slice(0, 3).map((seminar, i) => (
-            <SeminarCard key={seminar.id} seminar={seminar} delay={60 * (i + 1)} />
-          ))}
-        </div>
-      </section>
-
-      <section className="grid gap-6 py-10 lg:grid-cols-[0.9fr_1.1fr]">
-        <div
-          className="rise rounded-2xl border border-card/60 bg-card/70 p-6 backdrop-blur-xl"
-          style={{ animationDelay: "120ms" }}
-        >
-          <h2 className="text-xl font-bold tracking-tight">Booking summary</h2>
-          <div className="mt-5 space-y-3">
-            <div className="flex items-center justify-between rounded-xl bg-accent-soft/70 px-4 py-3">
-              <div>
-                <p className="text-sm font-semibold">Combined Mathematics · Tier I</p>
-                <p className="text-xs text-muted-foreground">1 seat · Sat 12 Apr</p>
-              </div>
-              <span className="font-mono text-sm">LKR 4,500</span>
-            </div>
-            <LineItem label="Institute fee" value="LKR 1,000" />
-            <LineItem label="Governing body levy" value="LKR 250" />
-            <div className="flex items-center justify-between border-t border-dashed border-border px-1 pt-4">
-              <span className="font-semibold">Total</span>
-              <span className="font-mono text-lg font-medium">LKR 5,750</span>
+              O/L and A/L revision passes with QR check-in — pay by card or bank slip.
+            </p>
+            <div
+              className="rise mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:flex-wrap"
+              style={{ animationDelay: "190ms" }}
+            >
+              <Button
+                size="lg"
+                className="h-12 w-full rounded-full bg-card px-8 text-ink hover:bg-card/95 sm:w-auto"
+                asChild
+              >
+                <Link to="/seminars">
+                  Get a pass <ArrowRight className="ml-1.5 size-4" />
+                </Link>
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-12 w-full rounded-full border-primary-foreground/40 bg-transparent px-8 text-primary-foreground hover:bg-primary-foreground/10 sm:w-auto"
+                asChild
+              >
+                <Link to="/lecturers">Find a lecturer</Link>
+              </Button>
             </div>
           </div>
-          <Link
-            to="/checkout/$seminarId"
-            params={{ seminarId: "combined-maths" }}
-            className="mt-5 block w-full rounded-xl bg-accent px-4 py-3 text-center text-sm font-semibold text-accent-foreground ring-1 ring-foreground/5 transition-opacity hover:opacity-90"
+
+          <a
+            href="#how-it-works"
+            className="scroll-cue mb-2 flex flex-col items-center gap-1 self-center text-primary-foreground/70 transition-colors hover:text-primary-foreground"
+            aria-label="Scroll to how it works"
           >
-            Pay with eZ Cash / card
-          </Link>
-          <p className="mt-2 text-center text-xs text-muted-foreground">
-            Digital pass + QR delivered instantly
-          </p>
+            <span className="text-[10px] font-medium tracking-widest uppercase">Explore</span>
+            <ChevronDown className="size-5" />
+          </a>
         </div>
+      </section>
 
-        <div
-          className="rise rounded-2xl border border-card/60 bg-card/70 p-6 backdrop-blur-xl"
-          style={{ animationDelay: "180ms" }}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-bold tracking-tight">Institution console</h2>
-              <p className="text-sm text-muted-foreground">Lanka Vidya Institute</p>
+      <section id="how-it-works" className="scroll-mt-24 border-b border-border bg-card">
+        <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:gap-10 sm:py-14 md:grid-cols-3">
+          <Reveal delay={0}>
+            <Step
+              icon={<Ticket className="size-5" />}
+              step="01"
+              title="Choose a seminar"
+              body="Filter by O/L or A/L, subject, medium, and city — then open the details."
+            />
+          </Reveal>
+          <Reveal delay={80}>
+            <Step
+              icon={<CreditCard className="size-5" />}
+              step="02"
+              title="Pay your way"
+              body="Card issues a pass instantly. Bank transfer lets you upload a slip for approval."
+            />
+          </Reveal>
+          <Reveal delay={160}>
+            <Step
+              icon={<QrCode className="size-5" />}
+              step="03"
+              title="Walk in with QR"
+              body="Show your digital pass at the gate. Attendance lands in your student portal."
+            />
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="ambient-grid">
+        <div className="mx-auto max-w-6xl px-5 py-12 sm:py-16">
+          <Reveal>
+            <SectionHeader
+              title="Upcoming seminar passes"
+              actionLabel="View all"
+              actionTo="/seminars"
+            />
+            <p className="-mt-4 mb-8 max-w-[42ch] text-sm text-muted-foreground sm:text-base">
+              Real sessions across Colombo, Kandy, Galle and beyond — each pass includes gate
+              check-in.
+            </p>
+          </Reveal>
+          {isLoading ? (
+            <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+              <Skeleton className="h-80 rounded-2xl" />
+              <Skeleton className="h-80 rounded-2xl" />
+              <Skeleton className="h-80 rounded-2xl" />
+              <Skeleton className="h-80 rounded-2xl" />
             </div>
-            <Link
-              to="/dashboard"
-              className="rounded-lg border border-border bg-card/70 px-3 py-2 text-sm font-medium"
-            >
-              + Create class
-            </Link>
-          </div>
-
-          <div className="mt-5 grid grid-cols-3 gap-3">
-            <MiniStat label="REVENUE" value="₨ 1.24M" />
-            <MiniStat label="ENROLLED" value="342" />
-            <MiniStat label="PENDING" value="₨ 86K" />
-          </div>
-
-          <h3 className="mt-6 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-            Fee status
-          </h3>
-          <div className="mt-2 overflow-hidden rounded-xl border border-border bg-card/60">
-            <div className="grid grid-cols-[1fr_auto] gap-2 border-b border-border px-4 py-2 text-[11px] font-medium text-muted-foreground">
-              <span>Student</span>
-              <span>Fee</span>
+          ) : (
+            <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+              {featured.map((s, i) => (
+                <Reveal key={s.id} delay={60 * i}>
+                  <SeminarCard seminar={s} />
+                </Reveal>
+              ))}
             </div>
-            <FeeRow name="Amara D. · Combined Maths" status="Paid" />
-            <FeeRow name="Rohan S. · Physics" status="Pending" />
-            <FeeRow name="Isuru M. · Biology" status="Paid" />
+          )}
+        </div>
+      </section>
+
+      <section className="bg-card">
+        <div className="mx-auto max-w-6xl px-5 py-12 sm:py-16">
+          <Reveal>
+            <SectionHeader title="Meet the lecturers" actionLabel="View all" actionTo="/lecturers" />
+          </Reveal>
+          <div className="mt-2 grid grid-cols-2 gap-6 sm:gap-8 md:grid-cols-3 lg:grid-cols-6">
+            {(lecturers ?? []).slice(0, 6).map((lec, i) => (
+              <Reveal key={lec.id} delay={50 * i}>
+                <Link
+                  to="/lecturers/$slug"
+                  params={{ slug: lec.slug }}
+                  className="group flex flex-col items-center text-center"
+                >
+                  <div className="relative size-[4.5rem] overflow-hidden rounded-full ring-2 ring-border transition-[ring-color,transform] duration-300 group-hover:scale-[1.04] group-hover:ring-primary/40 sm:size-24">
+                    <img
+                      src={lecturerPhoto(i)}
+                      alt=""
+                      className="size-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                  <p className="mt-3 text-sm font-semibold text-ink">{lec.name}</p>
+                  <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{lec.title}</p>
+                </Link>
+              </Reveal>
+            ))}
           </div>
         </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 py-12 sm:py-16">
+        <Reveal>
+          <div className="grid overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)] sm:rounded-[1.5rem] md:grid-cols-2">
+            <div className="relative min-h-[200px] sm:min-h-[240px] md:min-h-full">
+              <img
+                src={images.institute}
+                alt="Study materials and books"
+                className="absolute inset-0 size-full object-cover"
+                loading="lazy"
+              />
+            </div>
+            <div className="flex flex-col justify-center p-6 sm:p-8 md:p-10">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+                Institutes
+              </p>
+              <h2 className="mt-2 font-display text-2xl font-semibold text-ink sm:text-3xl">
+                Classes, attendance &amp; monthly fees
+              </h2>
+              <p className="mt-3 max-w-[40ch] text-sm leading-relaxed text-muted-foreground">
+                A quiet console for tuition institutes — roster students, mark attendance, and
+                collect fees by cash, card or bank slip. Separate from the public seminar home.
+              </p>
+              <Button className="mt-6 w-full rounded-full px-6 sm:w-fit" asChild>
+                <Link to="/pricing">
+                  Explore institute tools <ArrowRight className="ml-1.5 size-4" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </Reveal>
       </section>
     </SiteShell>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Step({
+  icon,
+  step,
+  title,
+  body,
+}: {
+  icon: ReactNode;
+  step: string;
+  title: string;
+  body: string;
+}) {
   return (
-    <div>
-      <dt className="font-mono text-[11px] text-muted-foreground">{label}</dt>
-      <dd className="font-mono text-lg text-foreground">{value}</dd>
-    </div>
-  );
-}
-
-function MiniStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl bg-accent-soft/70 p-3">
-      <p className="font-mono text-[10px] text-muted-foreground">{label}</p>
-      <p className="mt-1 font-mono text-sm font-medium">{value}</p>
-    </div>
-  );
-}
-
-function LineItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between px-1 py-1 text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-mono">{value}</span>
-    </div>
-  );
-}
-
-export function FeeRow({ name, status }: { name: string; status: "Paid" | "Pending" }) {
-  return (
-    <div className="grid grid-cols-[1fr_auto] gap-2 border-t border-border px-4 py-2.5 text-sm first:border-t-0">
-      <span>{name}</span>
-      <span
-        className={
-          status === "Paid"
-            ? "rounded-full bg-success/10 px-2 py-0.5 text-xs font-medium text-success"
-            : "rounded-full bg-warning/10 px-2 py-0.5 text-xs font-medium text-warning"
-        }
-      >
-        {status}
-      </span>
+    <div className="relative">
+      <span className="font-mono text-[11px] font-medium text-primary/70">{step}</span>
+      <div className="mt-3 flex size-11 items-center justify-center rounded-2xl bg-accent-soft text-primary">
+        {icon}
+      </div>
+      <h3 className="mt-4 font-display text-lg font-semibold text-ink">{title}</h3>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{body}</p>
     </div>
   );
 }
