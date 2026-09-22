@@ -2,6 +2,17 @@
 
 Frontend for Sri Lanka O/L & A/L **seminar passes** plus **institute tuition** tools (classes, attendance, monthly fees). Built with TanStack Start, React 19, Tailwind, and typed mock services (API-ready).
 
+## Deploy on Netlify
+
+1. Connect the GitHub repo [udithsandaruwan2/edupass.lk](https://github.com/udithsandaruwan2/edupass.lk).
+2. Leave build settings to `netlify.toml` (or set **Build command** `npm run build`, **Publish directory** `dist`).
+3. Do **not** use `dist/client` or `bun run build` — this app builds with Nitro to `dist/` plus Netlify Functions.
+
+```sh
+npm install
+npm run build   # writes dist/ + .netlify/functions-internal/
+```
+
 ## Quick start
 
 ```sh
