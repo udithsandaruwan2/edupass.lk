@@ -36,26 +36,25 @@ function Index() {
   return (
     <SiteShell heroOverlay>
       <section className="hero-viewport hero-atmosphere relative isolate overflow-hidden">
-        {/* Layered grids + side glow washes */}
+        {/* Layered grids + vibrant side washes on white */}
         <div className="hero-grid-layer hero-grid-drift pointer-events-none absolute inset-0" />
-        <div className="hero-grid-fine pointer-events-none absolute inset-0 opacity-80" />
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-primary/25 to-transparent blur-2xl" />
-        <div className="pointer-events-none absolute inset-y-[10%] right-0 w-2/5 bg-gradient-to-l from-primary/30 to-transparent blur-3xl" />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-navy/40 via-transparent to-navy/80" />
+        <div className="hero-grid-fine pointer-events-none absolute inset-0 opacity-90" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-[42%] bg-gradient-to-r from-primary/20 via-primary/10 to-transparent blur-2xl" />
+        <div className="pointer-events-none absolute inset-y-[8%] right-0 w-[45%] bg-gradient-to-l from-primary/25 via-[oklch(0.7_0.12_220_/_0.18)] to-transparent blur-3xl" />
 
         <div className="relative z-10 mx-auto grid h-full max-w-6xl grid-cols-1 items-center gap-6 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-[5.25rem] sm:pt-28 lg:grid-cols-[1.05fr_0.95fr] lg:gap-8 lg:pt-24">
           <div className="flex flex-col justify-center py-4 sm:py-6 lg:py-10">
-            <p className="rise text-xs font-semibold tracking-[0.2em] text-primary-foreground/75 uppercase sm:text-sm">
+            <p className="rise text-xs font-semibold tracking-[0.2em] text-primary uppercase sm:text-sm">
               edupass.lk
             </p>
             <h1
-              className="rise mt-3 max-w-[14ch] font-display text-[2.35rem] font-semibold leading-[1.05] text-primary-foreground sm:text-5xl md:text-6xl lg:text-[3.75rem]"
+              className="rise mt-3 max-w-[14ch] font-display text-[2.35rem] font-semibold leading-[1.05] text-ink sm:text-5xl md:text-6xl lg:text-[3.75rem]"
               style={{ animationDelay: "70ms" }}
             >
               Your seat at the next seminar
             </h1>
             <p
-              className="rise mt-4 max-w-[34ch] text-[0.95rem] leading-relaxed text-primary-foreground/85 sm:text-lg"
+              className="rise mt-4 max-w-[34ch] text-[0.95rem] leading-relaxed text-muted-foreground sm:text-lg"
               style={{ animationDelay: "130ms" }}
             >
               O/L and A/L revision passes with QR check-in — pay by card or bank slip.
@@ -64,11 +63,7 @@ function Index() {
               className="rise mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:flex-wrap"
               style={{ animationDelay: "190ms" }}
             >
-              <Button
-                size="lg"
-                className="h-12 w-full rounded-full bg-card px-8 text-ink hover:bg-card/95 sm:w-auto"
-                asChild
-              >
+              <Button size="lg" className="h-12 w-full rounded-full px-8 sm:w-auto" asChild>
                 <Link to="/seminars">
                   Get a pass <ArrowRight className="ml-1.5 size-4" />
                 </Link>
@@ -76,7 +71,7 @@ function Index() {
               <Button
                 size="lg"
                 variant="outline"
-                className="h-12 w-full rounded-full border-primary-foreground/40 bg-transparent px-8 text-primary-foreground hover:bg-primary-foreground/10 sm:w-auto"
+                className="h-12 w-full rounded-full border-primary/30 bg-card/80 px-8 text-ink hover:bg-accent-soft sm:w-auto"
                 asChild
               >
                 <Link to="/lecturers">Find a lecturer</Link>
@@ -93,7 +88,7 @@ function Index() {
 
           <a
             href="#how-it-works"
-            className="scroll-cue col-span-full mb-1 flex flex-col items-center gap-1 justify-self-center text-primary-foreground/70 transition-colors hover:text-primary-foreground lg:absolute lg:bottom-5 lg:left-1/2 lg:-translate-x-1/2"
+            className="scroll-cue col-span-full mb-1 flex flex-col items-center gap-1 justify-self-center text-muted-foreground transition-colors hover:text-primary lg:absolute lg:bottom-5 lg:left-1/2 lg:-translate-x-1/2"
             aria-label="Scroll to how it works"
           >
             <span className="text-[10px] font-medium tracking-widest uppercase">Explore</span>
@@ -102,8 +97,9 @@ function Index() {
         </div>
       </section>
 
-      <section id="how-it-works" className="scroll-mt-24 border-b border-border bg-card">
-        <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:gap-10 sm:py-14 md:grid-cols-3">
+      <section id="how-it-works" className="section-glow scroll-mt-24 border-b border-border bg-card">
+        <div className="section-glow-wash" />
+        <div className="relative z-10 mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:gap-10 sm:py-14 md:grid-cols-3">
           <Reveal delay={0}>
             <Step
               icon={<Ticket className="size-5" />}
@@ -163,8 +159,9 @@ function Index() {
         </div>
       </section>
 
-      <section className="bg-card">
-        <div className="mx-auto max-w-6xl px-5 py-12 sm:py-16">
+      <section className="section-glow bg-card">
+        <div className="section-glow-wash" />
+        <div className="relative z-10 mx-auto max-w-6xl px-5 py-12 sm:py-16">
           <Reveal>
             <SectionHeader title="Meet the lecturers" actionLabel="View all" actionTo="/lecturers" />
           </Reveal>
@@ -193,9 +190,10 @@ function Index() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5 py-12 sm:py-16">
+      <section className="section-glow mx-auto max-w-6xl px-5 py-12 sm:py-16">
+        <div className="section-glow-wash rounded-[1.5rem]" />
         <Reveal>
-          <div className="grid overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)] sm:rounded-[1.5rem] md:grid-cols-2">
+          <div className="relative z-10 grid overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)] sm:rounded-[1.5rem] md:grid-cols-2">
             <div className="relative min-h-[200px] sm:min-h-[240px] md:min-h-full">
               <img
                 src={images.institute}

@@ -52,7 +52,7 @@ function FloatingNav({ heroOverlay }: { heroOverlay: boolean }) {
     setOpen(false);
   }, [path]);
 
-  // Solid glass when scrolled or mobile menu open (readable over bright photos)
+  // Soft glass over light hero; denser glass after scroll / menu open
   const onHero = heroOverlay && !scrolled && !open;
   const accountHref =
     role === "admin"
@@ -71,30 +71,18 @@ function FloatingNav({ heroOverlay }: { heroOverlay: boolean }) {
         className={cn(
           "pointer-events-auto mx-auto max-w-6xl overflow-hidden rounded-2xl border transition-[background,border-color,box-shadow,backdrop-filter] duration-300",
           onHero
-            ? "border-white/20 bg-white/10 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.35)] backdrop-blur-xl"
-            : "border-border/70 bg-card/75 shadow-[var(--shadow-card)] backdrop-blur-xl",
+            ? "border-primary/15 bg-card/55 shadow-[0_8px_28px_-14px_oklch(0.45_0.12_255_/_0.28)] backdrop-blur-xl"
+            : "border-border/70 bg-card/80 shadow-[var(--shadow-card)] backdrop-blur-xl",
         )}
       >
         <div className="flex h-14 items-center justify-between gap-3 px-3 sm:h-[3.6rem] sm:px-4">
           <Link to="/" className="flex min-w-0 items-center gap-2 sm:gap-2.5">
-            <span
-              className={cn(
-                "flex size-8 shrink-0 items-center justify-center rounded-xl sm:size-9",
-                onHero
-                  ? "bg-card/90 text-primary"
-                  : "bg-primary text-primary-foreground shadow-sm",
-              )}
-            >
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm sm:size-9">
               <GraduationCap className="size-4 sm:size-5" aria-hidden />
             </span>
-            <span
-              className={cn(
-                "truncate font-display text-base font-semibold tracking-tight sm:text-lg",
-                onHero ? "text-primary-foreground" : "text-ink",
-              )}
-            >
+            <span className="truncate font-display text-base font-semibold tracking-tight text-ink sm:text-lg">
               edupass
-              <span className={onHero ? "text-primary-foreground/80" : "text-primary"}>.lk</span>
+              <span className="text-primary">.lk</span>
             </span>
           </Link>
 
@@ -105,7 +93,6 @@ function FloatingNav({ heroOverlay }: { heroOverlay: boolean }) {
                 to={item.to}
                 current={path}
                 exact={"exact" in item ? item.exact : false}
-                onHero={onHero}
               >
                 {item.label}
               </NavLink>
@@ -114,37 +101,15 @@ function FloatingNav({ heroOverlay }: { heroOverlay: boolean }) {
 
           <div className="flex items-center gap-1.5 sm:gap-2">
             {user ? (
-              <Button
-                size="sm"
-                className={cn(
-                  "hidden rounded-full px-4 sm:inline-flex",
-                  onHero && "bg-card text-ink hover:bg-card/90",
-                )}
-                asChild
-              >
+              <Button size="sm" className="hidden rounded-full px-4 sm:inline-flex" asChild>
                 <Link to={accountHref}>Dashboard</Link>
               </Button>
             ) : (
               <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={cn(
-                    "hidden rounded-full sm:inline-flex",
-                    onHero && "text-primary-foreground hover:bg-white/10 hover:text-primary-foreground",
-                  )}
-                  asChild
-                >
+                <Button variant="ghost" size="sm" className="hidden rounded-full sm:inline-flex" asChild>
                   <Link to="/auth/signup">Register</Link>
                 </Button>
-                <Button
-                  size="sm"
-                  className={cn(
-                    "rounded-full px-4",
-                    onHero && "bg-card text-ink hover:bg-card/90",
-                  )}
-                  asChild
-                >
+                <Button size="sm" className="rounded-full px-4" asChild>
                   <Link to="/auth/login">Sign In</Link>
                 </Button>
               </>
@@ -153,10 +118,7 @@ function FloatingNav({ heroOverlay }: { heroOverlay: boolean }) {
               type="button"
               variant="ghost"
               size="icon"
-              className={cn(
-                "rounded-xl md:hidden",
-                onHero && "text-primary-foreground hover:bg-white/10",
-              )}
+              className="rounded-xl md:hidden"
               aria-label={open ? "Close menu" : "Open menu"}
               aria-expanded={open}
               onClick={() => setOpen((v) => !v)}
@@ -174,22 +136,12 @@ function FloatingNav({ heroOverlay }: { heroOverlay: boolean }) {
           )}
         >
           <div className="overflow-hidden">
-            <nav
-              className={cn(
-                "flex flex-col gap-1 border-t px-3 py-3",
-                onHero ? "border-white/15" : "border-border/60",
-              )}
-            >
+            <nav className="flex flex-col gap-1 border-t border-border/60 px-3 py-3">
               {NAV.map((item) => (
                 <Link
                   key={item.to}
                   to={item.to}
-                  className={cn(
-                    "rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                    onHero
-                      ? "text-primary-foreground/90 hover:bg-white/10"
-                      : "text-foreground hover:bg-accent-soft",
-                  )}
+                  className="rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent-soft"
                 >
                   {item.label}
                 </Link>
@@ -197,22 +149,14 @@ function FloatingNav({ heroOverlay }: { heroOverlay: boolean }) {
               {user ? (
                 <Link
                   to={accountHref}
-                  className={cn(
-                    "rounded-xl px-3 py-2.5 text-sm font-semibold",
-                    onHero ? "bg-card/90 text-ink" : "bg-primary text-primary-foreground",
-                  )}
+                  className="rounded-xl bg-primary px-3 py-2.5 text-sm font-semibold text-primary-foreground"
                 >
                   Dashboard
                 </Link>
               ) : (
                 <Link
                   to="/auth/signup"
-                  className={cn(
-                    "rounded-xl px-3 py-2.5 text-sm font-medium",
-                    onHero
-                      ? "text-primary-foreground/90 hover:bg-white/10"
-                      : "text-muted-foreground",
-                  )}
+                  className="rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground"
                 >
                   Register
                 </Link>
@@ -230,13 +174,11 @@ function NavLink({
   current,
   children,
   exact,
-  onHero,
 }: {
   to: string;
   current: string;
   children: ReactNode;
   exact?: boolean;
-  onHero: boolean;
 }) {
   const active = exact ? current === to : current === to || current.startsWith(`${to}/`);
   return (
@@ -244,13 +186,9 @@ function NavLink({
       to={to}
       className={cn(
         "rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors",
-        onHero
-          ? active
-            ? "bg-white/20 text-primary-foreground"
-            : "text-primary-foreground/80 hover:bg-white/10 hover:text-primary-foreground"
-          : active
-            ? "bg-accent-soft font-semibold text-primary"
-            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+        active
+          ? "bg-accent-soft font-semibold text-primary"
+          : "text-muted-foreground hover:bg-muted hover:text-foreground",
       )}
     >
       {children}
