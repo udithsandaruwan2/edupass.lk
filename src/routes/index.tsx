@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { ArrowRight, ChevronDown, Ticket, CreditCard, QrCode } from "lucide-react";
 import { SiteShell } from "@/components/site-shell";
+import { HeroPass3D } from "@/components/hero-pass-3d";
 import { SeminarCard } from "@/components/seminar-card";
 import { SectionHeader } from "@/components/section-header";
 import { Reveal } from "@/components/reveal";
@@ -34,24 +35,21 @@ function Index() {
 
   return (
     <SiteShell heroOverlay>
-      {/* True full-viewport hero — fills mobile/tablet/desktop safely via svh */}
-      <section className="hero-viewport relative isolate overflow-hidden">
-        <img
-          src={images.hero}
-          alt=""
-          className="ken-burns absolute inset-0 size-full object-cover object-[center_30%]"
-          fetchPriority="high"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-navy/55 via-navy/50 to-navy/85" />
-        <div className="absolute inset-0 bg-gradient-to-r from-navy/70 via-transparent to-navy/30" />
+      <section className="hero-viewport hero-atmosphere relative isolate overflow-hidden">
+        {/* Layered grids + side glow washes */}
+        <div className="hero-grid-layer hero-grid-drift pointer-events-none absolute inset-0" />
+        <div className="hero-grid-fine pointer-events-none absolute inset-0 opacity-80" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-primary/25 to-transparent blur-2xl" />
+        <div className="pointer-events-none absolute inset-y-[10%] right-0 w-2/5 bg-gradient-to-l from-primary/30 to-transparent blur-3xl" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-navy/40 via-transparent to-navy/80" />
 
-        <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[5.5rem] sm:pt-28 md:pt-32">
-          <div className="flex flex-1 flex-col justify-center py-8 sm:py-10">
+        <div className="relative z-10 mx-auto grid h-full max-w-6xl grid-cols-1 items-center gap-6 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-[5.25rem] sm:pt-28 lg:grid-cols-[1.05fr_0.95fr] lg:gap-8 lg:pt-24">
+          <div className="flex flex-col justify-center py-4 sm:py-6 lg:py-10">
             <p className="rise text-xs font-semibold tracking-[0.2em] text-primary-foreground/75 uppercase sm:text-sm">
               edupass.lk
             </p>
             <h1
-              className="rise mt-3 max-w-[14ch] font-display text-[2.35rem] font-semibold leading-[1.05] text-primary-foreground sm:text-5xl md:text-6xl lg:text-[4rem]"
+              className="rise mt-3 max-w-[14ch] font-display text-[2.35rem] font-semibold leading-[1.05] text-primary-foreground sm:text-5xl md:text-6xl lg:text-[3.75rem]"
               style={{ animationDelay: "70ms" }}
             >
               Your seat at the next seminar
@@ -86,9 +84,16 @@ function Index() {
             </div>
           </div>
 
+          <div
+            className="rise relative flex min-h-[240px] items-center justify-center sm:min-h-[300px] lg:min-h-0 lg:justify-end"
+            style={{ animationDelay: "220ms" }}
+          >
+            <HeroPass3D />
+          </div>
+
           <a
             href="#how-it-works"
-            className="scroll-cue mb-2 flex flex-col items-center gap-1 self-center text-primary-foreground/70 transition-colors hover:text-primary-foreground"
+            className="scroll-cue col-span-full mb-1 flex flex-col items-center gap-1 justify-self-center text-primary-foreground/70 transition-colors hover:text-primary-foreground lg:absolute lg:bottom-5 lg:left-1/2 lg:-translate-x-1/2"
             aria-label="Scroll to how it works"
           >
             <span className="text-[10px] font-medium tracking-widest uppercase">Explore</span>
@@ -200,7 +205,7 @@ function Index() {
               />
             </div>
             <div className="flex flex-col justify-center p-6 sm:p-8 md:p-10">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+              <p className="text-xs font-semibold tracking-[0.14em] text-primary uppercase">
                 Institutes
               </p>
               <h2 className="mt-2 font-display text-2xl font-semibold text-ink sm:text-3xl">
