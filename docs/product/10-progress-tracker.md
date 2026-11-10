@@ -88,11 +88,10 @@ Checkboxes · Updated **2026-11-10** · Source of truth also: `project/05-plan.m
 
 | Ahead | Work |
 |---|---|
-| Next | Approve **G5** → commit/PR → `development` (`project/05-plan/G5-merge-ready.md`) |
-| Then | Staging smoke → human **G6** |
+| Next | Local QA on `development` → human **G6** when ready |
 | Later | PayHere (Phase F) |
 
-Branch tip: `feat/frontend/t009-polish` (T-001…T-009 implemented; **commit/push when you ask**).
+Branch tip: **`development`** (merged `feat/frontend/t009-polish`; push remote when you ask).
 
 ## Notes
 
