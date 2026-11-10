@@ -1,0 +1,16 @@
+# Keep the knowledge graph focused on product + framework source.
+site/
+examples/
+graphify-out/
+dist/
+build/
+node_modules/
+.venv/
+venv/
+__pycache__/
+.netlify/
+.agents/.cache/
+*.min.js
+pnpm-lock.yaml
+uv.lock
+package-lock.json

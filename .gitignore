@@ -1,3 +1,48 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets and local config
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Dependencies and build output
+node_modules/
+dist/
+build/
+out/
+target/
+.venv/
+venv/
+__pycache__/
+*.pyc
+.cache/
+coverage/
+.turbo/
+.netlify/
+
+# Agent scratch space
+.agents/.cache/
+project/handoffs/*.local.md
+.apf-backup-*/
+
+# Graphify knowledge graph (rebuild with: graphify update .)
+graphify-out/
+# IDE (adapters are generated and committed; local IDE state is not)
+.idea/
+.vscode/
+*.swp
+
+# OS
+# Secrets and local config
+# Dependencies and build output
+# Agent scratch space
+# Graphify knowledge graph (rebuild: graphify update .)
+# IDE (adapters are generated and committed; local IDE state is not)
 # Logs
 logs
 *.log
@@ -6,26 +51,18 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
+# Dependencies & builds
 node_modules
 dist
 dist-ssr
+coverage
 .output
-.vinxi
-.tanstack/**
-.nitro
 .netlify
 *.local
-
-# Wrangler / Cloudflare
-.wrangler/
-.dev.vars
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj

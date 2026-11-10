@@ -23,6 +23,6 @@ After every meaningful implementation chunk (or when the user asks to ship work)
 
 ## Notes
 
-- Prefer merge commits (or a normal merge) into `development`; do not force-push `main` or rewrite Lovable history.
+- Prefer merge commits (or a normal merge) into `development`; do not force-push `main` or rewrite shared published history.
 - If `development` does not exist yet, create it from current `main` once, push it, then merge the feature branch into it.
 - Keep the feature branch pushed so GitHub history stays clear.

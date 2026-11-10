@@ -1,0 +1,4 @@
+project/STATE.md
+project/03-architecture.md
+.agents/profiles/README.md
+.agents/profiles/layout-split-apps.md

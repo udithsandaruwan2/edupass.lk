@@ -1,0 +1,26 @@
+# Copy to .github/workflows/web.yml in a product repo.
+name: web
+on:
+  push:
+    branches: ['dev/frontend', 'prod/frontend']
+    paths: ['apps/web/**', 'netlify.toml', '.github/workflows/web.yml']
+  pull_request:
+    paths: ['apps/web/**', 'netlify.toml']
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint && pnpm typecheck && pnpm test && pnpm build

@@ -1,0 +1,17 @@
+#!/bin/sh
+# DevOpt + Graphify: rebuild AST knowledge graph after git events.
+# core.hooksPath=.githooks (official graphify hooks live under .git/hooks and
+# would be skipped). Keep this thin; `graphify update` is AST-only / no LLM.
+[ "${GRAPHIFY_SKIP_HOOK:-0}" = "1" ] && exit 0
+command -v graphify >/dev/null 2>&1 || exit 0
+_TOP=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+cd "$_TOP" || exit 0
+# Skip during rebase/merge continue
+_GD=$(git rev-parse --git-dir 2>/dev/null) || exit 0
+[ -d "$_GD/rebase-merge" ] && exit 0
+[ -d "$_GD/rebase-apply" ] && exit 0
+[ -f "$_GD/MERGE_HEAD" ] && exit 0
+_LOG="${XDG_CACHE_HOME:-$HOME/.cache}/graphify-rebuild.log"
+mkdir -p "$(dirname "$_LOG")" 2>/dev/null || true
+( graphify update . >>"$_LOG" 2>&1 ) &
+exit 0

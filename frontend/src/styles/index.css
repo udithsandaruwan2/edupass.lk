@@ -1,0 +1,161 @@
+@import "tailwindcss";
+
+/* Theme is driven by <html data-theme="dark|light">, set before first paint in index.html */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme {
+  --font-sans: "Open Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 12px 32px -16px rgb(0 0 0 / 0.22);
+  --shadow-overlay: 0 24px 64px -16px rgb(0 0 0 / 0.45);
+
+  /* Fixed brand orange for the logo mark (identity, not text) */
+  --color-brand-mark: #FF7518;
+
+  --animate-fade-in: fade-in 160ms ease-out;
+  --animate-pop-in: pop-in 180ms ease-out;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes pop-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+/* Semantic color utilities: bg-page, bg-surface, border-line, text-fg, text-muted, text-brand ... */
+@theme inline {
+  --color-page: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-secondary);
+  --color-line: var(--border);
+  --color-fg: var(--text-primary);
+  --color-muted: var(--text-secondary);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-solid: var(--brand-solid);
+  --color-brand-solid-hover: var(--brand-solid-hover);
+  --color-on-brand: var(--on-brand);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-series-1: var(--series-1);
+  --color-series-2: var(--series-2);
+  --color-series-3: var(--series-3);
+  --color-series-4: var(--series-4);
+}
+
+/* Dark (default). Contrast: fg/surface 15.9:1, muted/surface 6.5:1, on-brand/brand-solid 7.0:1 */
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #111214;
+  --surface: #1C1E22;
+  --surface-secondary: #24272C;
+  --border: #2A2D34;
+  --text-primary: #F8FAFC;
+  --text-secondary: #9CA3AF;
+  --brand: #FF7518;
+  --brand-strong: #FF9A52;
+  --brand-solid: #FF7518;
+  --brand-solid-hover: #FF8A3D;
+  --on-brand: #111214;
+  --success: #34D399;
+  --warning: #FBBF24;
+  --danger: #F87171;
+  --ring: #FF7518;
+  /* Chart categorical slots (validated: dark surface #1C1E22) */
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --grid: #2A2D34;
+}
+
+/* Light. Contrast: fg/surface 16.1:1, muted/surface 6.0:1, white/brand-solid 5.2:1, brand/bg 5.0:1 */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #FAFAF8;
+  --surface: #FFFFFF;
+  --surface-secondary: #F3F4F6;
+  --border: #E5E7EB;
+  --text-primary: #172033;
+  --text-secondary: #5B6472;
+  --brand: #C2410C;
+  --brand-strong: #9A3412;
+  --brand-solid: #C2410C;
+  --brand-solid-hover: #9A3412;
+  --on-brand: #FFFFFF;
+  --success: #047857;
+  --warning: #B45309;
+  --danger: #B91C1C;
+  --ring: #C2410C;
+  /* Chart categorical slots (validated: light surface #FFFFFF; slots 3–4 need labels/table) */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --grid: #E5E7EB;
+}
+
+@layer base {
+  html {
+    background-color: var(--bg);
+    color: var(--text-primary);
+    /* Keep anchor targets clear of the sticky header */
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background-color: var(--brand-solid);
+    color: var(--on-brand);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Print only the ticket when a ticket page is printed */
+@media print {
+  body * { visibility: hidden; }
+  .print-area, .print-area * { visibility: visible; }
+  .print-area { position: absolute; inset: 0 auto auto 0; width: 100%; }
+}

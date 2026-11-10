@@ -1,0 +1,23 @@
+# EduPass frontend — Vite SPA on Netlify
+# Set Base directory to `frontend` in Netlify UI (or use this file from repo root with base).
+
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Staging/production builds talk to Nest — never ship demo mocks.
+  VITE_USE_MOCKS = "false"
+
+[context.deploy-preview.environment]
+  VITE_USE_MOCKS = "false"
+
+[context.branch-deploy.environment]
+  VITE_USE_MOCKS = "false"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

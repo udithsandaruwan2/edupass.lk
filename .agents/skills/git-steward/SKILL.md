@@ -1,0 +1,151 @@
+---
+name: git-steward
+description: Use when creating branches, committing, opening PRs, promoting dev to prod or prod to main, using worktrees, resolving conflicts, tagging, or recovering from a git mistake.
+---
+
+# Git Steward
+
+Keep history readable and production deploys intentional. Default model is **promotion tracks**.
+
+## Inputs
+
+- `GIT_MODEL` and branch names in `framework.conf`
+- `project/STATE.md`
+- `git status`, branch, recent log
+
+## Procedure
+
+### 1. Inspect
+
+```bash
+git status --short --branch
+git log --oneline -5
+git diff --stat
+```
+
+Never commit or discard work you did not create. If the tree is unexpected, stop.
+
+### 2. Choose the model
+
+| `GIT_MODEL` | Long-lived | Feature branches from |
+|---|---|---|
+| `promotion` (default) | `main`, `dev/frontend`, `dev/backend`, `prod/frontend`, `prod/backend` | matching `dev/<track>` |
+| `trunk` | `main` only | `main` |
+
+This repo with no `apps/`: treat as trunk (`feat/<slug>` off `main`).
+
+### 3. Create a feature branch (promotion)
+
+```bash
+git fetch origin
+git switch dev/frontend          # or dev/backend
+git pull --ff-only
+git switch -c feat/frontend/<slug>
+```
+
+| Work | Prefix |
+|---|---|
+| feature | `feat/<track>/` |
+| bug | `fix/<track>/` |
+| refactor | `refactor/<track>/` |
+| docs | `docs/` |
+| tooling | `chore/` |
+| prod emergency | `hotfix/<track>/` from `prod/<track>` |
+
+Many commits per feature are expected. One feature per branch. Do not commit onto `dev/*`, `prod/*`, or `main`.
+
+### 4. Worktrees for parallel agents
+
+```bash
+git worktree add ../<repo>-web-notes -b feat/frontend/notes dev/frontend
+```
+
+One agent per worktree. Frontend agent: `apps/web` only. Backend agent: `apps/api` only. Remove the worktree after merge.
+
+### 5. Stage and commit
+
+```bash
+git add apps/web/src/x.ts apps/web/src/x.test.ts
+git diff --staged
+git commit -m "feat(web): add capture form" -m "Why.
+
+Refs: FEAT-001, T-003"
+```
+
+Never `git add .`. Conventional Commits, summary ≤72 chars. Checks green first. Hook: `./scripts/install-hooks.sh`.
+
+### 6. End of feature → development track
+
+Open a PR **into** `dev/frontend` or `dev/backend`, not `main`. Human reviews. Merge (keep feature commits). Test locally on the dev track. Delete the feature branch after merge.
+
+### 7. Promote (human-gated)
+
+```bash
+./scripts/promote.sh frontend prod          # dry-run
+./scripts/promote.sh frontend prod --apply  # only if human said "go to production"
+./scripts/promote.sh phase --apply          # both prod tracks → main, end of phase
+```
+
+Default is dry-run. **Never** `--apply` to prod or phase unless the human asked. Do not push unless asked (`--push`).
+
+### 8. Conflicts
+
+```bash
+git fetch origin
+git rebase origin/dev/frontend    # onto the track you will merge into
+```
+
+Preserve both intents. Never leave conflict markers. Re-run tests. Do not rebase a shared branch someone else is using.
+
+### 9. Hotfix
+
+Branch from `prod/<track>`, smallest fix + regression test, PR back into that prod track, then merge the same commit into `dev/<track>` so it is not lost.
+
+### 10. Recover
+
+| Goal | Command | Notes |
+|---|---|---|
+| Undo last local commit, keep changes | `git reset --soft HEAD~1` | local only |
+| Discard one file | `git restore <file>` | destructive |
+| Lost commit | `git reflog` then cherry-pick | safe |
+| Undo pushed commit | `git revert <sha>` | never force-push shared |
+| Park work | `git stash push -m "wip:"` | remember to pop |
+
+**Never** `git reset --hard`, `git clean -fd`, or `git push --force` on shared branches without explicit approval.
+
+## Permission matrix
+
+| Action | Agent default |
+|---|---|
+| status/diff/log | allowed |
+| feature branch / worktree | allowed |
+| commit on feature branch | allowed when checks pass |
+| PR into `dev/<track>` | when asked |
+| `promote.sh` dry-run | allowed |
+| `promote.sh --apply` to prod/main | human said so |
+| merge/tag/force-push shared | human only |
+
+## Guardrails
+
+- Never rewrite shared history.
+- Never commit secrets.
+- Never bypass the commit hook unless the human asks.
+- Never promote because tests are green; wait for the words.
+
+## Output contract
+
+```markdown
+## Git
+Model: promotion|trunk
+Branch: <name> (track: frontend|backend|framework)
+Commits: <n>
+Promote: dry-run|applied|not requested
+PR: <url or "not opened">
+Next: <one action>
+```
+
+## References
+
+- `docs/07-git-workflow.md`
+- `scripts/promote.sh`
+- `.githooks/commit-msg`

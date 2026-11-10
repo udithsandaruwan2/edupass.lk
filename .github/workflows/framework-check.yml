@@ -1,0 +1,30 @@
+name: framework-check
+
+on:
+  push:
+    branches: [main, 'dev/**', 'prod/**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make scripts executable
+        run: chmod +x scripts/*.sh .githooks/*
+
+      - name: Regenerate adapters
+        run: ./scripts/sync-adapters.sh
+
+      - name: Verify adapters are in sync
+        run: git diff --exit-code
+
+      - name: Doctor
+        run: ./scripts/doctor.sh
+
+      - name: Token budgets
+        run: ./scripts/token-audit.sh --strict

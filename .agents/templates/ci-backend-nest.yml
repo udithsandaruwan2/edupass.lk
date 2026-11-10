@@ -1,0 +1,26 @@
+# Copy to .github/workflows/api.yml when BACKEND_PROFILE=api-node-nest.
+name: api
+on:
+  push:
+    branches: ['dev/backend', 'prod/backend']
+    paths: ['apps/api/**', '.github/workflows/api.yml']
+  pull_request:
+    paths: ['apps/api/**']
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: apps/api/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint && pnpm typecheck && pnpm test && pnpm build

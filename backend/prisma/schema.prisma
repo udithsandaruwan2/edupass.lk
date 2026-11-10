@@ -1,0 +1,667 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum GlobalRole {
+  STUDENT
+  ADMIN
+}
+
+enum OrgType {
+  INSTITUTE
+  INDIVIDUAL_LECTURER
+  INDEPENDENT
+  SCHOOL_SOCIETY
+}
+
+enum OrgStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum EntitlementCode {
+  SEMINARS
+  INSTITUTE
+}
+
+enum EntitlementStatus {
+  ACTIVE
+  TRIAL
+  EXPIRED
+}
+
+enum StaffRole {
+  OWNER
+  ADMIN
+  TEACHER
+  CASHIER
+  SCANNER
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+}
+
+enum BillingPeriod {
+  MONTHLY
+  YEARLY
+}
+
+model User {
+  id              String          @id @default(cuid())
+  email           String          @unique
+  passwordHash    String
+  name            String
+  globalRole      GlobalRole      @default(STUDENT)
+  isPlatformAdmin Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  student         StudentProfile?
+  memberships     StaffMembership[]
+  orders          Order[]
+}
+
+model StudentProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  examYear  Int?
+  school    String?
+  district  String?
+  stream    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Organisation {
+  id            String                     @id @default(cuid())
+  name          String
+  slug          String                     @unique
+  type          OrgType
+  status        OrgStatus                  @default(ACTIVE)
+  createdAt     DateTime                   @default(now())
+  updatedAt     DateTime                   @updatedAt
+  memberships       StaffMembership[]
+  entitlements      OrganisationEntitlement[]
+  subscriptions     OrganisationSubscription[]
+  bankAccounts      BankAccount[]
+  seminars          Seminar[]
+  lecturerProfiles  LecturerProfile[]
+  orders            Order[]
+  paymentSlips      PaymentSlip[]
+  platformFeeLines  PlatformFeeLine[]
+  checkInEvents     CheckInEvent[]
+  platformInvoices  PlatformInvoice[]
+  batches           Batch[]
+  enrollments       InstituteEnrollment[]
+  classSessions     ClassSession[]
+  attendanceRecords AttendanceRecord[]
+  tuitionFeePlans   TuitionFeePlan[]
+  tuitionInvoices   TuitionInvoice[]
+  tuitionPayments   TuitionPayment[]
+}
+
+model OrganisationEntitlement {
+  id             String            @id @default(cuid())
+  organisationId String
+  organisation   Organisation      @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  code           EntitlementCode
+  status         EntitlementStatus @default(ACTIVE)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@unique([organisationId, code])
+}
+
+model StaffMembership {
+  id             String       @id @default(cuid())
+  userId         String
+  organisationId String
+  role           StaffRole    @default(OWNER)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([userId, organisationId])
+}
+
+model SubscriptionPlan {
+  id                        String                      @id @default(cuid())
+  code                      String                      @unique
+  name                      String
+  description               String?
+  priceLkr                  Int                         @default(0)
+  billingPeriod             BillingPeriod               @default(MONTHLY)
+  maxBatches                Int?
+  maxStudents               Int?
+  maxStaff                  Int?
+  maxSeminarsPerMonth       Int?
+  instituteEnabled          Boolean                     @default(true)
+  seminarsEnabled           Boolean                     @default(true)
+  ticketCommissionPercent   Decimal?                    @db.Decimal(5, 2)
+  isPublic                  Boolean                     @default(true)
+  sortOrder                 Int                         @default(0)
+  active                    Boolean                     @default(true)
+  createdAt                 DateTime                    @default(now())
+  updatedAt                 DateTime                    @updatedAt
+  subscriptions             OrganisationSubscription[]
+  platformInvoices          PlatformInvoice[]
+}
+
+model OrganisationSubscription {
+  id                 String             @id @default(cuid())
+  organisationId     String
+  planId             String
+  status             SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart DateTime           @default(now())
+  currentPeriodEnd   DateTime?
+  organisation       Organisation       @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  plan               SubscriptionPlan   @relation(fields: [planId], references: [id])
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@index([organisationId])
+}
+
+model PlatformSettings {
+  id                       String   @id @default("default")
+  ticketCommissionPercent  Decimal  @default(5.00) @db.Decimal(5, 2)
+  payhereEnabled           Boolean  @default(false)
+  updatedAt                DateTime @updatedAt
+}
+
+enum PlatformInvoiceStatus {
+  AWAITING_SLIP
+  UNDER_REVIEW
+  PAID
+  REJECTED
+  CANCELLED
+}
+
+/** Institution pays EduPass for Premium/Platinum subscription. */
+model PlatformInvoice {
+  id             String                @id @default(cuid())
+  organisationId String
+  organisation   Organisation          @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  planId         String
+  plan           SubscriptionPlan      @relation(fields: [planId], references: [id])
+  amountLkr      Int
+  status         PlatformInvoiceStatus @default(AWAITING_SLIP)
+  slipReference  String?
+  note           String?
+  rejectionReason String?
+  paidAt         DateTime?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  @@index([organisationId, status])
+}
+
+enum ClassAttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+}
+
+/** Institute batch / class group. */
+model Batch {
+  id             String   @id @default(cuid())
+  organisationId String
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  name           String
+  programme      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  enrollments    InstituteEnrollment[]
+  sessions       ClassSession[]
+
+  @@index([organisationId])
+}
+
+/** Roster row — plan student caps apply. */
+model InstituteEnrollment {
+  id             String   @id @default(cuid())
+  organisationId String
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  batchId        String?
+  batch          Batch?   @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  studentUserId  String?
+  displayName    String
+  status         String   @default("active")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  attendance     AttendanceRecord[]
+  tuitionInvoices TuitionInvoice[]
+
+  @@index([organisationId])
+  @@index([batchId])
+}
+
+/** Class session roll — AttendanceRecord ≠ CheckInEvent. */
+model ClassSession {
+  id             String   @id @default(cuid())
+  organisationId String
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  batchId        String
+  batch          Batch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  title          String
+  startsAt       DateTime
+  endsAt         DateTime?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  attendance     AttendanceRecord[]
+
+  @@index([organisationId])
+  @@index([batchId, startsAt])
+}
+
+model AttendanceRecord {
+  id             String                @id @default(cuid())
+  organisationId String
+  organisation   Organisation          @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  sessionId      String
+  session        ClassSession          @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  enrollmentId   String
+  enrollment     InstituteEnrollment   @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  status         ClassAttendanceStatus @default(PRESENT)
+  markedByUserId String
+  markedAt       DateTime              @default(now())
+  note           String?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  @@unique([sessionId, enrollmentId])
+  @@index([organisationId])
+  @@index([sessionId])
+}
+
+/** Institute class fees — never confuse with PlatformInvoice / PlatformFeeLine. */
+enum TuitionInvoiceStatus {
+  OPEN
+  PAID
+  CANCELLED
+}
+
+enum TuitionPaymentMethod {
+  CASH
+  BANK_SLIP
+}
+
+enum TuitionPaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model TuitionFeePlan {
+  id             String   @id @default(cuid())
+  organisationId String
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  name           String
+  amountLkr      Int
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  invoices       TuitionInvoice[]
+
+  @@index([organisationId])
+}
+
+model TuitionInvoice {
+  id             String               @id @default(cuid())
+  organisationId String
+  organisation   Organisation         @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  enrollmentId   String
+  enrollment     InstituteEnrollment  @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  feePlanId      String?
+  feePlan        TuitionFeePlan?      @relation(fields: [feePlanId], references: [id], onDelete: SetNull)
+  title          String
+  amountLkr      Int
+  paidAmountLkr  Int                  @default(0)
+  status         TuitionInvoiceStatus @default(OPEN)
+  dueAt          DateTime?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  payments       TuitionPayment[]
+
+  @@index([organisationId, status])
+  @@index([enrollmentId])
+}
+
+model TuitionPayment {
+  id               String                @id @default(cuid())
+  organisationId   String
+  organisation     Organisation          @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  invoiceId        String
+  invoice          TuitionInvoice        @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  method           TuitionPaymentMethod
+  amountLkr        Int
+  status           TuitionPaymentStatus  @default(PENDING)
+  slipReference    String?
+  note             String?
+  rejectionReason  String?
+  recordedByUserId String?
+  reviewedByUserId String?
+  reviewedAt       DateTime?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+
+  @@index([organisationId, status])
+  @@index([invoiceId])
+}
+
+model BankAccount {
+  id             String        @id @default(cuid())
+  organisationId String?
+  organisation   Organisation? @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  bankName       String
+  accountName    String
+  accountNumber  String
+  branch         String?
+  isPlatform     Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+enum CheckInMode {
+  QR_GATE
+  JOIN_LINK
+  BOTH
+}
+
+enum SeminarMode {
+  PHYSICAL
+  ONLINE
+  HYBRID
+}
+
+enum SeminarStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+}
+
+enum ExamLevel {
+  AL
+  OL
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        String
+  description String?
+  icon        String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  seminars    Seminar[]
+}
+
+model LecturerProfile {
+  id             String       @id @default(cuid())
+  organisationId String
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  name           String
+  title          String?
+  subjects       String[]
+  bio            String?
+  status         String       @default("active")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  seminars       Seminar[]
+
+  @@index([organisationId])
+}
+
+model Seminar {
+  id                String           @id @default(cuid())
+  organisationId    String
+  organisation      Organisation     @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  slug              String           @unique
+  title             String
+  subject           String
+  level             ExamLevel
+  categoryId        String?
+  category          Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  lecturerProfileId String?
+  lecturerProfile   LecturerProfile? @relation(fields: [lecturerProfileId], references: [id], onDelete: SetNull)
+  mode              SeminarMode      @default(PHYSICAL)
+  venue             String
+  district          String
+  startsAt          DateTime
+  durationHours     Float
+  summary           String
+  description       String           @db.Text
+  highlights        String[]
+  agenda            Json
+  status            SeminarStatus    @default(DRAFT)
+  checkInMode       CheckInMode?
+  /** Optional live-stream join URL (online/hybrid). */
+  streamJoinUrl     String?
+  featured          Boolean          @default(false)
+  language          String           @default("Sinhala")
+  image             String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  ticketTypes       TicketType[]
+  orderLines        OrderLine[]
+  tickets           Ticket[]
+  checkInEvents     CheckInEvent[]
+
+  @@index([organisationId])
+  @@index([status, startsAt])
+  @@index([subject])
+  @@index([district])
+}
+
+model TicketType {
+  id          String  @id @default(cuid())
+  seminarId   String
+  seminar     Seminar @relation(fields: [seminarId], references: [id], onDelete: Cascade)
+  name        String
+  description String  @default("")
+  priceLkr    Int
+  capacity    Int
+  sold        Int     @default(0)
+  orderLines  OrderLine[]
+
+  @@index([seminarId])
+}
+
+enum CommerceOrderStatus {
+  AWAITING_SLIP
+  UNDER_REVIEW
+  PAID
+  REJECTED
+  REFUNDED
+  CANCELLED
+}
+
+enum CommercePaymentMethod {
+  BANK_TRANSFER
+  CARD
+}
+
+enum SlipStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum TicketLifecycle {
+  PENDING
+  VALID
+  CHECKED_IN
+  VOID
+}
+
+enum FeeLineStatus {
+  ACTIVE
+  VOID
+}
+
+enum RefundStatus {
+  OPEN
+  APPROVED
+  REJECTED
+}
+
+model Order {
+  id                        String                @id @default(cuid())
+  studentUserId             String
+  student                   User                  @relation(fields: [studentUserId], references: [id], onDelete: Cascade)
+  organisationId            String
+  organisation              Organisation         @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  status                    CommerceOrderStatus   @default(AWAITING_SLIP)
+  paymentMethod             CommercePaymentMethod @default(BANK_TRANSFER)
+  buyerName                 String
+  buyerEmail                String
+  buyerPhone                String
+  subtotalLkr               Int
+  bookingFeeLkr             Int                   @default(0)
+  totalLkr                  Int
+  commissionPercentSnapshot Decimal               @db.Decimal(5, 2)
+  createdAt                 DateTime              @default(now())
+  updatedAt                 DateTime              @updatedAt
+  lines                     OrderLine[]
+  slips                     PaymentSlip[]
+  tickets                   Ticket[]
+  feeLines                  PlatformFeeLine[]
+  refunds                   RefundRequest[]
+
+  @@index([studentUserId])
+  @@index([organisationId, status])
+}
+
+model OrderLine {
+  id           String     @id @default(cuid())
+  orderId      String
+  order        Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  seminarId    String
+  seminar      Seminar    @relation(fields: [seminarId], references: [id])
+  ticketTypeId String
+  ticketType   TicketType @relation(fields: [ticketTypeId], references: [id])
+  quantity     Int
+  unitPriceLkr Int
+  attendeeNames String[]
+  tickets      Ticket[]
+
+  @@index([orderId])
+  @@index([seminarId])
+}
+
+model PaymentSlip {
+  id               String     @id @default(cuid())
+  orderId          String
+  order            Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  organisationId   String
+  organisation     Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  uploadedByUserId String
+  status           SlipStatus @default(PENDING)
+  slipReference    String
+  note             String?
+  rejectionReason  String?
+  reviewedAt       DateTime?
+  reviewedByUserId String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  @@index([organisationId, status])
+  @@index([orderId])
+}
+
+model Ticket {
+  id             String          @id @default(cuid())
+  code           String          @unique
+  orderId        String
+  order          Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderLineId    String
+  orderLine      OrderLine       @relation(fields: [orderLineId], references: [id], onDelete: Cascade)
+  studentUserId  String
+  seminarId      String
+  seminar        Seminar         @relation(fields: [seminarId], references: [id])
+  ticketTypeId   String
+  organisationId String
+  holderName     String
+  status         TicketLifecycle @default(PENDING)
+  checkedInAt    DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  checkIns       CheckInEvent[]
+
+  @@index([orderId])
+  @@index([studentUserId])
+  @@index([seminarId])
+  @@index([organisationId])
+}
+
+enum CheckInResult {
+  ADMITTED
+  DUPLICATE
+  WRONG_SEMINAR
+  INVALID
+  VOID
+  CROSS_TENANT
+}
+
+model CheckInEvent {
+  id               String        @id @default(cuid())
+  ticketId         String?
+  ticket           Ticket?       @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+  seminarId        String
+  seminar          Seminar       @relation(fields: [seminarId], references: [id], onDelete: Cascade)
+  organisationId   String
+  organisation     Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  scannedCode      String
+  result           CheckInResult
+  message          String
+  scannedByUserId  String
+  createdAt        DateTime      @default(now())
+
+  @@index([seminarId, createdAt])
+  @@index([organisationId])
+  @@index([ticketId])
+}
+
+model PlatformFeeLine {
+  id                 String        @id @default(cuid())
+  orderId            String
+  order              Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  organisationId     String
+  organisation       Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  commissionPercent  Decimal       @db.Decimal(5, 2)
+  ticketSubtotalLkr  Int
+  feeAmountLkr       Int
+  status             FeeLineStatus @default(ACTIVE)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([organisationId])
+  @@index([orderId])
+}
+
+model RefundRequest {
+  id            String       @id @default(cuid())
+  orderId       String
+  order         Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  studentUserId String
+  reason        String
+  amountLkr     Int
+  status        RefundStatus @default(OPEN)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([orderId])
+  @@index([studentUserId])
+}

@@ -1,0 +1,180 @@
+---
+name: plan-and-slice
+description: Use when breaking a milestone or feature into tasks, sequencing work, estimating effort, deciding what to build first, or splitting an oversized task before implementation.
+---
+
+# Plan and Slice
+
+Turn a product baseline and architecture into a short sequence of **demoable vertical slices**. The plan exists to buy information early, not to predict the future.
+
+## Inputs
+
+- `project/02-product-catalog.md`
+- `project/03-architecture.md` and ADRs
+- `project/05-plan.md` (if it exists)
+- Team capacity and deadline
+
+## Output
+
+- Updated `project/05-plan.md`
+- `project/05-plan/tasks/T-###-<slug>.md` for every task
+- `project/STATE.md` updated to phase 4 / next action
+
+## Procedure
+
+### 1. Define 3–5 outcome milestones
+
+A milestone is a demonstrable state:
+
+```markdown
+## M1 — Capture works
+Outcome: a signed-in user can create, reload, and see a note.
+Demo: create a note, refresh, note is still there.
+Exit: E2E green, staging deployed, no P0.
+```
+
+Avoid "backend 50%" or "sprint 3". If you cannot demo it, it is not a milestone.
+
+### 2. Slice vertically
+
+Each slice crosses UI, logic, and data for one user outcome:
+
+```markdown
+| ID | Task | Size | Depends | Status |
+|---|---|---|---|---|
+| T-001 | notes table + migration | S | — | todo |
+| T-002 | POST /notes + validation | S | T-001 | todo |
+| T-003 | capture form + optimistic save | M | T-002 | todo |
+| T-004 | E2E: empty, valid, offline | M | T-003 | todo |
+```
+
+Do not group by layer ("all models", "all endpoints"). That hides integration risk until the end.
+
+### 3. Size each task
+
+| Size | Files | Time | Planning |
+|---|---|---|---|
+| S | 1–2 | <30 min | none |
+| M | 3–8 | 0.5–2 h | 3–8 lines |
+| L | 9–20 | 2–6 h | written plan + slices |
+| XL | >20 | >1 day | **split** |
+
+If a task is XL, split by user outcome or risk. Never put an XL task in the plan.
+
+### 4. Write task files
+
+Use `.agents/templates/task.md`:
+
+```markdown
+# T-003 — Capture form
+
+Goal: submit a note from the main screen in ≤3 actions.
+Size: M. Risk: medium.
+
+Context:
+- FEAT-001 spec
+- src/notes/form.tsx (pattern)
+- T-002 API contract
+
+Acceptance:
+- [ ] Enter submits; Shift+Enter adds a newline
+- [ ] empty submit shows inline error, no request
+- [ ] optimistic note appears before the response
+- [ ] failure restores the draft and shows retry
+
+Out of scope: editing, sharing, rich text.
+Verification: pnpm test notes; pnpm lint; manual offline.
+Dependencies: T-002.
+```
+
+One page max. If it needs more, split.
+
+### 5. Sequence by risk and dependency
+
+1. Fatal unknowns → spike first.
+2. Critical path → what blocks the most work.
+3. Fast feedback → what lets you test the product soonest.
+4. Polish → last.
+
+Make the critical path visible. Mark tasks that can run in parallel with disjoint files.
+
+### 6. Estimate with ranges
+
+```markdown
+| Task | Size | Confidence | Note |
+|---|---|---|---|
+| T-001 | S | high | pattern exists |
+| T-003 | M | medium | offline behavior unclear |
+```
+
+Low confidence → add a spike before implementation.
+
+### 7. Add buffers visibly
+
+- Known work: sum of task ranges.
+- Integration/review: +20–30%.
+- Interruptions: +10–20%.
+- Release: 1–2 days.
+
+Do not inflate estimates to hide the buffer.
+
+### 8. Define the first slice
+
+It must be:
+
+- End-to-end, even if ugly.
+- Deployable to staging.
+- Covered by at least one automated test.
+- Demoable in under 5 minutes.
+- At most 3 tasks.
+
+If not, cut scope until it is.
+
+### 9. Plan review and release
+
+For each milestone:
+
+- Reviewer and review scope.
+- Required checks.
+- Rollback plan.
+- Docs to update.
+- Release window.
+
+### 10. Update state and hand off
+
+```yaml
+phase: 5-build
+gates:
+  G4: approved 2026-10-30 by human
+next_action: "Implement T-001 (notes table + migration)"
+```
+
+Then use `implementation-loop` for the first task.
+
+## Guardrails
+
+- No XL tasks.
+- No horizontal slices.
+- No date-based milestones without a demo.
+- No parallel tasks that touch the same files.
+- No task without acceptance and verification.
+- Do not plan more than one milestone in detail; later milestones will change.
+
+## Output contract
+
+```markdown
+## Plan updated
+Milestones: <n>
+Tasks: <n> (S/M/L/XL = ...)
+First slice: T-### → T-### → T-###
+Parallel-safe: <task IDs>
+Critical path: <task IDs>
+Risks: <top 3>
+Next: implement T-###
+```
+
+## References
+
+- `docs/04-planning.md`
+- `docs/07-git-workflow.md` (worktrees)
+- `.agents/templates/task.md`

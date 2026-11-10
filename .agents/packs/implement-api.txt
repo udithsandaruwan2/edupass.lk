@@ -1,0 +1,4 @@
+project/STATE.md
+.agents/profiles/api-python-django.md
+.agents/recipes/django-drf-crud.md
+apps/api/AGENTS.md

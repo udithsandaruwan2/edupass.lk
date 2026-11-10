@@ -1,0 +1,3 @@
+project/STATE.md
+project/00-brief.md
+.agents/templates/project-brief.md

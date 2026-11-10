@@ -1,0 +1,3 @@
+project/STATE.md
+docs/07-git-workflow.md
+.agents/skills/git-steward/SKILL.md
