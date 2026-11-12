@@ -1,27 +1,62 @@
 import { useEffect, useMemo, useState } from 'react';
+import {
+  listOrganiserOrdersRequest,
+  mapApiOrderStatus,
+  mapApiPaymentMethod,
+  type ApiOrder,
+} from '../../api/commerce';
 import { listOrganiserSeminars } from '../../api/seminars';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCatalog } from '../../hooks/useCatalog';
-import type { Seminar } from '../../types';
+import type { Order, Seminar } from '../../types';
+
+function mapOrder(o: ApiOrder): Order {
+  return {
+    id: o.id,
+    studentId: o.studentUserId,
+    lines: o.lines.map((l) => ({
+      seminarId: l.seminarId,
+      ticketTypeId: l.ticketTypeId,
+      quantity: l.quantity,
+      unitPrice: l.unitPriceLkr,
+    })),
+    subtotal: o.subtotalLkr,
+    fee: o.bookingFeeLkr,
+    total: o.totalLkr,
+    status: mapApiOrderStatus(o.status),
+    paymentMethod: mapApiPaymentMethod(o.paymentMethod),
+    buyer: o.buyer,
+    createdAt: o.createdAt,
+  };
+}
 
 /** The signed-in organiser's seminars, orders and tickets. */
 export function useOrganiser() {
   const { user, usingMocks } = useAuth();
   const catalog = useCatalog();
   const [apiSeminars, setApiSeminars] = useState<Seminar[] | null>(null);
+  const [apiOrders, setApiOrders] = useState<Order[] | null>(null);
 
   useEffect(() => {
     if (usingMocks || !user?.accessToken || !user.organisationId) {
       setApiSeminars(null);
+      setApiOrders(null);
       return;
     }
     let cancelled = false;
-    void listOrganiserSeminars(user.organisationId, user.accessToken)
-      .then((rows) => {
-        if (!cancelled) setApiSeminars(rows);
+    void Promise.all([
+      listOrganiserSeminars(user.organisationId, user.accessToken),
+      listOrganiserOrdersRequest(user.accessToken, user.organisationId),
+    ])
+      .then(([seminars, orders]) => {
+        if (cancelled) return;
+        setApiSeminars(seminars);
+        setApiOrders(orders.map(mapOrder));
       })
       .catch(() => {
-        if (!cancelled) setApiSeminars([]);
+        if (cancelled) return;
+        setApiSeminars([]);
+        setApiOrders([]);
       });
     return () => {
       cancelled = true;
@@ -53,7 +88,9 @@ export function useOrganiser() {
           }
         : undefined);
     const ids = new Set(seminars.map((s) => s.id));
-    const orders = catalog.orders.filter((o) => o.lines.some((l) => ids.has(l.seminarId)));
+    const orders = usingMocks
+      ? catalog.orders.filter((o) => o.lines.some((l) => ids.has(l.seminarId)))
+      : (apiOrders ?? []);
     const tickets = catalog.tickets.filter((t) => ids.has(t.seminarId));
     const lecturers = catalog.lecturers.filter(
       (l) => l.organiserId === mockOrgId || l.organiserId === id,
@@ -72,5 +109,5 @@ export function useOrganiser() {
       usingApi: !usingMocks,
       seminarsLoading: !usingMocks && apiSeminars === null && Boolean(user?.accessToken),
     };
-  }, [user, catalog, apiSeminars, usingMocks]);
+  }, [user, catalog, apiSeminars, apiOrders, usingMocks]);
 }

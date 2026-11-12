@@ -217,6 +217,15 @@ describe('Bank checkout → slip → tickets (e2e)', () => {
     expect(order.subtotalLkr).toBe(4000);
     expect(order.commissionPercentSnapshot).toBe(5);
 
+    const orgOrders = await app.inject({
+      method: 'GET',
+      url: `/api/organiser/orders?organisationId=${seller.organisationId}`,
+      headers: { authorization: `Bearer ${seller.token}` },
+    });
+    expect(orgOrders.statusCode).toBe(200);
+    const listed = JSON.parse(orgOrders.payload) as { id: string }[];
+    expect(listed.some((o) => o.id === order.id)).toBe(true);
+
     const instructions = await app.inject({
       method: 'GET',
       url: `/api/checkout/${order.id}/bank-instructions`,

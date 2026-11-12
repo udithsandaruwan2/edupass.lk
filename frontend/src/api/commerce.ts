@@ -111,3 +111,61 @@ export function reviewSlipRequest(
     },
   );
 }
+
+export type ApiTicket = {
+  id: string;
+  code: string;
+  orderId: string;
+  studentUserId: string;
+  seminarId: string;
+  ticketTypeId: string;
+  organisationId: string;
+  holderName: string;
+  status: string;
+  checkedInAt: string | null;
+  createdAt: string;
+};
+
+export function listStudentOrdersRequest(token: string) {
+  return apiRequest<ApiOrder[]>('/orders', { method: 'GET', token });
+}
+
+export function listStudentTicketsRequest(token: string) {
+  return apiRequest<ApiTicket[]>('/tickets', { method: 'GET', token });
+}
+
+export function listOrganiserOrdersRequest(token: string, organisationId: string) {
+  return apiRequest<ApiOrder[]>(
+    `/organiser/orders?organisationId=${encodeURIComponent(organisationId)}`,
+    { method: 'GET', token },
+  );
+}
+
+export function mapApiOrderStatus(
+  status: string,
+): 'paid' | 'failed' | 'refunded' | 'pending' {
+  const s = status.toUpperCase();
+  if (s === 'PAID') return 'paid';
+  if (s === 'FAILED' || s === 'CANCELLED') return 'failed';
+  if (s === 'REFUNDED') return 'refunded';
+  return 'pending';
+}
+
+export function mapApiPaymentMethod(
+  method: string,
+): 'card' | 'bank_transfer' | 'ez_cash' | 'koko' {
+  const m = method.toUpperCase();
+  if (m === 'CARD') return 'card';
+  if (m === 'EZ_CASH') return 'ez_cash';
+  if (m === 'KOKO') return 'koko';
+  return 'bank_transfer';
+}
+
+export function mapApiTicketStatusToUi(
+  status: string,
+): 'valid' | 'checked_in' | 'cancelled' {
+  const s = status.toUpperCase();
+  if (s === 'CHECKED_IN') return 'checked_in';
+  if (s === 'VOID' || s === 'CANCELLED') return 'cancelled';
+  return 'valid';
+}

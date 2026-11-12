@@ -108,3 +108,4 @@ Branch tip: **`development`** (T-010 + fee revenue).
 | 2026-11-10 | T-009: streamJoinUrl, BarcodeDetector camera QR, Playwright bank-path smoke, Netlify VITE_USE_MOCKS=false. |
 | 2026-11-11 | T-010: API-default (VITE_USE_MOCKS=false), empty catalogue, SMTP welcome/slip/tuition/reset, self-register, SEED_QA gate. |
 | 2026-11-12 | Admin PlatformFeeLine revenue UI + organiser commission % polish; G6 changelog/rollback ready. |
+| 2026-11-12 | FE wire: student tickets/orders + organiser orders from API; full smoke-product.sh green. |

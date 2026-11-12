@@ -13,6 +13,7 @@ import {
   type AuthUser,
 } from '../common/decorators/current-user.decorator';
 import { OrgScopeGuard } from '../common/guards/org-scope.guard';
+import { CheckoutService } from './checkout.service';
 import { ReviewRefundDto, ReviewSlipDto } from './dto/commerce.dto';
 import { RefundsService } from './refunds.service';
 import { SlipsService } from './slips.service';
@@ -23,7 +24,13 @@ export class OrganiserPaymentsController {
   constructor(
     private readonly slips: SlipsService,
     private readonly refunds: RefundsService,
+    private readonly checkout: CheckoutService,
   ) {}
+
+  @Get('orders')
+  orders(@Query('organisationId') organisationId: string) {
+    return this.checkout.listOrdersForOrganisation(organisationId);
+  }
 
   @Get('payments/pending-slips')
   pending(@Query('organisationId') organisationId: string) {
