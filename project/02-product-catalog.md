@@ -15,7 +15,7 @@
 | CAP-007 | Institute LMS | Materials, assignments, grades | institute | active |
 | CAP-008 | Seat maps | Optional reserved seating | seminars | active |
 | CAP-009 | Native companion | Expo tickets + scanner | platform | active |
-| CAP-010 | Student mobile app | Full student RN parity vs web | platform | planned |
+| CAP-010 | EduPass mobile | Student shell + staff QR gate verify | platform | planned |
 
 ## Features
 
@@ -49,6 +49,7 @@
 | FEAT-026 | CAP-010 | Mobile bookings/refunds/saved/notifications | Should | idea | `09-mobile-student-prd.md` | v0.4 |
 | FEAT-027 | CAP-010 | Mobile profile/settings/support | Must | idea | `09-mobile-student-prd.md` | v0.4 |
 | FEAT-028 | CAP-010 | Device smoke + EAS candidate | Must | idea | T-052…T-055 | v0.4 |
+| FEAT-029 | CAP-010 | Staff Gate shell: seminar pick + QR scan/verify | Must | idea | T-056 · ADR-0009 | v0.4 |
 
 ## Non-functional requirements
 

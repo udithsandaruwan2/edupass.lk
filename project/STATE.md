@@ -13,7 +13,7 @@ gates:
   G4: approved through Phase 8; Phase-9 mobile plan proposed 2026-11-12 (no build until approve)
   G5: approved 2026-11-10 by human (v0.1 web)
   G6: pending (web production; does not block Phase 9 planning)
-next_action: "Human review Phase 9 docs (discovery → PRD → ADR-0009 → plan). Approve G1/G2/G3/G4 Phase-9 to authorize mobile build. See project/PROGRESS.md."
+next_action: "Phase 9 docs updated for Student shell + Staff Gate QR verify. Human approve G1/G2/G3/G4 Phase-9 to authorize mobile build. See project/PROGRESS.md."
 ---
 
 # Project state

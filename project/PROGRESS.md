@@ -146,19 +146,19 @@ Legend: `[x]` done · `[ ]` open · `[~]` proposed / awaiting human
 
 ---
 
-## 8. Phase 9 — Student React Native (planning)
+## 8. Phase 9 — EduPass mobile: Student + Staff gate (planning)
 
 Docs (no build until G4 Phase-9 approve):
 
-- [x] Discovery — `project/09-mobile-student-discovery.md`
-- [x] PRD addendum — `project/09-mobile-student-prd.md`
-- [x] Catalog CAP-010 + FEAT-022…028
-- [x] ADR-0009 — `project/04-adr/0009-student-expo-app.md`
-- [x] Plan + tasks — `project/05-plan-phase9-mobile.md` · T-040…T-055
+- [x] Discovery — `project/09-mobile-student-discovery.md` (dual shell)
+- [x] PRD addendum — `project/09-mobile-student-prd.md` (student + staff verify)
+- [x] Catalog CAP-010 + FEAT-022…029
+- [x] ADR-0009 — one Expo app, Student shell + Staff Gate
+- [x] Plan + tasks — `project/05-plan-phase9-mobile.md` · T-040…T-056
 - [~] Human approve G1/G2/G3/G4 Phase-9
-- [ ] Build M1–M5 (auth → buy → LMS → polish → smoke)
+- [ ] Build M1–M5 (auth + **staff scan** → student buy → LMS → polish → smoke)
 
-Parity target: web `StudentRoutes` (overview, bookings, tickets, class-fees, learning, saved, notifications, profile, settings, support) + public explore/checkout.
+**Shells:** Student (full journeys) · Staff Gate (seminar pick + QR scan/verify). Not full organiser CRUD on phone.
 
 ---
 
