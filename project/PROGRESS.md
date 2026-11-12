@@ -13,6 +13,8 @@
 | G6 production cut | — | 1 (human) |
 | Build T-001…T-010 | 10/10 | — |
 | Phase 8 T-012…T-034 | 23/23 | — |
+| Phase 9 Student mobile (plan) | docs proposed | G1–G4 Phase-9 human |
+| Phase 9 build T-040…T-055 | 0/16 | after G4 |
 | Phase F PayHere | — | 1 (held) |
 
 Legend: `[x]` done · `[ ]` open · `[~]` proposed / awaiting human
@@ -31,6 +33,7 @@ Legend: `[x]` done · `[ ]` open · `[~]` proposed / awaiting human
 - [x] **G4-delta** Phase 8 plan T-012…T-034 — approved 2026-11-12 by human
 - [x] **G5** Merge-ready v0.1 (2026-11-10)
 - [ ] **G6** Release to production — human only (does **not** freeze Phase 8)
+- [~] **G1–G4 Phase-9** Student mobile — docs proposed 2026-11-12 (awaiting human)
 
 ---
 
@@ -143,7 +146,23 @@ Legend: `[x]` done · `[ ]` open · `[~]` proposed / awaiting human
 
 ---
 
-## 8. Still open (endgame)
+## 8. Phase 9 — Student React Native (planning)
+
+Docs (no build until G4 Phase-9 approve):
+
+- [x] Discovery — `project/09-mobile-student-discovery.md`
+- [x] PRD addendum — `project/09-mobile-student-prd.md`
+- [x] Catalog CAP-010 + FEAT-022…028
+- [x] ADR-0009 — `project/04-adr/0009-student-expo-app.md`
+- [x] Plan + tasks — `project/05-plan-phase9-mobile.md` · T-040…T-055
+- [~] Human approve G1/G2/G3/G4 Phase-9
+- [ ] Build M1–M5 (auth → buy → LMS → polish → smoke)
+
+Parity target: web `StudentRoutes` (overview, bookings, tickets, class-fees, learning, saved, notifications, profile, settings, support) + public explore/checkout.
+
+---
+
+## 9. Still open (endgame)
 
 ### Human / ops
 
@@ -151,6 +170,7 @@ Legend: `[x]` done · `[ ]` open · `[~]` proposed / awaiting human
 - [ ] Human smoke QA on `development` (bank path + LMS + seats + admin CMS + Expo)
 - [ ] Approve **G6** → production cut (`main` only when you say so)
 - [ ] Production API host + SMTP secrets on host (not in repo)
+- [~] Approve **Phase 9** G1–G4 (student mobile) — then build starts
 
 ### Phase F — PayHere (held)
 
@@ -167,7 +187,7 @@ Legend: `[x]` done · `[ ]` open · `[~]` proposed / awaiting human
 
 ---
 
-## 9. Timeline (how we got here)
+## 10. Timeline (how we got here)
 
 ```text
 Intake → Discovery → PRD/Catalog → Architecture
@@ -184,12 +204,15 @@ Intake → Discovery → PRD/Catalog → Architecture
 
 ---
 
-## 10. Quick links
+## 11. Quick links
 
 | Need | Path |
 |---|---|
 | This checklist | `project/PROGRESS.md` |
 | Live phase/gate | `project/STATE.md` |
+| Phase 9 mobile discovery | `project/09-mobile-student-discovery.md` |
+| Phase 9 mobile PRD | `project/09-mobile-student-prd.md` |
+| Phase 9 mobile plan | `project/05-plan-phase9-mobile.md` |
 | Task files | `project/05-plan/tasks/` |
 | Product roadmap | `docs/product/09-delivery-roadmap.md` |
 | Mirror tracker | `docs/product/10-progress-tracker.md` |

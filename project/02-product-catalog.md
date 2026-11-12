@@ -15,6 +15,7 @@
 | CAP-007 | Institute LMS | Materials, assignments, grades | institute | active |
 | CAP-008 | Seat maps | Optional reserved seating | seminars | active |
 | CAP-009 | Native companion | Expo tickets + scanner | platform | active |
+| CAP-010 | Student mobile app | Full student RN parity vs web | platform | planned |
 
 ## Features
 
@@ -41,6 +42,13 @@
 | FEAT-019 | CAP-009 | Expo native tickets + scanner | Must | shipped | ADR-0008 | v0.3 |
 | FEAT-020 | CAP-002 | LecturerProfile CRUD + public pages | Must | shipped | T-014 | v0.3 |
 | FEAT-021 | CAP-006 | Admin people/catalogue/sales list APIs | Must | shipped | T-019…T-021 | v0.3 |
+| FEAT-022 | CAP-010 | Student Expo shell + SecureStore auth | Must | idea | `09-mobile-student-prd.md` | v0.4 |
+| FEAT-023 | CAP-010 | Mobile catalogue + bank checkout + seats + slip | Must | idea | `09-mobile-student-prd.md` | v0.4 |
+| FEAT-024 | CAP-010 | Mobile tickets QR polish | Must | idea | ADR-0009 | v0.4 |
+| FEAT-025 | CAP-010 | Mobile tuition + LMS | Must | idea | `09-mobile-student-prd.md` | v0.4 |
+| FEAT-026 | CAP-010 | Mobile bookings/refunds/saved/notifications | Should | idea | `09-mobile-student-prd.md` | v0.4 |
+| FEAT-027 | CAP-010 | Mobile profile/settings/support | Must | idea | `09-mobile-student-prd.md` | v0.4 |
+| FEAT-028 | CAP-010 | Device smoke + EAS candidate | Must | idea | T-052…T-055 | v0.4 |
 
 ## Non-functional requirements
 
@@ -52,6 +60,8 @@
 | NFR-004 | PAYHERE_ENABLED | false until Phase F | active |
 | NFR-005 | Seat hold TTL | 15m default | planned |
 | NFR-006 | LMS upload cap | 10MB | planned |
+| NFR-007 | Student app cold start | &lt; 3s mid Android | planned |
+| NFR-008 | Mobile tokens | SecureStore only | planned |
 
 ## Risks
 

@@ -1,47 +1,43 @@
 ---
 project: "edupass.lk"
-phase: 5-build
-phase_name: "Build"
-status: phase8_authorized
+phase: 2-product
+phase_name: "Product"
+status: phase9_mobile_planning
 updated: "2026-11-12"
 owner: "human"
 gates:
   G0: approved 2026-11-10 by human
-  G1: approved 2026-11-10 by human
-  G2: approved 2026-11-10 by human; Phase-8 delta approved 2026-11-12 by human (scope C)
-  G3: approved 2026-11-10 by human; ADR-0006…0008 Phase 8 (accepted in ADRs)
-  G4: approved 2026-11-10 by human; Phase-8 plan approved 2026-11-12 by human (T-012…T-034)
-  G5: approved 2026-11-10 by human (v0.1)
-  G6: pending (does not freeze Phase 8)
-next_action: "Human smoke QA Phase 8 on development, then approve G6 when ready for production. PayHere held. See project/PROGRESS.md."
+  G1: approved 2026-11-10 by human; Phase-9 discovery proposed 2026-11-12
+  G2: approved 2026-11-10 + Phase-8 delta 2026-11-12; Phase-9 student mobile PRD/catalog proposed 2026-11-12
+  G3: approved 2026-11-10; ADR-0009 student Expo proposed 2026-11-12
+  G4: approved through Phase 8; Phase-9 mobile plan proposed 2026-11-12 (no build until approve)
+  G5: approved 2026-11-10 by human (v0.1 web)
+  G6: pending (web production; does not block Phase 9 planning)
+next_action: "Human review Phase 9 docs (discovery → PRD → ADR-0009 → plan). Approve G1/G2/G3/G4 Phase-9 to authorize mobile build. See project/PROGRESS.md."
 ---
 
 # Project state
 
-> Phase 8 authorized. G2-delta + G4-delta approved 2026-11-12. Implementation already on `development`. G6 still human-only for production.
+> **Phase 9 planning:** full Student React Native (Expo) app. Framework docs drafted; **no mobile product code until G4 Phase-9 approve.**
 
 ## Current focus
 
-Phase 8 complete on `development`. Next: human QA, then **G6** when ready to ship production.
+Research + roadmap for EduPass Student mobile parity with web student journeys. Web Phase 8 remains on `development`.
 
-## Gate log
+## Gate log (Phase 9)
 
-| Gate | Status | Date | Approved by | Notes |
-|---|---|---|---|---|
-| G0 Brief | approved | 2026-11-10 | human | `00-brief.md` |
-| G1 Discovery | approved | 2026-11-10 | human | `01-discovery.md` |
-| G2 Product | approved | 2026-11-10 | human | `02-prd.md`, catalog |
-| G2 Phase-8 delta | approved | 2026-11-12 | human | Scope C: LMS, seats, native, real admin |
-| G3 Architecture | approved | 2026-11-10 | human | ADR 0001–0004 |
-| G4 Plan / build | approved | 2026-11-10 | human | T-001…T-010 |
-| G4 Phase-8 plan | approved | 2026-11-12 | human | T-012…T-034 done on development |
-| G5 Merge | approved | 2026-11-10 | human | v0.1 |
-| G6 Release | pending | | | Production cut — say approve G6 |
+| Gate | Status | Date | Notes |
+|---|---|---|---|
+| G1 Phase-9 discovery | proposed | 2026-11-12 | `09-mobile-student-discovery.md` |
+| G2 Phase-9 product | proposed | 2026-11-12 | `09-mobile-student-prd.md` + FEAT-022…028 |
+| G3 Phase-9 ADR | proposed | 2026-11-12 | ADR-0009 |
+| G4 Phase-9 plan | proposed | 2026-11-12 | `05-plan-phase9-mobile.md` T-040…T-055 |
 
 ## Blockers
 
-- none (PayHere intentionally held)
+- Phase 9 build blocked on human G4 approve
+- PayHere held
 
 ## Next action
 
-See frontmatter.
+See frontmatter. Canonical ticks: `project/PROGRESS.md`.

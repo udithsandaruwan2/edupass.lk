@@ -1,0 +1,35 @@
+# T-048 — mobile-lms
+
+- **Milestone:** M3 (Phase 9)
+- **Feature:** `FEAT-025`
+- **Size:** M
+- **Risk:** medium
+- **Depends on:** see `project/05-plan-phase9-mobile.md`
+- **Status:** todo
+
+## Goal
+
+Deliver `mobile-lms` for EduPass Student mobile (Expo).
+
+## Context
+
+- `project/09-mobile-student-prd.md`
+- `project/04-adr/0009-student-expo-app.md`
+- Existing `mobile/` companion and Nest `/api`
+
+## Acceptance
+
+- [ ] Works against Nest API (mocks not required)
+- [ ] Secure token handling where auth involved
+- [ ] Covered by device smoke or manual checklist row
+
+## Out of scope
+
+- Organiser/admin mobile; PayHere
+
+## Verification
+
+```bash
+# after G4: expo start + Nest on :3000
+./scripts/smoke-product.sh  # API still green
+```
