@@ -23,6 +23,7 @@ All notable changes to this project are documented here. Format follows [Keep a 
 - Student My Tickets / bookings hydrate from `/tickets` + `/orders` in API mode.
 - Organiser bookings hydrate from `GET /organiser/orders`.
 - Product API smoke script: `scripts/smoke-product.sh`.
+- Organiser bank-account API (`GET/PUT /organisations/:id/bank-account`) wired to settings payout form.
 
 ### Changed
 

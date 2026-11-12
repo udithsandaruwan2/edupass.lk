@@ -35,8 +35,8 @@ describe('booking journey', () => {
     expect(screen.getByText('2 tickets · up to 6 per order')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /checkout/i }));
 
-    // Not signed in: continue as the demo student
-    await user.click(await screen.findByRole('button', { name: 'Continue as demo student' }));
+    // Not signed in: continue as the mock student
+    await user.click(await screen.findByRole('button', { name: 'Continue as mock student' }));
 
     // Details are prefilled; terms must be accepted
     await user.click(await screen.findByRole('button', { name: 'Continue to payment' }));

@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ExternalLink, Pencil, Save, Star, Trash2, UserPlus } from 'lucide-react';
+import { ApiError } from '../../api/client';
+import {
+  getOrganisationBankAccount,
+  upsertOrganisationBankAccount,
+} from '../../api/organisations';
 import { StatusBadge } from '../../components/StatusBadge';
 import { Button } from '../../components/ui/Button';
 import { DataTable, type Column } from '../../components/ui/DataTable';
 import { ConfirmDialog, Modal } from '../../components/ui/Dialog';
 import { Input, Select, Textarea } from '../../components/ui/Field';
 import { Avatar, Badge, Card, CardHeader, Notice } from '../../components/ui/Primitives';
+import { useAuth } from '../../contexts/AuthContext';
 import { useData } from '../../contexts/DataContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
@@ -146,27 +152,82 @@ export const OrganiserProfileSettingsPage: React.FC = () => {
 
 export const OrganiserSettingsPage: React.FC = () => {
   const toast = useToast();
+  const { user, usingMocks } = useAuth();
   const [payout, setPayout] = usePersistentState('edupass-payout-draft', () => ({ bank: '', branch: '', account: '', holder: '' }));
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const save = (e: React.FormEvent) => {
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (usingMocks || !user?.accessToken || !user.organisationId) return;
+    let cancelled = false;
+    void getOrganisationBankAccount(user.accessToken, user.organisationId)
+      .then((account) => {
+        if (cancelled || !account) return;
+        setPayout({
+          bank: account.bankName,
+          branch: account.branch ?? '',
+          account: account.accountNumber,
+          holder: account.accountName,
+        });
+      })
+      .catch(() => {
+        /* keep local draft */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [usingMocks, user?.accessToken, user?.organisationId, setPayout]);
+
+  const save = async (e: React.FormEvent) => {
     e.preventDefault();
     const errs: Record<string, string> = runValidators(payout, { bank: [required('Bank')], holder: [required('Account holder')] });
     if (!/^\d{8,16}$/.test(payout.account)) errs.account = 'Enter 8–16 digits';
     setErrors(errs);
     if (Object.keys(errs).length) return;
-    toast('Payout details saved', { description: 'Stored on this device until bank payout profiles ship in a later release.' });
+
+    if (usingMocks || !user?.accessToken || !user.organisationId) {
+      toast('Payout details saved', { description: 'Stored on this device in mock mode.' });
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await upsertOrganisationBankAccount(user.accessToken, user.organisationId, {
+        bankName: payout.bank.trim(),
+        accountName: payout.holder.trim(),
+        accountNumber: payout.account.trim(),
+        branch: payout.branch.trim() || undefined,
+      });
+      toast('Payout account saved', {
+        description: 'Students will see these bank details after checkout.',
+        tone: 'success',
+      });
+    } catch (err) {
+      toast(err instanceof ApiError ? err.message : 'Could not save bank account', { tone: 'error' });
+    } finally {
+      setSaving(false);
+    }
   };
   return (
     <>
       <AccountSettingsPage role="organiser" />
       <Card className="mt-6">
-        <CardHeader title="Payout account" description="Where ticket revenue should be paid after settlements." />
-        <form onSubmit={save} noValidate className="grid gap-4 p-5 sm:grid-cols-2">
+        <CardHeader
+          title="Payout account"
+          description={
+            usingMocks
+              ? 'Mock mode stores payout details on this device only.'
+              : 'Bank details shown to students for ticket slip transfers.'
+          }
+        />
+        <form onSubmit={(e) => void save(e)} noValidate className="grid gap-4 p-5 sm:grid-cols-2">
           <Input label="Bank" value={payout.bank} onValueChange={(x) => setPayout({ ...payout, bank: x })} error={errors.bank} />
           <Input label="Branch" value={payout.branch} onValueChange={(x) => setPayout({ ...payout, branch: x })} />
           <Input label="Account number" inputMode="numeric" value={payout.account} onValueChange={(x) => setPayout({ ...payout, account: x.replace(/\D/g, '') })} error={errors.account} />
           <Input label="Account holder" value={payout.holder} onValueChange={(x) => setPayout({ ...payout, holder: x })} error={errors.holder} />
-          <div className="flex justify-end sm:col-span-2"><Button type="submit">Save payout details</Button></div>
+          <div className="flex justify-end sm:col-span-2">
+            <Button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save payout details'}</Button>
+          </div>
         </form>
       </Card>
     </>

@@ -13,7 +13,7 @@ gates:
   G4: approved 2026-11-10 by human
   G5: approved 2026-11-10 by human
   G6: pending
-next_action: "Human smoke QA on development, then approve G6 to ship. PayHere (Phase F) held."
+next_action: "Human smoke QA on development (bank payout → checkout → slip → tickets → check-in), then approve G6. PayHere held."
 ---
 
 # Project state

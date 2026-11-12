@@ -173,8 +173,10 @@ export const CheckoutPage: React.FC = () => {
           <h1 className="mt-4 text-xl font-bold text-fg">Sign in to check out</h1>
           <p className="mt-2 text-sm text-muted">Tickets are saved to a student account so you can show the QR code at the door.</p>
           <div className="mt-6 flex flex-col gap-2">
-            <Button onClick={() => login(DEMO_ACCOUNTS.student)}>Continue as demo student</Button>
-            <Button to="/login?next=/checkout" variant="secondary">Log in</Button>
+            {usingMocks && (
+              <Button onClick={() => login(DEMO_ACCOUNTS.student)}>Continue as mock student</Button>
+            )}
+            <Button to="/login?next=/checkout" variant={usingMocks ? 'secondary' : undefined}>Log in</Button>
             <Button to="/register?next=/checkout" variant="ghost">Create a student account</Button>
           </div>
         </Card>

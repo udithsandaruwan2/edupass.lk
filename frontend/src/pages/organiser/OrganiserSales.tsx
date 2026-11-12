@@ -464,7 +464,9 @@ export const CheckInPage: React.FC = () => {
               <label htmlFor="ticket-code" className="sr-only">Ticket code</label>
               <input ref={inputRef} id="ticket-code" value={code} onChange={(e) => setCode(e.target.value)} placeholder="EDP-XXXXXXXX" autoComplete="off" className="h-12 min-w-0 flex-1 rounded-md border border-line bg-page px-4 font-mono text-base uppercase tracking-wider text-fg placeholder:text-muted focus-visible:border-brand" />
               <Button type="submit" size="lg" disabled={!code.trim()}>Check in</Button>
-              <Button variant="secondary" size="lg" onClick={simulateScan}>Simulate scan</Button>
+              {!usingApi && (
+                <Button variant="secondary" size="lg" onClick={simulateScan}>Simulate scan</Button>
+              )}
             </form>
           </Card>
 
