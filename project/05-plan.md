@@ -41,29 +41,31 @@
 
 | ID | Task | Size | Depends | Status |
 |---|---|---|---|---|
-| T-012 | change-password API + FE | M | — | todo |
-| T-013 | Contact → MailModule; demo scrub | S | — | todo |
-| T-014 | LecturerProfile CRUD + public API/FE | L | — | todo |
-| T-015 | Student/organiser profile GET/PUT | M | — | todo |
-| T-016 | StaffRoleGuard + JWT role claims | M | T-012 | todo |
-| T-017 | FE `/lecturer` + scanner shell | L | T-016 | todo |
-| T-018 | Institute staff invite UI + email | M | T-016 | todo |
-| T-019 | Admin list APIs | L | — | todo |
-| T-020 | CMS Prisma + CRUD | L | — | todo |
-| T-021 | Rewire Admin* to API | L | T-019,T-020 | todo |
-| T-022 | Category admin CRUD FE | M | T-019 | todo |
-| T-023 | LMS schema | L | T-016 | todo |
-| T-024 | LMS APIs | L | T-023 | todo |
-| T-025 | LMS FE portals | L | T-024 | todo |
-| T-026 | File storage for LMS | M | T-023 | todo |
-| T-027 | Seat schema + holds | L | — | todo |
-| T-028 | Seat-map editor FE | L | T-027 | todo |
-| T-029 | Checkout seat picker + e2e | L | T-027 | todo |
-| T-030 | Expo workspace + auth | L | — | todo |
-| T-031 | Expo student tickets | M | T-030 | todo |
-| T-032 | Expo scanner | M | T-030 | todo |
-| T-033 | Smoke/Playwright expand | M | M1–M6 | todo |
-| T-034 | Docs/STATE Phase 8 RC | S | T-033 | todo |
+| T-012 | change-password API + FE | M | — | done |
+| T-013 | Contact → MailModule; demo scrub | S | — | done |
+| T-014 | LecturerProfile CRUD + public API/FE | L | — | done |
+| T-015 | Student/organiser profile GET/PUT | M | — | done |
+| T-016 | StaffRoleGuard + JWT role claims | M | T-012 | done |
+| T-017 | FE `/lecturer` + scanner shell | L | T-016 | done |
+| T-018 | Institute staff invite UI + email | M | T-016 | done |
+| T-019 | Admin list APIs | L | — | done |
+| T-020 | CMS Prisma + CRUD | L | — | done |
+| T-021 | Rewire Admin* to API | L | T-019,T-020 | done |
+| T-022 | Category admin CRUD FE | M | T-019 | done |
+| T-023 | LMS schema | L | T-016 | done |
+| T-024 | LMS APIs | L | T-023 | done |
+| T-025 | LMS FE portals | L | T-024 | done |
+| T-026 | File storage for LMS | M | T-023 | done |
+| T-027 | Seat schema + holds | L | — | done |
+| T-028 | Seat-map editor FE | L | T-027 | done |
+| T-029 | Checkout seat picker + e2e | L | T-027 | done |
+| T-030 | Expo workspace + auth | L | — | done |
+| T-031 | Expo student tickets | M | T-030 | done |
+| T-032 | Expo scanner | M | T-030 | done |
+| T-033 | Smoke/Playwright expand | M | M1–M6 | done |
+| T-034 | Docs/STATE Phase 8 RC | S | T-033 | done |
+
+Progress checklist (beginning → end): `project/PROGRESS.md`
 
 ## ADRs
 

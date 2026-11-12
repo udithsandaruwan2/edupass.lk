@@ -5,6 +5,7 @@ The living truth of the project. Agents read this, not a parallel docs tree.
 | Path | Answers | Gate |
 |---|---|---|
 | `STATE.md` | Where are we? What is next? | all |
+| `PROGRESS.md` | Beginning→end checklist with ticks | all |
 | `00-brief.md` | Why this project? | G0 |
 | `01-discovery.md` | Is the problem real? | G1 |
 | `02-prd.md` | What are we building? | G2 |

@@ -7,7 +7,7 @@
 1. [01-product-vision.md](01-product-vision.md) — who registers, products, admin surfaces.
 2. [12-platform-billing-and-tenancy.md](12-platform-billing-and-tenancy.md) — multi-tenant model + **platform** fees/plans (not institute tuition).
 3. [03-domain-model.md](03-domain-model.md) + [05-api-surface.md](05-api-surface.md) + [11-one-go-build-playbook.md](11-one-go-build-playbook.md) when coding.
-4. [09-delivery-roadmap.md](09-delivery-roadmap.md) + [10-progress-tracker.md](10-progress-tracker.md).
+4. [09-delivery-roadmap.md](09-delivery-roadmap.md) + [10-progress-tracker.md](10-progress-tracker.md) · full ticks: [`../../project/PROGRESS.md`](../../project/PROGRESS.md).
 
 ## Document index
 
@@ -22,21 +22,20 @@
 | [07-frontend-masterpiece-plan.md](07-frontend-masterpiece-plan.md) | Three panel shells + checkout |
 | [08-backend-nestjs-plan.md](08-backend-nestjs-plan.md) | Nest + Prisma build |
 | [09-delivery-roadmap.md](09-delivery-roadmap.md) | Phased delivery |
-| [10-progress-tracker.md](10-progress-tracker.md) | Living checklist |
+| [10-progress-tracker.md](10-progress-tracker.md) | Living checklist (mirrors `project/PROGRESS.md`) |
+| [`project/PROGRESS.md`](../../project/PROGRESS.md) | Beginning→end progress plan with ticks |
 | [11-one-go-build-playbook.md](11-one-go-build-playbook.md) | One-pass task breakdown |
 | [12-platform-billing-and-tenancy.md](12-platform-billing-and-tenancy.md) | Plans, % fees, tenant isolation |
 
-## Status snapshot (2026-11-10)
+## Status snapshot (2026-11-12)
 
 | Area | Status |
 |---|---|
-| Frontend seminar marketplace (mock) | Demo UI — localStorage |
-| Backend Nest + Fastify | Scaffold + `/api/health` |
-| Multi-tenant orgs + individual lecturers | Designed in docs |
-| Student→seller money | Bank transfer/deposit + slip |
-| **Platform billing** (plans + ticket %) | Designed — Free / Premium / Platinum + configurable % |
-| PayHere card | Disabled until finance stage |
-| Institute tuition fees | Separate product feature (not platform fee) |
+| Bank-first Seminar Ops + institute + tuition | Shipped on `development` |
+| Phase 8 (admin CMS, LMS, seats, Expo) | Shipped on `development` |
+| Progress checklist | [`project/PROGRESS.md`](../../project/PROGRESS.md) |
+| PayHere card | Held — Phase F |
+| G6 production | Pending human approve |
 
 ## Locked defaults
 

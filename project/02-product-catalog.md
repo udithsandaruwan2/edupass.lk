@@ -31,16 +31,16 @@
 | FEAT-009 | CAP-004 | Batches, enrollments, sessions, AttendanceRecord | Must | shipped | `docs/product/05-api-surface.md` | v0.2 |
 | FEAT-010 | CAP-005 | TuitionFeePlan / Invoice / Payment | Must | shipped | `docs/product/03-domain-model.md` | v0.2 |
 | FEAT-011 | CAP-002 | Seminar refunds (offline settlement) | Should | shipped | `docs/product/06-user-flows.md` | v0.1 |
-| FEAT-012 | CAP-006 | CMS banners/FAQ/settings | Must | planned | ADR + T-020 | v0.3 |
+| FEAT-012 | CAP-006 | CMS banners/FAQ/settings | Must | shipped | ADR + T-020 | v0.3 |
 | FEAT-013 | CAP-002 | Camera QR + stream join | Could | shipped | polish | v0.2 |
 | FEAT-014 | CAP-003 | PayHere card checkout | Must later | deferred | Phase F | — |
-| FEAT-015 | CAP-001 | In-app change-password + profile APIs | Must | planned | T-012, T-015 | v0.3 |
-| FEAT-016 | CAP-001 | StaffRole ACL + lecturer/scanner FE | Must | planned | T-016…T-018 | v0.3 |
-| FEAT-017 | CAP-007 | Institute LMS modules/assignments/grades | Must | planned | ADR-0006 | v0.3 |
-| FEAT-018 | CAP-008 | Seminar seat maps + checkout holds | Must | planned | ADR-0007 | v0.3 |
-| FEAT-019 | CAP-009 | Expo native tickets + scanner | Must | planned | ADR-0008 | v0.3 |
-| FEAT-020 | CAP-002 | LecturerProfile CRUD + public pages | Must | planned | T-014 | v0.3 |
-| FEAT-021 | CAP-006 | Admin people/catalogue/sales list APIs | Must | planned | T-019…T-021 | v0.3 |
+| FEAT-015 | CAP-001 | In-app change-password + profile APIs | Must | shipped | T-012, T-015 | v0.3 |
+| FEAT-016 | CAP-001 | StaffRole ACL + lecturer/scanner FE | Must | shipped | T-016…T-018 | v0.3 |
+| FEAT-017 | CAP-007 | Institute LMS modules/assignments/grades | Must | shipped | ADR-0006 | v0.3 |
+| FEAT-018 | CAP-008 | Seminar seat maps + checkout holds | Must | shipped | ADR-0007 | v0.3 |
+| FEAT-019 | CAP-009 | Expo native tickets + scanner | Must | shipped | ADR-0008 | v0.3 |
+| FEAT-020 | CAP-002 | LecturerProfile CRUD + public pages | Must | shipped | T-014 | v0.3 |
+| FEAT-021 | CAP-006 | Admin people/catalogue/sales list APIs | Must | shipped | T-019…T-021 | v0.3 |
 
 ## Non-functional requirements
 
