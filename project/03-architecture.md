@@ -21,17 +21,19 @@ Monorepo SPA + Nest API for multi-tenant edupass.lk. Single Postgres with `organ
 ## System shape
 
 ```
-Browser SPA (frontend/) → Nest Fastify /api (backend/) → PostgreSQL
-                              ↘ object storage (slips/posters)
-                              ↘ email (notifications later)
+Browser SPA (frontend/) ─┐
+                         ├→ Nest Fastify /api (backend/) → PostgreSQL
+Expo Student (mobile/) ──┘         ↘ object storage (slips)
+                                   ↘ email (SMTP)
 ```
 
 | Component | Responsibility | Owns data? | Exit path |
 |---|---|---|---|
-| frontend | Public + student + 3 panels | no (tokens only) | Netlify redeploy |
-| backend | Auth, domain, billing, slips | yes via Prisma | API redeploy + migrate |
+| frontend | Public + student + 3 panels (web) | no (tokens only) | Netlify redeploy |
+| mobile | Student RN app (Phase 9); tickets/scanner origin Phase 8 | no (SecureStore tokens) | EAS / store |
+| backend | Auth, domain, billing, slips, LMS | yes via Prisma | API redeploy + migrate |
 | Postgres | Tenants, orders, tickets, plans | yes | backups / Neon branch |
-| Storage | Slip/poster blobs | files | bucket lifecycle |
+| Storage | Slip/poster/LMS blobs | files | bucket lifecycle |
 
 ## Options considered
 
@@ -41,6 +43,7 @@ Browser SPA (frontend/) → Nest Fastify /api (backend/) → PostgreSQL
 | Tenancy | DB-per-tenant | Shared DB + orgId | Shared + orgId | 0002 |
 | Git | Only `development` | Promotion tracks | Promotion in conf; keep `development` until tracks created | 0003 |
 | Payments | PayHere first | Bank slip first | Bank slip; PayHere stub | 0004 |
+| Native | Capacitor / Flutter | Expo RN student app | Expo; expand `mobile/` | 0008, 0009 |
 
 ## Boundaries
 
@@ -52,8 +55,9 @@ Browser SPA (frontend/) → Nest Fastify /api (backend/) → PostgreSQL
 | Institute / Tuition | Classes + tuition | `/api/institute/*` | backend |
 | Payments (slips) | Multipart + approve paths | `/api/payments/slips` | backend |
 | FE api client | Bearer + nav from `/auth/me` | `frontend/src/api/` | frontend |
+| Mobile api client | Same Nest contracts; SecureStore | `mobile/src/` | mobile |
 
-Dependency rule: UI → API client → Nest modules → Prisma. No FE direct DB.
+Dependency rule: UI (web|mobile) → API client → Nest modules → Prisma. No client direct DB.
 
 ## Data model
 

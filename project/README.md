@@ -6,6 +6,8 @@ The living truth of the project. Agents read this, not a parallel docs tree.
 |---|---|---|
 | `STATE.md` | Where are we? What is next? | all |
 | `PROGRESS.md` | Beginning→end checklist with ticks | all |
+| `09-mobile-student-*.md` | Phase 9 student RN discovery + PRD | G1–G2 |
+| `05-plan-phase9-mobile.md` | Phase 9 mobile task sequence | G4 |
 | `00-brief.md` | Why this project? | G0 |
 | `01-discovery.md` | Is the problem real? | G1 |
 | `02-prd.md` | What are we building? | G2 |
