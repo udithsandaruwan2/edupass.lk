@@ -5,6 +5,7 @@ import { CommissionService } from './commission.service';
 import { OrganiserPaymentsController } from './organiser-payments.controller';
 import { PaymentsController } from './payments.controller';
 import { RefundsService } from './refunds.service';
+import { SeatsService } from './seats.service';
 import { SlipsService } from './slips.service';
 
 @Module({
@@ -18,7 +19,14 @@ import { SlipsService } from './slips.service';
     CheckoutService,
     SlipsService,
     RefundsService,
+    SeatsService,
   ],
-  exports: [CommissionService, CheckoutService, SlipsService, RefundsService],
+  exports: [
+    CommissionService,
+    CheckoutService,
+    SlipsService,
+    RefundsService,
+    SeatsService,
+  ],
 })
 export class CommerceModule {}

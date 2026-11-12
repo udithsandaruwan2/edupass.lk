@@ -13,8 +13,10 @@ import {
   InstituteClassAttendancePage,
   InstituteClassesPage,
   InstituteRosterPage,
+  InstituteStaffPage,
 } from './InstitutePages';
 import { TuitionFeesPage } from './TuitionPages';
+import { OrganiserLmsPage } from './LmsPages';
 
 const OrganiserRoutes: React.FC = () => (
   <Routes>
@@ -36,8 +38,10 @@ const OrganiserRoutes: React.FC = () => (
       <Route path="classes" element={<InstituteClassesPage />} />
       <Route path="roster" element={<InstituteRosterPage />} />
       <Route path="class-attendance" element={<InstituteClassAttendancePage />} />
+      <Route path="staff" element={<InstituteStaffPage />} />
       <Route path="fees" element={<TuitionFeesPage />} />
       <Route path="plan" element={<InstituteBillingPage />} />
+      <Route path="lms" element={<OrganiserLmsPage />} />
       <Route path="notifications" element={<NotificationsPage role="organiser" />} />
       <Route path="profile" element={<OrganiserProfileSettingsPage />} />
       <Route path="settings" element={<OrganiserSettingsPage />} />

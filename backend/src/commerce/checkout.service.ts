@@ -15,6 +15,7 @@ import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CommissionService } from './commission.service';
 import { CheckoutDto } from './dto/commerce.dto';
+import { SeatsService } from './seats.service';
 
 function mapOrder(order: {
   id: string;
@@ -73,6 +74,7 @@ export class CheckoutService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly commission: CommissionService,
+    private readonly seats: SeatsService,
   ) {}
 
   async checkout(studentUserId: string, dto: CheckoutDto) {
@@ -180,6 +182,10 @@ export class CheckoutService {
         include: { lines: true },
       });
     });
+
+    if (dto.seatIds?.length) {
+      await this.seats.linkHoldsToOrder(studentUserId, order.id, dto.seatIds);
+    }
 
     return mapOrder(order);
   }

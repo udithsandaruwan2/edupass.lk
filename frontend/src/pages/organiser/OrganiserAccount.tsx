@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { ExternalLink, Pencil, Save, Star, Trash2, UserPlus } from 'lucide-react';
+import {
+  createOrganiserLecturer,
+  deleteOrganiserLecturer,
+  updateOrganiserLecturer,
+} from '../../api/lecturers';
 import { ApiError } from '../../api/client';
 import {
   getOrganisationBankAccount,
@@ -27,9 +32,11 @@ const EMPTY_LECTURER = { name: '', title: '', subjects: '', email: '', bio: '' }
 
 export const LecturerManagementPage: React.FC = () => {
   useDocumentTitle('Lecturers');
-  const { id, lecturers, seminars } = useOrganiser();
+  const { id, lecturers, seminars, usingApi, refreshOrganiserData } = useOrganiser();
+  const { user, usingMocks } = useAuth();
   const { upsert, remove } = useData();
   const toast = useToast();
+  const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState<Lecturer | 'new' | null>(null);
   const [v, setV] = useState(EMPTY_LECTURER);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -50,12 +57,48 @@ export const LecturerManagementPage: React.FC = () => {
     }
     setErrors(errs);
     if (Object.keys(errs).length || !editing) return;
-    const base: Lecturer = editing === 'new'
-      ? { id: makeId('lec').toLowerCase(), organiserId: id, rating: 0, studentsTaught: 0, yearsTeaching: 0, qualifications: [], status: 'invited', name: '', title: '', subjects: [], bio: '' }
-      : editing;
-    upsert('lecturers', { ...base, name: v.name.trim(), title: v.title.trim(), subjects: v.subjects.split(',').map((s) => s.trim()).filter(Boolean), bio: v.bio.trim() || base.bio });
-    toast(editing === 'new' ? 'Invitation sent (demo)' : 'Lecturer updated', { description: editing === 'new' ? `No email was sent to ${v.email}.` : undefined });
-    setEditing(null);
+    const subjects = v.subjects.split(',').map((s) => s.trim()).filter(Boolean);
+    void (async () => {
+      if (usingApi && user?.accessToken && user.organisationId) {
+        setSaving(true);
+        try {
+          if (editing === 'new') {
+            await createOrganiserLecturer(user.accessToken, {
+              organisationId: user.organisationId,
+              name: v.name.trim(),
+              title: v.title.trim() || undefined,
+              subjects,
+              bio: v.bio.trim() || undefined,
+              email: v.email.trim(),
+            });
+            toast('Invitation sent', { description: `Invite emailed to ${v.email}.` });
+          } else {
+            await updateOrganiserLecturer(user.accessToken, editing.id, user.organisationId, {
+              name: v.name.trim(),
+              title: v.title.trim() || undefined,
+              subjects,
+              bio: v.bio.trim() || undefined,
+            });
+            toast('Lecturer updated');
+          }
+          refreshOrganiserData();
+          setEditing(null);
+        } catch (err) {
+          toast(err instanceof ApiError ? err.message : 'Could not save lecturer', { tone: 'error' });
+        } finally {
+          setSaving(false);
+        }
+        return;
+      }
+      const base: Lecturer = editing === 'new'
+        ? { id: makeId('lec').toLowerCase(), organiserId: id, rating: 0, studentsTaught: 0, yearsTeaching: 0, qualifications: [], status: 'invited', name: '', title: '', subjects: [], bio: '' }
+        : editing;
+      upsert('lecturers', { ...base, name: v.name.trim(), title: v.title.trim(), subjects, bio: v.bio.trim() || base.bio });
+      toast(editing === 'new' ? 'Invitation sent (demo)' : 'Lecturer updated', {
+        description: editing === 'new' ? `No email was sent to ${v.email}.` : undefined,
+      });
+      setEditing(null);
+    })();
   };
 
   const columns: Column<Lecturer>[] = [
@@ -87,7 +130,7 @@ export const LecturerManagementPage: React.FC = () => {
         open={editing !== null}
         onClose={() => setEditing(null)}
         title={editing === 'new' ? 'Invite a lecturer' : 'Edit lecturer'}
-        footer={<><Button variant="secondary" onClick={() => setEditing(null)}>Cancel</Button><Button onClick={save}>{editing === 'new' ? 'Send invite (demo)' : 'Save'}</Button></>}
+        footer={<><Button variant="secondary" onClick={() => setEditing(null)}>Cancel</Button><Button onClick={save} disabled={saving}>{editing === 'new' ? (usingMocks ? 'Send invite (demo)' : 'Send invite') : 'Save'}</Button></>}
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <Input label="Full name" required value={v.name} onValueChange={(x) => setV({ ...v, name: x })} error={errors.name} />
@@ -103,7 +146,24 @@ export const LecturerManagementPage: React.FC = () => {
         description={`${removing?.name ?? ''} will no longer be available for your seminars.`}
         confirmLabel="Remove"
         onCancel={() => setRemoving(null)}
-        onConfirm={() => { if (removing) remove('lecturers', removing.id); setRemoving(null); toast('Lecturer removed', { tone: 'info' }); }}
+        onConfirm={() => {
+          void (async () => {
+            if (!removing) return;
+            if (usingApi && user?.accessToken && user.organisationId) {
+              try {
+                await deleteOrganiserLecturer(user.accessToken, removing.id, user.organisationId);
+                refreshOrganiserData();
+                toast('Lecturer removed', { tone: 'info' });
+              } catch (err) {
+                toast(err instanceof ApiError ? err.message : 'Could not remove lecturer', { tone: 'error' });
+              }
+            } else {
+              remove('lecturers', removing.id);
+              toast('Lecturer removed', { tone: 'info' });
+            }
+            setRemoving(null);
+          })();
+        }}
       />
     </>
   );

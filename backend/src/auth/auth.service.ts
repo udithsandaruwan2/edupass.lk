@@ -19,12 +19,15 @@ import {
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
+  ChangePasswordDto,
+  ContactDto,
   ForgotPasswordDto,
   LoginDto,
   RegisterInstitutionDto,
   RegisterLecturerDto,
   RegisterStudentDto,
   ResetPasswordDto,
+  UpdateProfileDto,
 } from './dto/auth.dto';
 
 type ResetEntry = { code: string; expiresAt: number };
@@ -204,6 +207,67 @@ export class AuthService {
       data: { passwordHash },
     });
     this.resetCodes.delete(email);
+    return { ok: true as const };
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+    });
+    const ok = await bcrypt.compare(dto.currentPassword, user.passwordHash);
+    if (!ok) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+    if (dto.currentPassword === dto.newPassword) {
+      throw new BadRequestException('New password must be different');
+    }
+    const passwordHash = await bcrypt.hash(dto.newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    });
+    return { ok: true as const };
+  }
+
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(dto.name ? { name: dto.name.trim() } : {}),
+        student: {
+          upsert: {
+            create: {
+              school: dto.school,
+              district: dto.district,
+              stream: dto.stream,
+              examYear: dto.examYear,
+            },
+            update: {
+              ...(dto.school !== undefined ? { school: dto.school } : {}),
+              ...(dto.district !== undefined ? { district: dto.district } : {}),
+              ...(dto.stream !== undefined ? { stream: dto.stream } : {}),
+              ...(dto.examYear !== undefined ? { examYear: dto.examYear } : {}),
+            },
+          },
+        },
+      },
+    });
+    return this.me(userId);
+  }
+
+  async contact(dto: ContactDto) {
+    const support =
+      process.env.SUPPORT_EMAIL ?? 'support@edupass.lk';
+    await this.mail.send({
+      to: support,
+      subject: `[EduPass contact · ${dto.topic}] from ${dto.name}`,
+      text: `From: ${dto.name} <${dto.email}>\nTopic: ${dto.topic}\n\n${dto.message}`,
+    });
+    await this.mail.send({
+      to: dto.email.toLowerCase(),
+      subject: 'We received your EduPass message',
+      text: `Hi ${dto.name},\n\nThanks for contacting EduPass about "${dto.topic}". Our team will reply within one working day.\n\n— EduPass`,
+    });
     return { ok: true as const };
   }
 

@@ -5,10 +5,11 @@ import {
   mapApiPaymentMethod,
   type ApiOrder,
 } from '../../api/commerce';
+import { listOrganiserLecturers } from '../../api/lecturers';
 import { listOrganiserSeminars } from '../../api/seminars';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCatalog } from '../../hooks/useCatalog';
-import type { Order, Seminar } from '../../types';
+import type { Lecturer, Order, Seminar } from '../../types';
 
 function mapOrder(o: ApiOrder): Order {
   return {
@@ -36,31 +37,36 @@ export function useOrganiser() {
   const catalog = useCatalog();
   const [apiSeminars, setApiSeminars] = useState<Seminar[] | null>(null);
   const [apiOrders, setApiOrders] = useState<Order[] | null>(null);
+  const [apiLecturers, setApiLecturers] = useState<Lecturer[] | null>(null);
+
+  const refreshOrganiserData = () => {
+    if (usingMocks || !user?.accessToken || !user.organisationId) return;
+    void Promise.all([
+      listOrganiserSeminars(user.organisationId, user.accessToken),
+      listOrganiserOrdersRequest(user.accessToken, user.organisationId),
+      listOrganiserLecturers(user.accessToken, user.organisationId),
+    ])
+      .then(([seminars, orders, lecturers]) => {
+        setApiSeminars(seminars);
+        setApiOrders(orders.map(mapOrder));
+        setApiLecturers(lecturers);
+      })
+      .catch(() => {
+        setApiSeminars([]);
+        setApiOrders([]);
+        setApiLecturers([]);
+      });
+  };
 
   useEffect(() => {
     if (usingMocks || !user?.accessToken || !user.organisationId) {
       setApiSeminars(null);
       setApiOrders(null);
+      setApiLecturers(null);
       return;
     }
-    let cancelled = false;
-    void Promise.all([
-      listOrganiserSeminars(user.organisationId, user.accessToken),
-      listOrganiserOrdersRequest(user.accessToken, user.organisationId),
-    ])
-      .then(([seminars, orders]) => {
-        if (cancelled) return;
-        setApiSeminars(seminars);
-        setApiOrders(orders.map(mapOrder));
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setApiSeminars([]);
-        setApiOrders([]);
-      });
-    return () => {
-      cancelled = true;
-    };
+    refreshOrganiserData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usingMocks, user?.accessToken, user?.organisationId]);
 
   return useMemo(() => {
@@ -92,9 +98,9 @@ export function useOrganiser() {
       ? catalog.orders.filter((o) => o.lines.some((l) => ids.has(l.seminarId)))
       : (apiOrders ?? []);
     const tickets = catalog.tickets.filter((t) => ids.has(t.seminarId));
-    const lecturers = catalog.lecturers.filter(
-      (l) => l.organiserId === mockOrgId || l.organiserId === id,
-    );
+    const lecturers = usingMocks
+      ? catalog.lecturers.filter((l) => l.organiserId === mockOrgId || l.organiserId === id)
+      : (apiLecturers ?? []);
     const refunds = catalog.refunds.filter((r) => orders.some((o) => o.id === r.orderId));
     return {
       id,
@@ -106,8 +112,9 @@ export function useOrganiser() {
       refunds,
       catalog,
       refreshSeminars: setApiSeminars,
+      refreshOrganiserData,
       usingApi: !usingMocks,
       seminarsLoading: !usingMocks && apiSeminars === null && Boolean(user?.accessToken),
     };
-  }, [user, catalog, apiSeminars, apiOrders, usingMocks]);
+  }, [user, catalog, apiSeminars, apiOrders, apiLecturers, usingMocks]);
 }

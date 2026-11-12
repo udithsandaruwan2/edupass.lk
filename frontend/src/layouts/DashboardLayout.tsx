@@ -40,6 +40,7 @@ export const NAV: Record<Role, { title: string; items: NavItem[] }[]> = {
       items: [
         { to: '/student/tickets', label: 'My tickets', icon: Ticket },
         { to: '/student/class-fees', label: 'My class fees', icon: Wallet },
+        { to: '/student/learning', label: 'Class learning', icon: FileText },
         { to: '/student/saved', label: 'Saved seminars', icon: Heart },
         { to: '/cart', label: 'Cart & checkout', icon: ShoppingCart },
       ],
@@ -97,8 +98,32 @@ export const NAV: Record<Role, { title: string; items: NavItem[] }[]> = {
         { to: '/organiser/roster', label: 'Roster', icon: UsersRound },
         { to: '/organiser/class-attendance', label: 'Class attendance', icon: ClipboardList },
         { to: '/organiser/fees', label: 'Class fees', icon: ReceiptText },
+        { to: '/organiser/lms', label: 'LMS', icon: FileText },
         { to: '/organiser/plan', label: 'Plan & usage', icon: BadgePercent },
+        { to: '/organiser/staff', label: 'Staff', icon: UserCog },
       ],
+    },
+  ],
+  lecturer: [
+    { title: '', items: [{ to: '/lecturer', label: 'Overview', icon: LayoutDashboard, end: true }] },
+    {
+      title: 'Institute',
+      items: [
+        { to: '/lecturer/classes', label: 'Classes', icon: BookOpenCheck },
+        { to: '/lecturer/lms', label: 'LMS modules', icon: FileText },
+      ],
+    },
+    {
+      title: 'Account',
+      items: [
+        { to: '/lecturer/settings', label: 'Settings', icon: Settings },
+      ],
+    },
+  ],
+  scanner: [
+    {
+      title: '',
+      items: [{ to: '/organiser/check-in', label: 'QR check-in', icon: ScanLine, end: true }],
     },
   ],
   admin: [
@@ -152,11 +177,19 @@ export const NAV: Record<Role, { title: string; items: NavItem[] }[]> = {
   ],
 };
 
-const ROLE_ICONS: Record<Role, LucideIcon> = { student: Ticket, organiser: BadgeDollarSign, admin: ReceiptText };
+const ROLE_ICONS: Record<Role, LucideIcon> = {
+  student: Ticket,
+  organiser: BadgeDollarSign,
+  admin: ReceiptText,
+  lecturer: Users,
+  scanner: ScanLine,
+};
 
 const INSTITUTE_NAV_TITLE = 'Institute';
 
 function navForRole(role: Role, showInstitute: boolean) {
+  if (role === 'scanner') return NAV.scanner;
+  if (role === 'lecturer') return NAV.lecturer;
   if (role !== 'organiser') return NAV[role];
   return NAV.organiser.filter((section) => section.title !== INSTITUTE_NAV_TITLE || showInstitute);
 }
@@ -289,9 +322,10 @@ export const RoleSwitcher: React.FC<{ compact?: boolean }> = ({ compact }) => {
   );
 };
 
-export const DashboardLayout: React.FC<{ role: Role }> = ({ role }) => {
+export const DashboardLayout: React.FC<{ role: Role }> = ({ role: layoutRole }) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { user } = useAuth();
+  const role = user?.role === 'scanner' ? 'scanner' : layoutRole;
   const { theme, toggle } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();

@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "EduPass",
+    "slug": "edupass",
+    "version": "0.3.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "lk.edupass.app"
+    },
+    "android": {
+      "package": "lk.edupass.app",
+      "permissions": ["CAMERA"]
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow EduPass to scan ticket QR codes."
+        }
+      ]
+    ]
+  }
+}

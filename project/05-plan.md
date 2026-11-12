@@ -1,88 +1,79 @@
 # Development plan
 
-> Phase 4 · Gate G4 · Draft · Sequence from `docs/product/09-delivery-roadmap.md` + playbook
+> Phase 8 · Gate G4 proposed · Continuous build on `development` (no G6 freeze)
 
 ## Summary
 
-- **Target:** Staging demo of bank seminar path + tenant isolation; institute Free plan usable
-- **Capacity:** TBD (agent-assisted; owner reviews)
-- **Critical path:** T-001 → T-002 → T-003 → T-004 → T-005 → T-008
+- **Target:** Real admin/CMS, staff roles, LMS, seat maps, Expo companion on `development`
+- **Capacity:** agent-assisted; owner reviews
+- **Critical path:** G2-delta → T-012…T-015 → T-016…T-018 → T-019…T-022 → T-023…T-026 → T-027…T-029 → T-030…T-032 → T-033
 
 ## Milestones
 
-### M1 — Foundation + tenancy (FEAT-001, FEAT-002, FEAT-007 seed)
+### M1 — Kill demo surfaces (FEAT-015, FEAT-020)
+- **Demo:** Change password; contact SMTP; lecturer profiles persist
+- **Tasks:** T-012…T-015
 
-- **Demo:** Login as institution A, B, and individual lecturer; nav differs by entitlements
-- **Exit:** JWT auth; dual-org seed; doctor/tests for guards green
-- **Tasks:** `T-001`, `T-002`
+### M2 — Staff roles (FEAT-016)
+- **Demo:** TEACHER `/lecturer`; SCANNER check-in only
+- **Tasks:** T-016…T-018
 
-### M2 — Seminar Ops + bank slips + attendance (FEAT-003…006, FEAT-011)
+### M3 — Admin CMS (FEAT-012, FEAT-021)
+- **Demo:** Admin lists/orders/CMS from Nest
+- **Tasks:** T-019…T-022
 
-- **Demo:** Lecturer publishes → student bank checkout → approve slip → QR → check-in once
-- **Exit:** PlatformFeeLine written; card disabled; no PayHere calls
-- **Tasks:** `T-003`, `T-004`, `T-005`
+### M4 — Institute LMS (FEAT-017)
+- **Demo:** Material → assignment → submit → grade
+- **Tasks:** T-023…T-026
 
-### M3 — Plans admin + institute ops + tuition (FEAT-007…010)
+### M5 — Seat maps (FEAT-018)
+- **Demo:** Seat pick at checkout; no oversell
+- **Tasks:** T-027…T-029
 
-- **Demo:** Admin edits %/plans; Free institute hits cap; upgrade path; class attendance + tuition slip
-- **Exit:** PlanLimitService enforced; individual 403 on institute
-- **Tasks:** `T-006`, `T-007`, `T-008`
+### M6 — Expo native (FEAT-019)
+- **Demo:** Mobile tickets + scanner
+- **Tasks:** T-030…T-032
 
-### M4 — Polish
-
-- **Demo:** Stream join CTA optional; camera QR optional; Playwright bank smoke
-- **Exit:** Mocks off on staging; PayHere still off
-- **Tasks:** `T-009`
+### M7 — Harden
+- **Tasks:** T-033, T-034
 
 ## Task table
 
-| ID | Task | Size | Depends | Parallel-safe | Status |
-|---|---|---|---|---|---|
-| T-001 | Prisma foundation + auth + register kinds + seed | L | — | no | done |
-| T-002 | FE API client + register/login + entitlement nav | M | T-001 | no | done |
-| T-003 | Seminar catalogue/CRUD + checkInMode + FE wire | L | T-001 | partial w/ T-002 | done |
-| T-004 | Bank checkout + slips + tickets + PlatformFeeLine | L | T-003 | no | done |
-| T-005 | Check-in API + attendees + FE scanner | M | T-004 | no | done |
-| T-006 | Admin plans/% + usage/upgrade + PlanLimitService | M | T-001 | after T-004 better | done |
-| T-007 | Institute batches/roster/class attendance + FE gated | L | T-006 | no | todo |
-| T-008 | Tuition fees cash/slip + FE | M | T-007 | no | todo |
-| T-009 | Polish: stream/camera/Playwright/mocks off | M | T-005,T-008 | yes | todo |
-
-## Risks
-
-| ID | Risk | Impact | Mitigation | Owner |
+| ID | Task | Size | Depends | Status |
 |---|---|---|---|---|
-| RISK-001 | Slip UX abandon | high | Clear statuses | human+agent |
-| RISK-002 | Isolation bug | fatal | Dual-org tests in T-001/T-005 | agent |
-| RISK-004 | Git confusion | med | ADR-0003; ask before new tracks | human |
+| T-012 | change-password API + FE | M | — | todo |
+| T-013 | Contact → MailModule; demo scrub | S | — | todo |
+| T-014 | LecturerProfile CRUD + public API/FE | L | — | todo |
+| T-015 | Student/organiser profile GET/PUT | M | — | todo |
+| T-016 | StaffRoleGuard + JWT role claims | M | T-012 | todo |
+| T-017 | FE `/lecturer` + scanner shell | L | T-016 | todo |
+| T-018 | Institute staff invite UI + email | M | T-016 | todo |
+| T-019 | Admin list APIs | L | — | todo |
+| T-020 | CMS Prisma + CRUD | L | — | todo |
+| T-021 | Rewire Admin* to API | L | T-019,T-020 | todo |
+| T-022 | Category admin CRUD FE | M | T-019 | todo |
+| T-023 | LMS schema | L | T-016 | todo |
+| T-024 | LMS APIs | L | T-023 | todo |
+| T-025 | LMS FE portals | L | T-024 | todo |
+| T-026 | File storage for LMS | M | T-023 | todo |
+| T-027 | Seat schema + holds | L | — | todo |
+| T-028 | Seat-map editor FE | L | T-027 | todo |
+| T-029 | Checkout seat picker + e2e | L | T-027 | todo |
+| T-030 | Expo workspace + auth | L | — | todo |
+| T-031 | Expo student tickets | M | T-030 | todo |
+| T-032 | Expo scanner | M | T-030 | todo |
+| T-033 | Smoke/Playwright expand | M | M1–M6 | todo |
+| T-034 | Docs/STATE Phase 8 RC | S | T-033 | todo |
 
-## Spikes
+## ADRs
 
-| ID | Question | Time-box | Decision unblocked | Result |
-|---|---|---|---|---|
-| S-001 | Slip storage (disk vs S3) for local | 0.5d | T-004 upload | pending |
-
-## Buffers
-
-- Known work: M1–M3 critical path
-- Integration/review: +25%
-- PayHere: **not started** (Phase F)
-
-## Review and release
-
-- **Reviewer:** human
-- **Required checks:** `npm test` workspaces; backend e2e inject; FE vitest; `./scripts/doctor.sh`
-- **Release window:** TBD after G4
-- **Rollback:** prior deploy + migrate down if needed
+- ADR-0006 LMS · ADR-0007 seats · ADR-0008 Expo
 
 ## Open questions
 
 | # | Question | Default |
 |---|---|---|
-| Q1 | Create promotion git tracks now? | No — wait for explicit ask (ADR-0003) |
+| Q1 | Blob store | Local `uploads/` + env path; Netlify Blobs when FE host needs it |
+| Q2 | G6 | Human when ready; does not block Phase 8 |
 
-**Approved by:** human on 2026-11-10
-
-## Task files
-
-See `project/05-plan/tasks/`.
+**G4 Phase-8 proposed:** 2026-11-12

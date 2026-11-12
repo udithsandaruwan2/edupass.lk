@@ -1,10 +1,14 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
+import { SeatsService } from '../commerce/seats.service';
 import { ListSeminarsQueryDto } from './dto/seminar.dto';
 import { SeminarsService } from './seminars.service';
 
 @Controller()
 export class CatalogueController {
-  constructor(private readonly seminars: SeminarsService) {}
+  constructor(
+    private readonly seminars: SeminarsService,
+    private readonly seatsService: SeatsService,
+  ) {}
 
   @Get('categories')
   listCategories() {
@@ -19,5 +23,10 @@ export class CatalogueController {
   @Get('seminars/:slug')
   getSeminar(@Param('slug') slug: string) {
     return this.seminars.getBySlug(slug);
+  }
+
+  @Get('seminars/:slug/seats')
+  listSeats(@Param('slug') slug: string) {
+    return this.seatsService.listAvailableBySlug(slug);
   }
 }

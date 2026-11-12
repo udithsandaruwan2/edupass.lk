@@ -124,3 +124,26 @@ export function markAttendance(
     body,
   });
 }
+
+export type ApiStaffMember = {
+  id: string;
+  userId: string;
+  email: string;
+  name: string;
+  role: string;
+  createdAt: string;
+};
+
+export function listStaff(token: string, organisationId: string) {
+  return apiRequest<ApiStaffMember[]>(
+    `/institute/staff?organisationId=${encodeURIComponent(organisationId)}`,
+    { method: 'GET', token },
+  );
+}
+
+export function inviteStaff(
+  token: string,
+  body: { organisationId: string; email: string; role?: string },
+) {
+  return apiRequest('/institute/staff', { method: 'POST', token, body });
+}

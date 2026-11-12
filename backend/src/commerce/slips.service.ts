@@ -14,6 +14,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CheckoutService } from './checkout.service';
 import { CommissionService } from './commission.service';
 import { ReviewSlipDto, SlipReviewAction, UploadSlipDto } from './dto/commerce.dto';
+import { SeatsService } from './seats.service';
 
 @Injectable()
 export class SlipsService {
@@ -22,6 +23,7 @@ export class SlipsService {
     private readonly checkout: CheckoutService,
     private readonly commission: CommissionService,
     private readonly mail: MailService,
+    private readonly seats: SeatsService,
   ) {}
 
   async upload(studentUserId: string, dto: UploadSlipDto) {
@@ -182,6 +184,8 @@ export class SlipsService {
 
       return { slip: s, feeAmount };
     });
+
+    await this.seats.convertHoldsForOrder(slip.orderId);
 
     void this.mail.slipApproved(
       slip.order.buyerEmail,

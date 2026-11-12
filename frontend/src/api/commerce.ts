@@ -65,6 +65,7 @@ export function checkoutRequest(
     lines: { ticketTypeId: string; quantity: number; attendeeNames?: string[] }[];
     buyer: { name: string; email: string; phone: string };
     paymentMethod?: 'BANK_TRANSFER' | 'CARD';
+    seatIds?: string[];
   },
 ) {
   return apiRequest<ApiOrder>('/checkout', {

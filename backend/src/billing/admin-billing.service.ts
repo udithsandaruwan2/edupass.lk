@@ -1,9 +1,22 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import {
+  CommerceOrderStatus,
+  FeeLineStatus,
+  Prisma,
+  RefundStatus,
+} from '@prisma/client';
+import { CheckoutService } from '../commerce/checkout.service';
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  UpsertAnnouncementDto,
+  UpsertBannerDto,
+  UpsertCategoryDto,
+  UpsertFaqDto,
+} from './dto/admin-cms.dto';
 import {
   AssignSubscriptionDto,
   PatchOrganisationDto,
@@ -58,7 +71,10 @@ function mapPlan(p: {
 
 @Injectable()
 export class AdminBillingService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly checkout: CheckoutService,
+  ) {}
 
   listPlans() {
     return this.prisma.subscriptionPlan
@@ -318,5 +334,337 @@ export class AdminBillingService {
       }
       return paid;
     });
+  }
+
+  listUsers() {
+    return this.prisma.user
+      .findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 500,
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          globalRole: true,
+          isPlatformAdmin: true,
+          createdAt: true,
+        },
+      })
+      .then((rows) =>
+        rows.map((u) => ({
+          ...u,
+          createdAt: u.createdAt.toISOString(),
+        })),
+      );
+  }
+
+  listOrganisations() {
+    return this.prisma.organisation
+      .findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 500,
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          type: true,
+          status: true,
+          createdAt: true,
+        },
+      })
+      .then((rows) =>
+        rows.map((o) => ({
+          ...o,
+          createdAt: o.createdAt.toISOString(),
+        })),
+      );
+  }
+
+  listSeminars() {
+    return this.prisma.seminar
+      .findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 500,
+        select: {
+          id: true,
+          organisationId: true,
+          slug: true,
+          title: true,
+          status: true,
+          startsAt: true,
+          createdAt: true,
+        },
+      })
+      .then((rows) =>
+        rows.map((s) => ({
+          ...s,
+          startsAt: s.startsAt.toISOString(),
+          createdAt: s.createdAt.toISOString(),
+        })),
+      );
+  }
+
+  listOrders() {
+    return this.prisma.order
+      .findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 500,
+        select: {
+          id: true,
+          studentUserId: true,
+          organisationId: true,
+          status: true,
+          totalLkr: true,
+          createdAt: true,
+        },
+      })
+      .then((rows) =>
+        rows.map((o) => ({
+          ...o,
+          createdAt: o.createdAt.toISOString(),
+        })),
+      );
+  }
+
+  listTickets() {
+    return this.prisma.ticket
+      .findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 500,
+        select: {
+          id: true,
+          code: true,
+          orderId: true,
+          seminarId: true,
+          status: true,
+          createdAt: true,
+        },
+      })
+      .then((rows) =>
+        rows.map((t) => ({
+          ...t,
+          createdAt: t.createdAt.toISOString(),
+        })),
+      );
+  }
+
+  listRefunds() {
+    return this.prisma.refundRequest
+      .findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 500,
+        select: {
+          id: true,
+          orderId: true,
+          studentUserId: true,
+          amountLkr: true,
+          status: true,
+          createdAt: true,
+        },
+      })
+      .then((rows) =>
+        rows.map((r) => ({
+          ...r,
+          createdAt: r.createdAt.toISOString(),
+        })),
+      );
+  }
+
+  async reviewRefund(id: string, action: 'approve' | 'reject') {
+    const refund = await this.prisma.refundRequest.findUnique({
+      where: { id },
+      include: { order: true },
+    });
+    if (!refund) throw new NotFoundException('Refund not found');
+    if (refund.status !== RefundStatus.OPEN) {
+      throw new BadRequestException('Refund already reviewed');
+    }
+
+    if (action === 'reject') {
+      const updated = await this.prisma.refundRequest.update({
+        where: { id },
+        data: { status: RefundStatus.REJECTED },
+      });
+      return {
+        id: updated.id,
+        status: updated.status,
+        createdAt: updated.createdAt.toISOString(),
+      };
+    }
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const r = await tx.refundRequest.update({
+        where: { id },
+        data: { status: RefundStatus.APPROVED },
+      });
+      await tx.order.update({
+        where: { id: refund.orderId },
+        data: { status: CommerceOrderStatus.REFUNDED },
+      });
+      await this.checkout.voidTicketsForOrder(tx, refund.orderId);
+      await tx.platformFeeLine.updateMany({
+        where: { orderId: refund.orderId, status: FeeLineStatus.ACTIVE },
+        data: { status: FeeLineStatus.VOID },
+      });
+      return r;
+    });
+    return {
+      id: updated.id,
+      status: updated.status,
+      createdAt: updated.createdAt.toISOString(),
+    };
+  }
+
+  // —— CMS ——
+
+  listBanners() {
+    return this.prisma.banner
+      .findMany({ orderBy: { sortOrder: 'asc' } })
+      .then((rows) =>
+        rows.map((b) => ({
+          id: b.id,
+          title: b.title,
+          active: b.active,
+          sortOrder: b.sortOrder,
+          createdAt: b.createdAt.toISOString(),
+        })),
+      );
+  }
+
+  async createBanner(dto: UpsertBannerDto) {
+    const b = await this.prisma.banner.create({ data: dto });
+    return {
+      id: b.id,
+      title: b.title,
+      createdAt: b.createdAt.toISOString(),
+    };
+  }
+
+  async updateBanner(id: string, dto: Partial<UpsertBannerDto>) {
+    const b = await this.prisma.banner.update({ where: { id }, data: dto });
+    return {
+      id: b.id,
+      title: b.title,
+      createdAt: b.createdAt.toISOString(),
+    };
+  }
+
+  async deleteBanner(id: string) {
+    await this.prisma.banner.delete({ where: { id } });
+    return { id, deleted: true };
+  }
+
+  listFaqs() {
+    return this.prisma.faq
+      .findMany({ orderBy: { sortOrder: 'asc' } })
+      .then((rows) =>
+        rows.map((f) => ({
+          id: f.id,
+          question: f.question,
+          active: f.active,
+          createdAt: f.createdAt.toISOString(),
+        })),
+      );
+  }
+
+  async createFaq(dto: UpsertFaqDto) {
+    const f = await this.prisma.faq.create({ data: dto });
+    return {
+      id: f.id,
+      question: f.question,
+      createdAt: f.createdAt.toISOString(),
+    };
+  }
+
+  async updateFaq(id: string, dto: Partial<UpsertFaqDto>) {
+    const f = await this.prisma.faq.update({ where: { id }, data: dto });
+    return {
+      id: f.id,
+      question: f.question,
+      createdAt: f.createdAt.toISOString(),
+    };
+  }
+
+  async deleteFaq(id: string) {
+    await this.prisma.faq.delete({ where: { id } });
+    return { id, deleted: true };
+  }
+
+  listAnnouncements() {
+    return this.prisma.announcement
+      .findMany({ orderBy: { createdAt: 'desc' } })
+      .then((rows) =>
+        rows.map((a) => ({
+          id: a.id,
+          title: a.title,
+          audience: a.audience,
+          active: a.active,
+          createdAt: a.createdAt.toISOString(),
+        })),
+      );
+  }
+
+  async createAnnouncement(dto: UpsertAnnouncementDto) {
+    const a = await this.prisma.announcement.create({ data: dto });
+    return {
+      id: a.id,
+      title: a.title,
+      createdAt: a.createdAt.toISOString(),
+    };
+  }
+
+  async updateAnnouncement(id: string, dto: Partial<UpsertAnnouncementDto>) {
+    const a = await this.prisma.announcement.update({
+      where: { id },
+      data: dto,
+    });
+    return {
+      id: a.id,
+      title: a.title,
+      createdAt: a.createdAt.toISOString(),
+    };
+  }
+
+  async deleteAnnouncement(id: string) {
+    await this.prisma.announcement.delete({ where: { id } });
+    return { id, deleted: true };
+  }
+
+  listCategories() {
+    return this.prisma.category
+      .findMany({ orderBy: { name: 'asc' } })
+      .then((rows) =>
+        rows.map((c) => ({
+          id: c.id,
+          slug: c.slug,
+          name: c.name,
+          createdAt: c.createdAt.toISOString(),
+        })),
+      );
+  }
+
+  async createCategory(dto: UpsertCategoryDto) {
+    const c = await this.prisma.category.create({ data: dto });
+    return {
+      id: c.id,
+      slug: c.slug,
+      name: c.name,
+      createdAt: c.createdAt.toISOString(),
+    };
+  }
+
+  async updateCategory(id: string, dto: Partial<UpsertCategoryDto>) {
+    const c = await this.prisma.category.update({ where: { id }, data: dto });
+    return {
+      id: c.id,
+      slug: c.slug,
+      name: c.name,
+      createdAt: c.createdAt.toISOString(),
+    };
+  }
+
+  async deleteCategory(id: string) {
+    await this.prisma.category.delete({ where: { id } });
+    return { id, deleted: true };
   }
 }

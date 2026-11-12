@@ -6,6 +6,7 @@ All notable changes to this project are documented here. Format follows [Keep a 
 
 ### Added
 
+- Phase 8: change-password, profile PUT, contact SMTP; LecturerProfile CRUD; StaffRoleGuard; admin list/CMS APIs; institute LMS; seminar seat maps; Expo companion (`mobile/`).
 - NestJS 11 + Fastify API (`/api`) with Prisma/Postgres tenancy (T-001).
 - JWT auth, register student / institution / lecturer, org-scope + entitlement guards (T-001).
 - React/Vite frontend API client, login/register, entitlement-gated nav (T-002).

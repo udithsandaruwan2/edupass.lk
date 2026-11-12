@@ -5,6 +5,7 @@ import { SeminarGrid } from '../../components/SeminarCard';
 import { Input } from '../../components/ui/Field';
 import { Avatar, Badge, Card, EmptyState, SectionHeader, container } from '../../components/ui/Primitives';
 import { useCatalog } from '../../hooks/useCatalog';
+import { usePublicLecturers } from './usePublicLecturers';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { formatDate } from '../../utils/date';
 import { formatCompact } from '../../utils/format';
@@ -12,14 +13,15 @@ import { NotFoundPage } from './InfoPages';
 
 export const LecturersPage: React.FC = () => {
   useDocumentTitle('Lecturers');
-  const { lecturers, listed, organiserById } = useCatalog();
+  const { lecturers, catalog, usingMocks } = usePublicLecturers();
+  const { listed, organiserById } = catalog;
   const [q, setQ] = useState('');
   const visible = lecturers
     .filter((l) => l.status === 'active')
     .filter((l) => `${l.name} ${l.subjects.join(' ')}`.toLowerCase().includes(q.toLowerCase()));
   return (
     <div className={`${container} py-10 sm:py-14`}>
-      <SectionHeader as="h1" eyebrow="Speakers" title="Lecturers" description="Meet the lecturers running seminars on EduPass. All profiles in this demo are fictional." actions={<Input label="Search lecturers" hideLabel type="search" placeholder="Name or subject" value={q} onValueChange={setQ} className="w-full sm:w-64" />} />
+      <SectionHeader as="h1" eyebrow="Speakers" title="Lecturers" description={usingMocks ? 'Meet the lecturers running seminars on EduPass. All profiles in this demo are fictional.' : 'Meet the lecturers running seminars on EduPass.'} actions={<Input label="Search lecturers" hideLabel type="search" placeholder="Name or subject" value={q} onValueChange={setQ} className="w-full sm:w-64" />} />
       {visible.length === 0 ? (
         <EmptyState icon={<Users className="size-5" aria-hidden="true" />} title="No lecturers found" description="Try another name or subject." />
       ) : (
@@ -51,7 +53,8 @@ export const LecturersPage: React.FC = () => {
 
 export const LecturerProfilePage: React.FC = () => {
   const { id } = useParams();
-  const { lecturerById, organiserById, listed } = useCatalog();
+  const { lecturerById, catalog } = usePublicLecturers();
+  const { organiserById, listed } = catalog;
   const l = id ? lecturerById.get(id) : undefined;
   useDocumentTitle(l?.name ?? 'Lecturer');
   if (!l) return <NotFoundPage />;

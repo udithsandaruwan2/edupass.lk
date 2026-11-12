@@ -89,3 +89,40 @@ export function resetPasswordRequest(body: {
     body,
   });
 }
+
+export function changePasswordRequest(
+  token: string,
+  body: { currentPassword: string; newPassword: string },
+) {
+  return apiRequest<{ ok: true }>('/auth/change-password', {
+    method: 'POST',
+    token,
+    body,
+  });
+}
+
+export function updateProfileRequest(
+  token: string,
+  body: {
+    name?: string;
+    school?: string;
+    district?: string;
+    stream?: string;
+    examYear?: number;
+  },
+) {
+  return apiRequest<ApiUser>('/auth/profile', {
+    method: 'PUT',
+    token,
+    body,
+  });
+}
+
+export function contactRequest(body: {
+  name: string;
+  email: string;
+  topic: string;
+  message: string;
+}) {
+  return apiRequest<{ ok: true }>('/auth/contact', { method: 'POST', body });
+}

@@ -14,16 +14,27 @@ import {
 } from '../common/decorators/current-user.decorator';
 import { CheckoutService } from './checkout.service';
 import { CheckoutDto } from './dto/commerce.dto';
+import { SeatHoldDto } from './dto/seats.dto';
+import { SeatsService } from './seats.service';
 
 @Controller()
 @UseGuards(JwtAuthGuard)
 export class CheckoutController {
-  constructor(private readonly checkout: CheckoutService) {}
+  constructor(
+    private readonly checkout: CheckoutService,
+    private readonly seats: SeatsService,
+  ) {}
 
   @Post('checkout')
   @HttpCode(201)
   create(@CurrentUser() user: AuthUser, @Body() dto: CheckoutDto) {
     return this.checkout.checkout(user.userId, dto);
+  }
+
+  @Post('checkout/seat-holds')
+  @HttpCode(201)
+  seatHolds(@CurrentUser() user: AuthUser, @Body() dto: SeatHoldDto) {
+    return this.seats.createHolds(user.userId, dto);
   }
 
   @Get('checkout/:orderId/bank-instructions')

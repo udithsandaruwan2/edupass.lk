@@ -48,7 +48,7 @@ export const LoginPage: React.FC = () => {
   const [params] = useSearchParams();
   const [role, setRole] = useState<Role>('student');
   const [values, setValues] = useState({
-    email: usingMocks ? DEMO_ACCOUNTS.student.email : '',
+    email: usingMocks ? (DEMO_ACCOUNTS.student?.email ?? '') : '',
     password: usingMocks ? 'demo1234' : '',
   });
   const [errors, setErrors] = useState<Partial<Record<'email' | 'password', string>>>({});
@@ -58,7 +58,7 @@ export const LoginPage: React.FC = () => {
   const pickRole = (r: Role) => {
     setRole(r);
     setValues({
-      email: usingMocks ? DEMO_ACCOUNTS[r].email : values.email,
+      email: usingMocks ? (DEMO_ACCOUNTS[r]?.email ?? values.email) : values.email,
       password: usingMocks ? 'demo1234' : values.password,
     });
     setErrors({});
@@ -86,7 +86,7 @@ export const LoginPage: React.FC = () => {
       return;
     }
 
-    let user: DemoUser = DEMO_ACCOUNTS[role];
+    let user: DemoUser = DEMO_ACCOUNTS[role] ?? { role, id: `${role}-custom`, name: 'Demo user', email: values.email };
     const emailLc = values.email.toLowerCase();
     if (role === 'student') {
       const s = data.students.find((x) => x.email.toLowerCase() === emailLc);
@@ -135,8 +135,12 @@ export const SelectAccountPage: React.FC = () => {
   const { login, user, usingMocks } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const icons = { student: GraduationCap, organiser: Building2, admin: ShieldCheck };
-  const blurbs = { student: 'Book seminars, manage tickets and favourites.', organiser: 'Lumina Academy — manage seminars, sales and check-in.', admin: 'Oversee users, seminars, payments and content.' };
+  const icons: Partial<Record<Role, typeof GraduationCap>> = { student: GraduationCap, organiser: Building2, admin: ShieldCheck };
+  const blurbs: Partial<Record<Role, string>> = {
+    student: 'Book seminars, manage tickets and favourites.',
+    organiser: 'Lumina Academy — manage seminars, sales and check-in.',
+    admin: 'Oversee users, seminars, payments and content.',
+  };
   if (!usingMocks) {
     return <Navigate to="/login" replace />;
   }
@@ -145,8 +149,9 @@ export const SelectAccountPage: React.FC = () => {
       <AuthHeader title="Choose a mock account" description="Offline demo accounts for local UI walkthroughs. Not used in production." />
       <ul className="space-y-3">
         {(Object.keys(DEMO_ACCOUNTS) as Role[]).map((r) => {
-          const Icon = icons[r];
           const acc = DEMO_ACCOUNTS[r];
+          if (!acc) return null;
+          const Icon = icons[r] ?? GraduationCap;
           return (
             <li key={r}>
               <button
@@ -160,7 +165,7 @@ export const SelectAccountPage: React.FC = () => {
                 <span className="flex size-11 shrink-0 items-center justify-center rounded-md bg-brand/10 text-brand"><Icon className="size-5" aria-hidden="true" /></span>
                 <span className="min-w-0 flex-1">
                   <span className="block font-semibold text-fg">{ROLE_LABEL[r]} · {acc.name}</span>
-                  <span className="block text-sm text-muted">{blurbs[r]}</span>
+                  <span className="block text-sm text-muted">{blurbs[r] ?? ''}</span>
                 </span>
                 {user?.role === r && <span className="text-xs font-semibold text-brand">Current</span>}
               </button>

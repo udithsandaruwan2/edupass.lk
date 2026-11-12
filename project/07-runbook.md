@@ -83,3 +83,5 @@ Manual: student bank checkout → organiser approve slip → ticket appears → 
 
 - Product / gate approvals: human (see `project/STATE.md`)
 - Phase F PayHere: blocked pending owner finance brief
+- Phase 8 continuous on `development` (LMS / seats / Expo / admin CMS); G6 does not freeze that work
+- Expo: `cd mobile && npm i && EXPO_PUBLIC_API_URL=http://<host>:3000/api npm start`

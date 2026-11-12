@@ -18,13 +18,67 @@ import type { Banner, FaqItem, Notification, PlatformSettings, Role } from '../.
 import { formatDateTime, relativeTime } from '../../utils/date';
 import { makeId } from '../../utils/random';
 import { email, required, runValidators } from '../../utils/validation';
+import { useAdminBanners, useAdminFaqs } from './useAdminApi';
+import {
+  createAdminBanner,
+  createAdminFaq,
+  deleteAdminBanner,
+  deleteAdminFaq,
+} from '../../api/admin';
 
 const FAQ_GROUPS: FaqItem['group'][] = ['Booking', 'Tickets', 'Payments', 'Organisers', 'Account'];
 
 export const ContentManagementPage: React.FC = () => {
   useDocumentTitle('Content management');
-  const { data, update, upsert, remove } = useData();
+  const apiFaqs = useAdminFaqs();
   const toast = useToast();
+  const [question, setQuestion] = useState('');
+  const [answer, setAnswer] = useState('');
+  if (!apiFaqs.usingMocks) {
+    const add = () => {
+      if (!apiFaqs.enabled || question.trim().length < 2 || answer.trim().length < 2) return;
+      void createAdminFaq(apiFaqs.token, { question: question.trim(), answer: answer.trim(), category: 'booking' })
+        .then(() => {
+          setQuestion('');
+          setAnswer('');
+          apiFaqs.reload();
+          toast('FAQ saved');
+        })
+        .catch((err) => toast(err instanceof ApiError ? err.message : 'Save failed', { tone: 'error' }));
+    };
+    return (
+      <>
+        <PageHeader title="Content management" description="FAQ entries served from the API." actions={<Button to="/faq" variant="secondary">View FAQ page</Button>} />
+        <Card className="mb-6 space-y-4 p-5">
+          <Input label="Question" value={question} onValueChange={setQuestion} />
+          <Textarea label="Answer" rows={4} value={answer} onValueChange={setAnswer} />
+          <Button onClick={add}>Add FAQ</Button>
+        </Card>
+        <Card>
+          <ul className="divide-y divide-line">
+            {apiFaqs.rows.map((f) => (
+              <li key={f.id} className="flex items-start justify-between gap-3 px-5 py-4">
+                <p className="font-semibold text-fg">{f.question}</p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    void deleteAdminFaq(apiFaqs.token, f.id).then(() => {
+                      apiFaqs.reload();
+                      toast('Deleted', { tone: 'info' });
+                    });
+                  }}
+                >
+                  Delete
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </>
+    );
+  }
+  const { data, update, upsert, remove } = useData();
   const [announcement, setAnnouncement] = useState(data.announcement);
   const [editing, setEditing] = useState<FaqItem | 'new' | null>(null);
   const [faq, setFaq] = useState({ group: 'Booking' as FaqItem['group'], question: '', answer: '' });
@@ -97,9 +151,53 @@ export const ContentManagementPage: React.FC = () => {
 
 export const BannerManagementPage: React.FC = () => {
   useDocumentTitle('Homepage banners');
+  const apiBanners = useAdminBanners();
+  const toast = useToast();
+  const [title, setTitle] = useState('');
+  if (!apiBanners.usingMocks) {
+    const add = () => {
+      if (!apiBanners.enabled || title.trim().length < 2) return;
+      void createAdminBanner(apiBanners.token, { title: title.trim(), active: true })
+        .then(() => {
+          setTitle('');
+          apiBanners.reload();
+          toast('Banner saved');
+        })
+        .catch((err) => toast(err instanceof ApiError ? err.message : 'Save failed', { tone: 'error' }));
+    };
+    return (
+      <>
+        <PageHeader title="Homepage banners" description="CMS banners from Nest admin API." />
+        <Card className="mb-4 flex gap-3 p-5">
+          <Input label="Banner title" value={title} onValueChange={setTitle} className="flex-1" />
+          <Button className="self-end" onClick={add}>Add banner</Button>
+        </Card>
+        <Card>
+          <ul className="divide-y divide-line">
+            {apiBanners.rows.map((b) => (
+              <li key={b.id} className="flex items-center justify-between px-5 py-3 text-sm">
+                <span className="font-semibold text-fg">{b.title}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    void deleteAdminBanner(apiBanners.token, b.id).then(() => {
+                      apiBanners.reload();
+                      toast('Removed', { tone: 'info' });
+                    });
+                  }}
+                >
+                  Delete
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </>
+    );
+  }
   const c = useCatalog();
   const { update } = useData();
-  const toast = useToast();
   const [editing, setEditing] = useState<Banner | 'new' | null>(null);
   const [v, setV] = useState({ seminarId: '', headline: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
