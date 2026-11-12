@@ -14,6 +14,7 @@ import { SeminarDetailsPage } from './pages/public/SeminarDetailsPage';
 const StudentRoutes = lazy(() => import('./pages/student/StudentRoutes'));
 const OrganiserRoutes = lazy(() => import('./pages/organiser/OrganiserRoutes'));
 const AdminRoutes = lazy(() => import('./pages/admin/AdminRoutes'));
+const LecturerRoutes = lazy(() => import('./pages/organiser/LecturerRoutes'));
 
 // Auth and checkout pages are loaded on demand (checkout pulls in the QR library)
 const auth = () => import('./pages/auth/AuthPages');
@@ -103,6 +104,7 @@ export function App() {
 
           <Route path="student/*" element={<RequireRole role="student"><StudentRoutes /></RequireRole>} />
           <Route path="organiser/*" element={<RequireRole role="organiser"><OrganiserRoutes /></RequireRole>} />
+          <Route path="lecturer/*" element={<RequireRole role="lecturer"><LecturerRoutes /></RequireRole>} />
           <Route path="admin/*" element={<RequireRole role="admin"><AdminRoutes /></RequireRole>} />
         </Routes>
       </Suspense>

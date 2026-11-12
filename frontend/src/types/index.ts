@@ -1,4 +1,6 @@
-export type Role = 'student' | 'organiser' | 'admin';
+export type Role = 'student' | 'organiser' | 'admin' | 'lecturer' | 'scanner';
+
+export type StaffRole = 'OWNER' | 'ADMIN' | 'TEACHER' | 'SCANNER' | string;
 
 export type SeminarMode = 'physical' | 'online' | 'hybrid';
 export type SeminarStatus = 'draft' | 'published' | 'cancelled';

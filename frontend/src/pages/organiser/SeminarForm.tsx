@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { Eye, Plus, Save, Send, Trash2 } from 'lucide-react';
 import { ApiError } from '../../api/client';
+import { upsertVenueLayout } from '../../api/seats';
 import { createSeminarApi, publishSeminarApi, updateSeminarApi } from '../../api/seminars';
 import { Button, IconButton } from '../../components/ui/Button';
 import { Checkbox, Input, Select, Textarea } from '../../components/ui/Field';
@@ -88,6 +89,10 @@ export const SeminarFormPage: React.FC = () => {
         },
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [layoutName, setLayoutName] = useState('Main hall');
+  const [layoutRows, setLayoutRows] = useState('8');
+  const [layoutCols, setLayoutCols] = useState('10');
+  const [layoutSaving, setLayoutSaving] = useState(false);
 
   if (seminarId && !existing) {
     if (usingApi && seminarsLoading) return <Notice tone="warning">Loading seminar…</Notice>;
@@ -321,6 +326,41 @@ export const SeminarFormPage: React.FC = () => {
         </div>
 
         <div className="space-y-4 xl:sticky xl:top-24 xl:self-start">
+          {usingApi && existing && user?.accessToken && user.organisationId && f.mode !== 'online' && (
+            <Card className="space-y-3 p-5">
+              <h2 className="text-base font-semibold text-fg">Seat map</h2>
+              <p className="text-sm text-muted">Generate a simple rows × columns layout for reserved seating at checkout.</p>
+              <Input label="Layout name" value={layoutName} onValueChange={setLayoutName} />
+              <div className="grid grid-cols-2 gap-3">
+                <Input label="Rows" type="number" min={1} value={layoutRows} onValueChange={setLayoutRows} />
+                <Input label="Columns" type="number" min={1} value={layoutCols} onValueChange={setLayoutCols} />
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={layoutSaving}
+                onClick={() => {
+                  void (async () => {
+                    setLayoutSaving(true);
+                    try {
+                      await upsertVenueLayout(user.accessToken!, existing.id, user.organisationId!, {
+                        name: layoutName.trim() || 'Hall',
+                        rows: Number(layoutRows),
+                        cols: Number(layoutCols),
+                      });
+                      toast('Seat layout saved');
+                    } catch (err) {
+                      toast(err instanceof ApiError ? err.message : 'Could not save layout', { tone: 'error' });
+                    } finally {
+                      setLayoutSaving(false);
+                    }
+                  })();
+                }}
+              >
+                {layoutSaving ? 'Saving…' : 'Save seat layout'}
+              </Button>
+            </Card>
+          )}
           <Card className="p-5">
             <h2 className="text-base font-semibold text-fg">Publishing</h2>
             <p className="mt-1 text-sm text-muted">

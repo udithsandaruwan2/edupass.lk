@@ -12,6 +12,9 @@ import { BillingModule } from './billing/billing.module';
 import { InstituteModule } from './institute/institute.module';
 import { TuitionModule } from './tuition/tuition.module';
 import { MailModule } from './mail/mail.module';
+import { LecturersModule } from './lecturers/lecturers.module';
+import { CmsModule } from './cms/cms.module';
+import { LmsModule } from './lms/lms.module';
 
 @Module({
   imports: [
@@ -26,6 +29,9 @@ import { MailModule } from './mail/mail.module';
     BillingModule,
     InstituteModule,
     TuitionModule,
+    LecturersModule,
+    CmsModule,
+    LmsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

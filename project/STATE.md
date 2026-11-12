@@ -1,67 +1,33 @@
 ---
 project: "edupass.lk"
-phase: 6-release
-phase_name: "Release"
-status: ready_for_g6
+phase: 5-build
+phase_name: "Build"
+status: phase8_candidate
 updated: "2026-11-12"
 owner: "human"
 gates:
   G0: approved 2026-11-10 by human
   G1: approved 2026-11-10 by human
-  G2: approved 2026-11-10 by human
-  G3: approved 2026-11-10 by human
-  G4: approved 2026-11-10 by human
-  G5: approved 2026-11-10 by human
-  G6: pending
-next_action: "Human smoke QA on development (bank payout → checkout → slip → tickets → check-in), then approve G6. PayHere held."
+  G2: approved 2026-11-10 by human; Phase-8 delta proposed 2026-11-12 (scope C)
+  G3: approved 2026-11-10 by human; ADR-0006…0008 Phase 8
+  G4: approved 2026-11-10 by human; Phase-8 plan proposed 2026-11-12
+  G5: approved 2026-11-10 by human (v0.1)
+  G6: pending (does not freeze Phase 8)
+next_action: "Human QA Phase 8 on development (LMS, seats, admin CMS, Expo). Approve G2/G4 deltas and G6 when ready. PayHere held."
 ---
 
 # Project state
 
-> Product: **edupass.lk**. Scope: `docs/product/`. Gates G0–G5 approved. Framework: **DevOpt 1.4.1**. Pre-PayHere build complete; awaiting **G6**.
+> Phase 8 implementation candidate on `feat/phase8-complete-real-product` → merge to `development`. No G6 freeze.
 
 ## Current focus
 
-**Release-ready candidate.** T-001…T-010 done; admin fee revenue + organiser earnings polish done. Human **G6** required before production. Phase F (PayHere) held.
-
-## Gate log
-
-| Gate | Status | Date | Approved by | Notes |
-|---|---|---|---|---|
-| G0 Brief | approved | 2026-11-10 | human | `00-brief.md` |
-| G1 Discovery | approved | 2026-11-10 | human | `01-discovery.md` |
-| G2 Product | approved | 2026-11-10 | human | `02-prd.md`, `02-product-catalog.md` |
-| G3 Architecture | approved | 2026-11-10 | human | `03-architecture.md`, ADR 0001–0004 |
-| G4 Plan / build | approved | 2026-11-10 | human | `05-plan.md`, T-001…T-010 |
-| G5 Merge | approved | 2026-11-10 | human | Finalize → development + local QA |
-| G6 Release | pending | | | Changelog + rollback drafted; needs human approve |
+Phase 8 M1–M7 implemented: real auth/CMS/admin, staff roles, LMS, seat maps, Expo companion. Smoke extended and green.
 
 ## Blockers
 
-- none (PayHere intentionally held)
-
-## Recent decisions
-
-| Date | Decision | ADR |
-|---|---|---|
-| 2026-11-10 | Nest+Fastify not Django | `04-adr/0001-nestjs-fastify-stack.md` |
-| 2026-11-10 | Shared DB + organisationId | `04-adr/0002-shared-db-tenancy.md` |
-| 2026-11-10 | Promotion conf; keep existing branches until asked | `04-adr/0003-git-tracks.md` |
-| 2026-11-10 | Bank slip first; PayHere hold | `04-adr/0004-bank-slip-first.md` |
+- none (PayHere held)
 
 ## Next action
 
 See frontmatter.
-
-## Links
-
-- PRD / Catalog: `02-prd.md`, `02-product-catalog.md`
-- Architecture: `03-architecture.md`, `04-adr/`
-- Plan: `05-plan.md`, `05-plan/tasks/`
-- Product docs: `../docs/product/README.md`
-- Rollback: `07-runbook.md` (G6 section)
-
-## Rules for updating this file
-
-- Never mark a gate `approved` without human approval.
-- Update on every phase/gate/blocker/handoff.

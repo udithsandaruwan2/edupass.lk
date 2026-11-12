@@ -5,14 +5,17 @@ import {
   createEnrollment,
   createSession,
   getSessionAttendance,
+  inviteStaff,
   listBatches,
   listEnrollments,
   listSessions,
+  listStaff,
   markAttendance,
   type ApiBatch,
   type ApiEnrollment,
   type ApiRollRow,
   type ApiSession,
+  type ApiStaffMember,
 } from '../../api/institute';
 import { ApiError } from '../../api/client';
 import { Button } from '../../components/ui/Button';
@@ -196,6 +199,93 @@ export const InstituteRosterPage: React.FC = () => {
         ))}
         {rows.length === 0 && <li className="px-5 py-8 text-center text-sm text-muted">No students in this batch.</li>}
       </ul>
+    </>
+  );
+};
+
+export const InstituteStaffPage: React.FC = () => {
+  useDocumentTitle('Staff');
+  const { apiReady, orgId, token, usingMocks, entitled } = useInstituteOrg();
+  const toast = useToast();
+  const [staff, setStaff] = useState<ApiStaffMember[]>([]);
+  const [email, setEmail] = useState('');
+  const [role, setRole] = useState('TEACHER');
+
+  const refresh = () => {
+    if (!apiReady || !token || !orgId) return;
+    void listStaff(token, orgId).then(setStaff).catch(() => setStaff([]));
+  };
+
+  useEffect(() => {
+    refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiReady, token, orgId]);
+
+  if (usingMocks) {
+    return (
+      <>
+        <PageHeader title="Staff" />
+        <Notice>API mode required to invite institute staff.</Notice>
+      </>
+    );
+  }
+  if (!entitled) {
+    return (
+      <>
+        <PageHeader title="Staff" />
+        <Notice tone="warning">Institute entitlement required.</Notice>
+      </>
+    );
+  }
+
+  const sendInvite = async () => {
+    if (!token || !orgId || email.trim().length < 3) return;
+    try {
+      await inviteStaff(token, { organisationId: orgId, email: email.trim(), role });
+      setEmail('');
+      toast('Staff invite sent', { tone: 'success' });
+      refresh();
+    } catch (err) {
+      toast(err instanceof ApiError ? err.message : 'Invite failed', { tone: 'error' });
+    }
+  };
+
+  return (
+    <>
+      <PageHeader title="Staff" description="Invite teachers, scanners and admins to your institute." />
+      <Card className="mb-6 space-y-4 p-5">
+        <Input label="Email" type="email" value={email} onValueChange={setEmail} />
+        <Select
+          label="Role"
+          value={role}
+          onValueChange={setRole}
+          options={[
+            { value: 'TEACHER', label: 'Teacher' },
+            { value: 'SCANNER', label: 'Scanner' },
+            { value: 'ADMIN', label: 'Admin' },
+          ]}
+        />
+        <Button onClick={() => void sendInvite()} disabled={email.trim().length < 3}>
+          Send invite
+        </Button>
+      </Card>
+      <Card>
+        <CardHeader title="Team members" />
+        <ul className="divide-y divide-line">
+          {staff.map((s) => (
+            <li key={s.id} className="flex items-center justify-between px-5 py-3 text-sm">
+              <div>
+                <p className="font-semibold text-fg">{s.name}</p>
+                <p className="text-muted">{s.email}</p>
+              </div>
+              <span className="font-mono text-xs text-muted">{s.role}</span>
+            </li>
+          ))}
+          {staff.length === 0 && (
+            <li className="px-5 py-8 text-center text-sm text-muted">No staff listed yet.</li>
+          )}
+        </ul>
+      </Card>
     </>
   );
 };

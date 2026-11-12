@@ -7,7 +7,7 @@ import { Button } from '../../components/ui/Button';
 import { DataTable, type Column } from '../../components/ui/DataTable';
 import { ConfirmDialog, Modal } from '../../components/ui/Dialog';
 import { Input, Select, Textarea } from '../../components/ui/Field';
-import { Avatar, Card, Notice, ProgressBar } from '../../components/ui/Primitives';
+import { Avatar, Card, EmptyState, Notice, ProgressBar } from '../../components/ui/Primitives';
 import { Tabs } from '../../components/ui/Tabs';
 import { useData } from '../../contexts/DataContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -20,9 +20,38 @@ import { formatDate, formatShortDate } from '../../utils/date';
 import { formatLKR, formatNumber, slugify } from '../../utils/format';
 import { makeId } from '../../utils/random';
 import { required, runValidators } from '../../utils/validation';
-
+import { useAdminCategories, useAdminOrganisations, useAdminSeminars, useAdminUsers } from './useAdminApi';
+import { createAdminCategory, deleteAdminCategory } from '../../api/admin';
+import { ApiError } from '../../api/client';
 export const UserManagementPage: React.FC = () => {
   useDocumentTitle('User management');
+  const apiUsers = useAdminUsers();
+  if (!apiUsers.usingMocks) {
+    return (
+      <>
+        <PageHeader title="User management" description={`${apiUsers.rows.length} accounts`} />
+        <Card>
+          {apiUsers.loading ? (
+            <p className="p-5 text-sm text-muted">Loading…</p>
+          ) : apiUsers.rows.length === 0 ? (
+            <EmptyState icon={<UserCheck className="size-5" aria-hidden="true" />} title="No users" description="No accounts in the database yet." />
+          ) : (
+            <ul className="divide-y divide-line">
+              {apiUsers.rows.map((u) => (
+                <li key={u.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm">
+                  <div>
+                    <p className="font-semibold text-fg">{u.name}</p>
+                    <p className="text-muted">{u.email}</p>
+                  </div>
+                  <span className="text-xs text-muted">{u.globalRole} · {formatDate(u.createdAt)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </>
+    );
+  }
   const c = useCatalog();
   const { patch } = useData();
   const toast = useToast();
@@ -116,6 +145,31 @@ export const UserManagementPage: React.FC = () => {
 
 export const OrganiserManagementPage: React.FC = () => {
   useDocumentTitle('Organiser management');
+  const apiOrgs = useAdminOrganisations();
+  if (!apiOrgs.usingMocks) {
+    return (
+      <>
+        <PageHeader title="Organiser management" description={`${apiOrgs.rows.length} organisations`} />
+        <Card>
+          {apiOrgs.loading ? (
+            <p className="p-5 text-sm text-muted">Loading…</p>
+          ) : (
+            <ul className="divide-y divide-line">
+              {apiOrgs.rows.map((o) => (
+                <li key={o.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm">
+                  <div>
+                    <p className="font-semibold text-fg">{o.name}</p>
+                    <p className="text-muted">{o.slug}</p>
+                  </div>
+                  <StatusBadge status={o.status === 'ACTIVE' ? 'active' : 'pending'} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </>
+    );
+  }
   const c = useCatalog();
   const { patch, notify } = useData();
   const toast = useToast();
@@ -192,6 +246,31 @@ export const OrganiserManagementPage: React.FC = () => {
 
 export const AdminSeminarsPage: React.FC = () => {
   useDocumentTitle('Seminar management');
+  const apiSeminars = useAdminSeminars();
+  if (!apiSeminars.usingMocks) {
+    return (
+      <>
+        <PageHeader title="Seminar management" description={`${apiSeminars.rows.length} seminars`} />
+        <Card>
+          {apiSeminars.loading ? (
+            <p className="p-5 text-sm text-muted">Loading…</p>
+          ) : (
+            <ul className="divide-y divide-line">
+              {apiSeminars.rows.map((s) => (
+                <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm">
+                  <div>
+                    <p className="font-semibold text-fg">{s.title}</p>
+                    <p className="text-muted">{s.slug}</p>
+                  </div>
+                  <StatusBadge status={s.status === 'PUBLISHED' ? 'published' : s.status === 'DRAFT' ? 'draft' : 'cancelled'} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </>
+    );
+  }
   const c = useCatalog();
   const { patch } = useData();
   const toast = useToast();
@@ -270,9 +349,56 @@ export const AdminSeminarsPage: React.FC = () => {
 
 export const CategoryManagementPage: React.FC = () => {
   useDocumentTitle('Category management');
+  const apiCats = useAdminCategories();
+  const toast = useToast();
+  const [name, setName] = useState('');
+  if (!apiCats.usingMocks) {
+    const add = () => {
+      if (!apiCats.enabled || name.trim().length < 2) return;
+      void createAdminCategory(apiCats.token, { slug: slugify(name), name: name.trim() })
+        .then(() => {
+          setName('');
+          apiCats.reload();
+          toast('Category created');
+        })
+        .catch((err) => toast(err instanceof ApiError ? err.message : 'Create failed', { tone: 'error' }));
+    };
+    return (
+      <>
+        <PageHeader title="Category management" />
+        <Card className="mb-4 flex gap-3 p-5">
+          <Input label="New category" value={name} onValueChange={setName} className="flex-1" />
+          <Button className="self-end" onClick={add}>Add</Button>
+        </Card>
+        <Card>
+          <ul className="divide-y divide-line">
+            {apiCats.rows.map((c) => (
+              <li key={c.id} className="flex items-center justify-between px-5 py-3 text-sm">
+                <span className="font-semibold text-fg">{c.name}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    void deleteAdminCategory(apiCats.token, c.id).then(() => {
+                      apiCats.reload();
+                      toast('Category deleted', { tone: 'info' });
+                    });
+                  }}
+                >
+                  Delete
+                </Button>
+              </li>
+            ))}
+            {apiCats.rows.length === 0 && !apiCats.loading && (
+              <li className="px-5 py-8 text-center text-muted">No categories yet.</li>
+            )}
+          </ul>
+        </Card>
+      </>
+    );
+  }
   const c = useCatalog();
   const { upsert, remove } = useData();
-  const toast = useToast();
   const [editing, setEditing] = useState<Category | 'new' | null>(null);
   const [v, setV] = useState({ name: '', description: '', icon: 'BookOpen' });
   const [errors, setErrors] = useState<Record<string, string>>({});

@@ -7,6 +7,7 @@ import { AccountSettingsPage, StudentProfilePage, SupportPage } from './StudentA
 import { BookingHistoryPage, MyBookingsPage, PastSeminarsPage, StudentOverview, UpcomingSeminarsPage } from './StudentPages';
 import { StudentTuitionPage } from './StudentTuitionPage';
 import { MyTicketsPage, SavedSeminarsPage, TicketDetailPage } from './StudentTickets';
+import { StudentLmsPage } from './StudentLmsPage';
 
 const StudentRoutes: React.FC = () => (
   <Routes>
@@ -19,6 +20,7 @@ const StudentRoutes: React.FC = () => (
       <Route path="tickets" element={<MyTicketsPage />} />
       <Route path="tickets/:ticketId" element={<TicketDetailPage />} />
       <Route path="class-fees" element={<StudentTuitionPage />} />
+      <Route path="learning" element={<StudentLmsPage />} />
       <Route path="saved" element={<SavedSeminarsPage />} />
       <Route path="notifications" element={<NotificationsPage role="student" />} />
       <Route path="profile" element={<StudentProfilePage />} />

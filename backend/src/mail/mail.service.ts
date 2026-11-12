@@ -108,4 +108,20 @@ export class MailService {
       text: `Hi ${name},\n\nYour password reset code is: ${code}\n\nIf you did not request this, ignore this email.\n\n— EduPass`,
     });
   }
+
+  staffInvite(to: string, name: string, orgName: string, role: string) {
+    return this.send({
+      to,
+      subject: `You were invited to ${orgName} on EduPass`,
+      text: `Hi ${name},\n\nYou have been added as ${role} at ${orgName} on EduPass. Sign in to access your panel.\n\n— EduPass`,
+    });
+  }
+
+  lecturerInvite(to: string, name: string, orgName: string) {
+    return this.send({
+      to,
+      subject: `Lecturer profile created at ${orgName}`,
+      text: `Hi ${name},\n\nA lecturer profile was created for you under ${orgName} on EduPass.\n\n— EduPass`,
+    });
+  }
 }

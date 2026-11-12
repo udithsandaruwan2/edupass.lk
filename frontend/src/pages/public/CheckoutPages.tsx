@@ -16,6 +16,7 @@ import {
   uploadSlipRequest,
   type BankInstructions,
 } from '../../api/commerce';
+import { createSeatHolds, getSeminarSeatsBySlug, type ApiSeat } from '../../api/seats';
 import { DEMO_ACCOUNTS, useAuth } from '../../contexts/AuthContext';
 import { useCart, type CartLine } from '../../contexts/CartContext';
 import { useData } from '../../contexts/DataContext';
@@ -155,6 +156,8 @@ export const CheckoutPage: React.FC = () => {
   const [outcome, setOutcome] = useState<'success' | 'failure'>('success');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [processing, setProcessing] = useState(false);
+  const [seatOptions, setSeatOptions] = useState<ApiSeat[] | null>(null);
+  const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>([]);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => headingRef.current?.focus(), [step]);
@@ -173,8 +176,8 @@ export const CheckoutPage: React.FC = () => {
           <h1 className="mt-4 text-xl font-bold text-fg">Sign in to check out</h1>
           <p className="mt-2 text-sm text-muted">Tickets are saved to a student account so you can show the QR code at the door.</p>
           <div className="mt-6 flex flex-col gap-2">
-            {usingMocks && (
-              <Button onClick={() => login(DEMO_ACCOUNTS.student)}>Continue as mock student</Button>
+            {usingMocks && DEMO_ACCOUNTS.student && (
+              <Button onClick={() => login(DEMO_ACCOUNTS.student!)}>Continue as mock student</Button>
             )}
             <Button to="/login?next=/checkout" variant={usingMocks ? 'secondary' : undefined}>Log in</Button>
             <Button to="/register?next=/checkout" variant="ghost">Create a student account</Button>
@@ -192,7 +195,20 @@ export const CheckoutPage: React.FC = () => {
     const errs: Record<string, string> = runValidators(buyer, { name: [required('Full name')], email: [required('Email'), email], phone: [required('Mobile number'), phone] });
     if (!agree) errs.agree = 'Please accept the terms to continue';
     setErrors(errs);
-    if (Object.keys(errs).length === 0) setStep(1);
+    if (Object.keys(errs).length === 0) {
+      setStep(1);
+      if (apiMode && cart.lines.length === 1) {
+        void getSeminarSeatsBySlug(cart.lines[0]!.seminar.slug)
+          .then((map) => {
+            setSeatOptions(map.seats);
+            setSelectedSeatIds([]);
+          })
+          .catch(() => {
+            setSeatOptions(null);
+            setSelectedSeatIds([]);
+          });
+      }
+    }
   };
 
   const pay = (e: React.FormEvent) => {
@@ -214,6 +230,19 @@ export const CheckoutPage: React.FC = () => {
       }
       void (async () => {
         try {
+          const needSeats = seatOptions && seatOptions.length > 0;
+          if (needSeats && selectedSeatIds.length !== ticketCount) {
+            toast(`Select ${ticketCount} seat${ticketCount === 1 ? '' : 's'} to continue`, { tone: 'error' });
+            setProcessing(false);
+            setStep(1);
+            return;
+          }
+          if (needSeats && cart.lines[0]) {
+            await createSeatHolds(user.accessToken!, {
+              seminarId: cart.lines[0].seminarId,
+              seatIds: selectedSeatIds,
+            });
+          }
           let attendeeOffset = 0;
           const order = await checkoutRequest(user.accessToken!, {
             buyer,
@@ -227,6 +256,7 @@ export const CheckoutPage: React.FC = () => {
               };
             }),
             paymentMethod: 'BANK_TRANSFER',
+            seatIds: needSeats ? selectedSeatIds : undefined,
           });
           cart.clear();
           navigate(`/checkout/bank/${order.id}`, { replace: true });
@@ -300,6 +330,33 @@ export const CheckoutPage: React.FC = () => {
             {step === 1 && (
               <form onSubmit={pay} noValidate className="space-y-6">
                 <h1 ref={headingRef} tabIndex={-1} className="text-2xl font-bold text-fg focus:outline-none">Payment method</h1>
+                {seatOptions && seatOptions.length > 0 && (
+                  <Card className="p-5">
+                    <h2 className="text-base font-semibold text-fg">Choose seats</h2>
+                    <p className="mb-3 text-sm text-muted">Select {ticketCount} seat{ticketCount === 1 ? '' : 's'} for this seminar.</p>
+                    <div className="flex flex-wrap gap-2">
+                      {seatOptions.map((seat) => {
+                        const picked = selectedSeatIds.includes(seat.id);
+                        return (
+                          <button
+                            key={seat.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedSeatIds((ids) => {
+                                if (picked) return ids.filter((id) => id !== seat.id);
+                                if (ids.length >= ticketCount) return ids;
+                                return [...ids, seat.id];
+                              });
+                            }}
+                            className={`rounded-md border px-3 py-2 text-sm font-semibold ${picked ? 'border-brand bg-brand/10 text-brand-strong' : 'border-line text-fg hover:border-brand/40'}`}
+                          >
+                            {seat.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </Card>
+                )}
                 <Notice tone="warning" icon={<TriangleAlert className="size-4 text-warning" aria-hidden="true" />}>
                   <strong>Bank transfer only.</strong> Card and wallets are disabled until PayHere is enabled.
                 </Notice>

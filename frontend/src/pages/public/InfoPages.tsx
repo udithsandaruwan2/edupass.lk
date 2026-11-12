@@ -6,6 +6,9 @@ import {
 import { Button } from '../../components/ui/Button';
 import { Input, Select, Textarea } from '../../components/ui/Field';
 import { Card, EmptyState, Notice, SectionHeader, container } from '../../components/ui/Primitives';
+import { contactRequest } from '../../api/auth';
+import { ApiError } from '../../api/client';
+import { useMocks } from '../../api/client';
 import { useToast } from '../../contexts/ToastContext';
 import { useCatalog } from '../../hooks/useCatalog';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
@@ -84,6 +87,8 @@ export const ContactPage: React.FC = () => {
   useDocumentTitle('Contact us');
   const [params] = useSearchParams();
   const toast = useToast();
+  const usingMocks = useMocks();
+  const [submitting, setSubmitting] = useState(false);
   const initialTopic = TOPICS.some((t) => t.value === params.get('topic')) ? params.get('topic')! : 'booking';
   const [values, setValues] = useState({ name: '', email: '', topic: initialTopic, message: '' });
   const [errors, setErrors] = useState<Partial<Record<keyof typeof values, string>>>({});
@@ -95,8 +100,28 @@ export const ContactPage: React.FC = () => {
     const errs = runValidators(values, { name: [required('Your name')], email: [required('Email'), email], message: [required('Message'), minLength('Message', 20)] });
     setErrors(errs);
     if (Object.keys(errs).length) return;
-    setSent(true);
-    toast('Message sent (demo)', { description: 'Nothing was actually sent in this demo build.' });
+    void (async () => {
+      if (!usingMocks) {
+        setSubmitting(true);
+        try {
+          await contactRequest({
+            name: values.name.trim(),
+            email: values.email.trim(),
+            topic: values.topic,
+            message: values.message.trim(),
+          });
+          setSent(true);
+          toast('Message sent', { description: 'Our team will reply within one working day.' });
+        } catch (err) {
+          toast(err instanceof ApiError ? err.message : 'Could not send message', { tone: 'error' });
+        } finally {
+          setSubmitting(false);
+        }
+        return;
+      }
+      setSent(true);
+      toast('Message sent (demo)', { description: 'Nothing was actually sent in this demo build.' });
+    })();
   };
 
   return (
@@ -108,7 +133,11 @@ export const ContactPage: React.FC = () => {
             <div role="status" className="py-10 text-center">
               <MessageSquare className="mx-auto size-10 text-success" aria-hidden="true" />
               <h2 className="mt-4 text-xl font-bold text-fg">Thanks, {values.name.split(' ')[0]}!</h2>
-              <p className="mt-2 text-sm text-muted">In a live build our team would reply to {values.email} within one working day. This demo did not send anything.</p>
+              <p className="mt-2 text-sm text-muted">
+                {usingMocks
+                  ? `In a live build our team would reply to ${values.email} within one working day. This demo did not send anything.`
+                  : `We'll reply to ${values.email} within one working day.`}
+              </p>
               <Button variant="secondary" className="mt-6" onClick={() => { setSent(false); setValues({ name: '', email: '', topic: 'booking', message: '' }); }}>
                 Send another message
               </Button>
@@ -120,15 +149,15 @@ export const ContactPage: React.FC = () => {
               <Select label="Topic" value={values.topic} onValueChange={set('topic')} options={TOPICS} className="sm:col-span-2" />
               <Textarea label="Message" required rows={6} value={values.message} onValueChange={set('message')} error={errors.message} hint="At least 20 characters. Include your order number if you have one." className="sm:col-span-2" />
               <div className="sm:col-span-2">
-                <Button type="submit" size="lg">Send message</Button>
+                <Button type="submit" size="lg" disabled={submitting}>{submitting ? 'Sending…' : 'Send message'}</Button>
               </div>
             </form>
           )}
         </Card>
         <div className="space-y-4">
           {[
-            { icon: Mail, label: 'Email', value: 'support@edupass.demo' },
-            { icon: Phone, label: 'Phone', value: '011 000 0000 (demo)' },
+            { icon: Mail, label: 'Email', value: usingMocks ? 'support@edupass.demo' : 'support@edupass.lk' },
+            { icon: Phone, label: 'Phone', value: usingMocks ? '011 000 0000 (demo)' : '011 7 000 000' },
             { icon: MapPin, label: 'Office', value: 'Colombo, Sri Lanka' },
           ].map(({ icon: Icon, label, value }) => (
             <Card key={label} className="flex items-center gap-4 p-5">

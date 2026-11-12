@@ -54,6 +54,12 @@ export class CheckoutDto {
   @IsOptional()
   @IsEnum(CommercePaymentMethod)
   paymentMethod?: CommercePaymentMethod;
+
+  /** Reserved seat IDs — holds must belong to the checkout student. */
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  seatIds?: string[];
 }
 
 export class UploadSlipDto {

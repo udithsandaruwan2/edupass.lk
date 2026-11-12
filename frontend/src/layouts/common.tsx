@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router';
-import { ROLE_LABEL, useAuth } from '../contexts/AuthContext';
+import { ROLE_HOME, ROLE_LABEL, useAuth } from '../contexts/AuthContext';
 import type { Role } from '../types';
 import { Button } from '../components/ui/Button';
 import { Card, Skeleton } from '../components/ui/Primitives';
@@ -28,7 +28,9 @@ export const RequireRole: React.FC<{ role: Role; children: React.ReactNode }> = 
   if (!user) {
     return <Navigate to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
-  if (user.role !== role) {
+  const allowed: Role[] =
+    role === 'organiser' ? ['organiser', 'scanner'] : [role];
+  if (!allowed.includes(user.role)) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center p-4">
         <Card className="max-w-md p-8 text-center">
@@ -40,7 +42,7 @@ export const RequireRole: React.FC<{ role: Role; children: React.ReactNode }> = 
             {usingMocks && (
               <Button onClick={() => switchRole(role)}>Switch to {ROLE_LABEL[role]}</Button>
             )}
-            <Button to={user.role === 'student' ? '/student' : user.role === 'organiser' ? '/organiser' : '/admin'} variant="secondary">
+            <Button to={ROLE_HOME[user.role]} variant="secondary">
               Go to my dashboard
             </Button>
             <Button to="/" variant="secondary">Back to site</Button>

@@ -108,6 +108,8 @@ model Organisation {
   tuitionFeePlans   TuitionFeePlan[]
   tuitionInvoices   TuitionInvoice[]
   tuitionPayments   TuitionPayment[]
+  courseModules     CourseModule[]
+  venueLayouts      VenueLayout[]
 }
 
 model OrganisationEntitlement {
@@ -224,6 +226,7 @@ model Batch {
   updatedAt      DateTime @updatedAt
   enrollments    InstituteEnrollment[]
   sessions       ClassSession[]
+  courseModules  CourseModule[]
 
   @@index([organisationId])
 }
@@ -458,6 +461,7 @@ model Seminar {
   orderLines        OrderLine[]
   tickets           Ticket[]
   checkInEvents     CheckInEvent[]
+  venueLayout       VenueLayout?
 
   @@index([organisationId])
   @@index([status, startsAt])
@@ -664,4 +668,139 @@ model RefundRequest {
 
   @@index([orderId])
   @@index([studentUserId])
+}
+
+model Banner {
+  id        String   @id @default(cuid())
+  title     String
+  body      String?
+  imageUrl  String?
+  href      String?
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Faq {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String   @db.Text
+  category  String?
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  body      String   @db.Text
+  audience  String   @default("all")
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CourseModule {
+  id             String       @id @default(cuid())
+  organisationId String
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  batchId        String
+  batch          Batch        @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  title          String
+  description    String?
+  sortOrder      Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  materials      Material[]
+  assignments    Assignment[]
+
+  @@index([organisationId, batchId])
+}
+
+model Material {
+  id        String       @id @default(cuid())
+  moduleId  String
+  module    CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  title     String
+  url       String?
+  body      String?      @db.Text
+  filePath  String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model Assignment {
+  id          String       @id @default(cuid())
+  moduleId    String
+  module      CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  title       String
+  description String?      @db.Text
+  dueAt       DateTime?
+  maxScore    Int          @default(100)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  submissions Submission[]
+}
+
+model Submission {
+  id               String     @id @default(cuid())
+  assignmentId     String
+  assignment       Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  studentUserId    String
+  body             String?    @db.Text
+  filePath         String?
+  submittedAt      DateTime   @default(now())
+  gradeScore       Int?
+  gradeFeedback    String?
+  gradedAt         DateTime?
+  gradedByUserId   String?
+
+  @@unique([assignmentId, studentUserId])
+  @@index([studentUserId])
+}
+
+model VenueLayout {
+  id             String       @id @default(cuid())
+  organisationId String
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  seminarId      String?      @unique
+  seminar        Seminar?     @relation(fields: [seminarId], references: [id], onDelete: Cascade)
+  name           String
+  rows           Int
+  cols           Int
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  seats          Seat[]
+}
+
+model Seat {
+  id       String      @id @default(cuid())
+  layoutId String
+  layout   VenueLayout @relation(fields: [layoutId], references: [id], onDelete: Cascade)
+  row      Int
+  col      Int
+  label    String
+  status   String      @default("available")
+  holds    SeatHold[]
+
+  @@unique([layoutId, row, col])
+  @@index([layoutId])
+}
+
+model SeatHold {
+  id        String   @id @default(cuid())
+  seatId    String
+  seat      Seat     @relation(fields: [seatId], references: [id], onDelete: Cascade)
+  orderId   String?
+  userId    String
+  expiresAt DateTime
+  status    String   @default("held")
+  createdAt DateTime @default(now())
+
+  @@index([seatId, status])
+  @@index([orderId])
+  @@index([expiresAt])
 }

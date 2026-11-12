@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
+import { CommerceModule } from '../commerce/commerce.module';
 import { CatalogueController } from './catalogue.controller';
 import { OrganiserSeminarsController } from './organiser-seminars.controller';
 import { SeminarsService } from './seminars.service';
 
 @Module({
+  imports: [CommerceModule],
   controllers: [CatalogueController, OrganiserSeminarsController],
   providers: [SeminarsService],
   exports: [SeminarsService],

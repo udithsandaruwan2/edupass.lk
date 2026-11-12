@@ -5,9 +5,12 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { UpsertVenueLayoutDto } from '../commerce/dto/seats.dto';
+import { SeatsService } from '../commerce/seats.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { OrgScopeGuard } from '../common/guards/org-scope.guard';
 import {
@@ -20,7 +23,10 @@ import { SeminarsService } from './seminars.service';
 @Controller('organiser/seminars')
 @UseGuards(JwtAuthGuard, OrgScopeGuard)
 export class OrganiserSeminarsController {
-  constructor(private readonly seminars: SeminarsService) {}
+  constructor(
+    private readonly seminars: SeminarsService,
+    private readonly seats: SeatsService,
+  ) {}
 
   @Get()
   list(@Query('organisationId') organisationId: string) {
@@ -64,5 +70,14 @@ export class OrganiserSeminarsController {
     @Query('organisationId') organisationId: string,
   ) {
     return this.seminars.cancel(id, organisationId);
+  }
+
+  @Put(':id/venue-layout')
+  venueLayout(
+    @Param('id') id: string,
+    @Query('organisationId') organisationId: string,
+    @Body() dto: UpsertVenueLayoutDto,
+  ) {
+    return this.seats.upsertVenueLayout(id, organisationId, dto);
   }
 }

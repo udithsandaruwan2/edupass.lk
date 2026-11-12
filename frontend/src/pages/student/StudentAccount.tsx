@@ -5,6 +5,8 @@ import { Button } from '../../components/ui/Button';
 import { ConfirmDialog } from '../../components/ui/Dialog';
 import { Input, Select, Switch, Textarea } from '../../components/ui/Field';
 import { Avatar, Card, CardHeader, Notice } from '../../components/ui/Primitives';
+import { changePasswordRequest, updateProfileRequest } from '../../api/auth';
+import { ApiError } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
 import { useData } from '../../contexts/DataContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -22,11 +24,32 @@ export const StudentProfilePage: React.FC = () => {
   useDocumentTitle('Profile');
   const { profile } = useStudent();
   const { patch } = useData();
-  const { login, user } = useAuth();
+  const { login, user, usingMocks, refreshMe } = useAuth();
   const toast = useToast();
-  const [v, setV] = useState({ name: profile?.name ?? '', email: profile?.email ?? '', phone: profile?.phone ?? '', school: profile?.school ?? '', district: profile?.district ?? 'Colombo', stream: profile?.stream ?? 'Commerce', examYear: String(profile?.examYear ?? new Date().getFullYear()) });
+  const [saving, setSaving] = useState(false);
+  const [v, setV] = useState({
+    name: profile?.name ?? user?.name ?? '',
+    email: profile?.email ?? user?.email ?? '',
+    phone: profile?.phone ?? '',
+    school: profile?.school ?? user?.studentProfile?.school ?? '',
+    district: profile?.district ?? user?.studentProfile?.district ?? 'Colombo',
+    stream: profile?.stream ?? user?.studentProfile?.stream ?? 'Commerce',
+    examYear: String(profile?.examYear ?? user?.studentProfile?.examYear ?? new Date().getFullYear()),
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  if (!profile) return null;
+  if (!profile && !user) return null;
+  const displayProfile = profile ?? {
+    id: user!.id,
+    name: user!.name,
+    email: user!.email,
+    phone: '',
+    school: user!.studentProfile?.school ?? '',
+    district: user!.studentProfile?.district ?? 'Colombo',
+    stream: user!.studentProfile?.stream ?? 'Commerce',
+    examYear: user!.studentProfile?.examYear ?? new Date().getFullYear(),
+    status: 'active' as const,
+    joinedAt: new Date().toISOString(),
+  };
   const set = (k: keyof typeof v) => (x: string) => setV({ ...v, [k]: x });
 
   const save = (e: React.FormEvent) => {
@@ -34,9 +57,30 @@ export const StudentProfilePage: React.FC = () => {
     const errs = runValidators(v, { name: [required('Name')], email: [required('Email'), email], phone: [phone], school: [required('School')] });
     setErrors(errs as Record<string, string>);
     if (Object.keys(errs).length) return;
-    patch('students', profile.id, { ...v, examYear: Number(v.examYear) });
+  void (async () => {
+    if (!usingMocks && user?.accessToken) {
+      setSaving(true);
+      try {
+        await updateProfileRequest(user.accessToken, {
+          name: v.name.trim(),
+          school: v.school.trim(),
+          district: v.district,
+          stream: v.stream,
+          examYear: Number(v.examYear),
+        });
+        await refreshMe();
+        toast('Profile saved');
+      } catch (err) {
+        toast(err instanceof ApiError ? err.message : 'Could not save profile', { tone: 'error' });
+      } finally {
+        setSaving(false);
+      }
+      return;
+    }
+    patch('students', displayProfile.id, { ...v, examYear: Number(v.examYear) });
     if (user) login({ ...user, name: v.name, email: v.email });
     toast('Profile saved');
+  })();
   };
 
   return (
@@ -44,11 +88,11 @@ export const StudentProfilePage: React.FC = () => {
       <PageHeader title="Personal profile" description="Organisers see your name on tickets and attendee lists." />
       <div className="grid gap-6 lg:grid-cols-[18rem_minmax(0,1fr)]">
         <Card className="h-fit p-6 text-center">
-          <Avatar name={v.name || profile.name} size="xl" className="mx-auto" />
-          <p className="mt-3 font-semibold text-fg">{profile.name}</p>
-          <p className="text-sm text-muted">{profile.school}</p>
-          <p className="mt-3 text-xs text-muted">Member since {formatDate(profile.joinedAt)}</p>
-          <div className="mt-2"><StatusBadge status={profile.status} /></div>
+          <Avatar name={v.name || displayProfile.name} size="xl" className="mx-auto" />
+          <p className="mt-3 font-semibold text-fg">{displayProfile.name}</p>
+          <p className="text-sm text-muted">{displayProfile.school || v.school}</p>
+          <p className="mt-3 text-xs text-muted">Member since {formatDate(displayProfile.joinedAt)}</p>
+          <div className="mt-2"><StatusBadge status={displayProfile.status} /></div>
         </Card>
         <Card>
           <CardHeader title="Details" />
@@ -61,7 +105,7 @@ export const StudentProfilePage: React.FC = () => {
             <Select label="Stream" value={v.stream} onValueChange={set('stream')} options={['Commerce', 'Physical Science', 'Biological Science', 'Arts', 'Technology', 'O/L'].map((d) => ({ value: d, label: d }))} />
             <Input label="Exam year" type="number" value={v.examYear} onValueChange={set('examYear')} />
             <div className="flex items-end justify-end sm:col-span-2">
-              <Button type="submit"><Save className="size-4" aria-hidden="true" />Save changes</Button>
+              <Button type="submit" disabled={saving}><Save className="size-4" aria-hidden="true" />{saving ? 'Saving…' : 'Save changes'}</Button>
             </div>
           </form>
         </Card>
@@ -83,7 +127,7 @@ export const AccountSettingsPage: React.FC<{ role: 'student' | 'organiser' }> = 
   useDocumentTitle('Settings');
   const toast = useToast();
   const { theme, setTheme } = useTheme();
-  const { logout, usingMocks } = useAuth();
+  const { logout, usingMocks, user } = useAuth();
   const { resetDemo } = useData();
   const [prefs, setPrefs] = usePersistentState<Prefs>(`edupass-prefs-${role}`, () => ({ emailBookings: true, emailReminders: true, smsReminders: false, newsletter: false, language: 'en' }));
   const [pw, setPw] = useState({ current: '', next: '', confirm: '' });
@@ -94,18 +138,34 @@ export const AccountSettingsPage: React.FC<{ role: 'student' | 'organiser' }> = 
     toast('Preference saved', { tone: 'info' });
   };
 
+  const [pwSaving, setPwSaving] = useState(false);
+
   const changePassword = (e: React.FormEvent) => {
     e.preventDefault();
     const errs: Record<string, string> = runValidators(pw, { current: [required('Current password'), minLength('Current password', 8)], next: [password] });
     if (pw.confirm !== pw.next) errs.confirm = 'Passwords do not match';
     setPwErrors(errs);
     if (Object.keys(errs).length) return;
+  void (async () => {
+    if (!usingMocks && user?.accessToken) {
+      setPwSaving(true);
+      try {
+        await changePasswordRequest(user.accessToken, {
+          currentPassword: pw.current,
+          newPassword: pw.next,
+        });
+        setPw({ current: '', next: '', confirm: '' });
+        toast('Password updated');
+      } catch (err) {
+        toast(err instanceof ApiError ? err.message : 'Could not update password', { tone: 'error' });
+      } finally {
+        setPwSaving(false);
+      }
+      return;
+    }
     setPw({ current: '', next: '', confirm: '' });
-    toast(usingMocks ? 'Password updated (mock)' : 'Use forgot password to reset by email', {
-      description: usingMocks
-        ? 'Nothing is stored in mock mode.'
-        : 'Open Forgot password from the login page to receive a reset code.',
-    });
+    toast('Password updated (mock)', { description: 'Nothing is stored in mock mode.' });
+  })();
   };
 
   return (
@@ -134,7 +194,7 @@ export const AccountSettingsPage: React.FC<{ role: 'student' | 'organiser' }> = 
             <Input label="Current password" type="password" autoComplete="current-password" value={pw.current} onValueChange={(x) => setPw({ ...pw, current: x })} error={pwErrors.current} />
             <Input label="New password" type="password" autoComplete="new-password" value={pw.next} onValueChange={(x) => setPw({ ...pw, next: x })} error={pwErrors.next} hint="8+ characters with a letter and a number" />
             <Input label="Confirm new password" type="password" autoComplete="new-password" value={pw.confirm} onValueChange={(x) => setPw({ ...pw, confirm: x })} error={pwErrors.confirm} />
-            <div className="flex justify-end"><Button type="submit">Update password</Button></div>
+            <div className="flex justify-end"><Button type="submit" disabled={pwSaving}>{pwSaving ? 'Updating…' : 'Update password'}</Button></div>
           </form>
         </Card>
         <Card>

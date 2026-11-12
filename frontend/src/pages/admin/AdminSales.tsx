@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, CircleDollarSign, CreditCard, RotateCcw, Wallet, X } from 'lucide-react';
+import { Check, CircleDollarSign, ClipboardList, CreditCard, RotateCcw, Wallet, X } from 'lucide-react';
 import { StatusBadge } from '../../components/StatusBadge';
 import { Button } from '../../components/ui/Button';
 import { DataTable, type Column } from '../../components/ui/DataTable';
@@ -18,11 +18,41 @@ import type { Order, RefundRequest, Ticket } from '../../types';
 import { ticketsIn } from '../../utils/analytics';
 import { formatDate, formatDateTime } from '../../utils/date';
 import { PAYMENT_LABELS, formatLKR, formatNumber } from '../../utils/format';
+import { useAdminOrders, useAdminRefunds, useAdminTickets } from './useAdminApi';
+import { reviewAdminRefund } from '../../api/admin';
+import { ApiError } from '../../api/client';
+import { EmptyState } from '../../components/ui/Primitives';
 
 const STATUS_OPTIONS = [{ value: '', label: 'All statuses' }, { value: 'paid', label: 'Paid' }, { value: 'refunded', label: 'Refunded' }, { value: 'failed', label: 'Failed' }];
 
 export const AdminBookingsPage: React.FC = () => {
   useDocumentTitle('Booking management');
+  const api = useAdminOrders();
+  if (!api.usingMocks) {
+    return (
+      <>
+        <PageHeader title="Booking management" description={`${api.rows.length} orders`} />
+        <Card>
+          {api.loading ? (
+            <p className="p-5 text-sm text-muted">Loading…</p>
+          ) : api.rows.length === 0 ? (
+            <EmptyState icon={<ClipboardList className="size-5" aria-hidden="true" />} title="No orders" description="No checkout orders yet." />
+          ) : (
+            <ul className="divide-y divide-line">
+              {api.rows.map((o) => (
+                <li key={o.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm">
+                  <span className="font-mono text-xs">{o.id}</span>
+                  <StatusBadge status={o.status === 'PAID' ? 'paid' : o.status === 'REFUNDED' ? 'refunded' : 'pending'} />
+                  <span>{formatLKR(o.totalLkr)}</span>
+                  <span className="text-muted">{formatDate(o.createdAt)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </>
+    );
+  }
   const c = useCatalog();
   const [status, setStatus] = useState('');
   const rows = c.orders.filter((o) => !status || o.status === status);
@@ -50,6 +80,24 @@ export const AdminBookingsPage: React.FC = () => {
 
 export const AdminTicketsPage: React.FC = () => {
   useDocumentTitle('Ticket management');
+  const api = useAdminTickets();
+  if (!api.usingMocks) {
+    return (
+      <>
+        <PageHeader title="Ticket management" description={`${api.rows.length} tickets`} />
+        <Card>
+          <ul className="divide-y divide-line">
+            {api.rows.map((t) => (
+              <li key={t.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm">
+                <span className="font-mono font-semibold">{t.code}</span>
+                <StatusBadge status={t.status === 'VALID' ? 'valid' : t.status === 'CHECKED_IN' ? 'checked_in' : 'cancelled'} />
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </>
+    );
+  }
   const c = useCatalog();
   const { patch } = useData();
   const toast = useToast();
@@ -92,6 +140,25 @@ const txnId = (o: Order) => o.id.replace('ORD', 'PAY');
 
 export const PaymentRecordsPage: React.FC = () => {
   useDocumentTitle('Payment records');
+  const api = useAdminOrders();
+  if (!api.usingMocks) {
+    return (
+      <>
+        <PageHeader title="Payment records" description={`${api.rows.length} orders from checkout`} />
+        <Card>
+          <ul className="divide-y divide-line">
+            {api.rows.map((o) => (
+              <li key={o.id} className="flex justify-between px-5 py-3 text-sm">
+                <span className="font-mono text-xs">{o.id}</span>
+                <span>{formatLKR(o.totalLkr)}</span>
+                <StatusBadge status={o.status === 'PAID' ? 'paid' : 'pending'} />
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </>
+    );
+  }
   const c = useCatalog();
   const [method, setMethod] = useState('');
   const [status, setStatus] = useState('');
@@ -131,9 +198,59 @@ export const PaymentRecordsPage: React.FC = () => {
 
 export const RefundRequestsPage: React.FC = () => {
   useDocumentTitle('Refund requests');
+  const api = useAdminRefunds();
+  const toast = useToast();
+  if (!api.usingMocks) {
+    return (
+      <>
+        <PageHeader title="Refund requests" description={`${api.rows.length} requests`} />
+        <Card>
+          <ul className="divide-y divide-line">
+            {api.rows.map((r) => (
+              <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm">
+                <span className="font-mono text-xs">{r.orderId}</span>
+                <span>{formatLKR(r.amountLkr)}</span>
+                <StatusBadge status={r.status === 'OPEN' ? 'open' : r.status === 'APPROVED' ? 'approved' : 'rejected'} />
+                {r.status === 'OPEN' && (
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        void reviewAdminRefund(api.token, r.id, 'approve')
+                          .then(() => {
+                            api.reload();
+                            toast('Refund approved', { tone: 'success' });
+                          })
+                          .catch((err) => toast(err instanceof ApiError ? err.message : 'Failed', { tone: 'error' }));
+                      }}
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        void reviewAdminRefund(api.token, r.id, 'reject')
+                          .then(() => {
+                            api.reload();
+                            toast('Refund rejected', { tone: 'info' });
+                          })
+                          .catch((err) => toast(err instanceof ApiError ? err.message : 'Failed', { tone: 'error' }));
+                      }}
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </>
+    );
+  }
   const c = useCatalog();
   const { setData, notify } = useData();
-  const toast = useToast();
   const [tab, setTab] = useState<'open' | 'approved' | 'rejected'>('open');
   const [deciding, setDeciding] = useState<{ r: RefundRequest; approve: boolean } | null>(null);
   const rows = c.refunds.filter((r) => r.status === tab);
@@ -155,7 +272,7 @@ export const RefundRequestsPage: React.FC = () => {
           }
         : {}),
     }));
-    if (r.studentId === DEMO_ACCOUNTS.student.id) {
+    if (DEMO_ACCOUNTS.student && r.studentId === DEMO_ACCOUNTS.student.id) {
       notify('student', approve ? 'Refund approved' : 'Refund request declined', `Order ${r.orderId}: ${approve ? `${formatLKR(r.amount)} refunded.` : 'see the Refund Policy for details.'}`, '/student/history');
     }
     toast(approve ? 'Refund approved' : 'Refund rejected', { tone: approve ? 'success' : 'info', description: approve ? 'Order refunded and tickets voided (simulated).' : undefined });

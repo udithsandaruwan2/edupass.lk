@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { StaffRole } from '@prisma/client';
+import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateSessionDto,
@@ -13,7 +14,10 @@ import {
 
 @Injectable()
 export class InstituteService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mail: MailService,
+  ) {}
 
   async listStaff(organisationId: string) {
     const rows = await this.prisma.staffMembership.findMany({
@@ -42,6 +46,11 @@ export class InstituteService {
         'No user with that email — they must register first',
       );
     }
+    const org = await this.prisma.organisation.findUnique({
+      where: { id: dto.organisationId },
+    });
+    if (!org) throw new NotFoundException('Organisation not found');
+
     const membership = await this.prisma.staffMembership.upsert({
       where: {
         userId_organisationId: {
@@ -57,6 +66,15 @@ export class InstituteService {
       },
       include: { user: { select: { id: true, name: true, email: true } } },
     });
+
+    const role = membership.role;
+    void this.mail.staffInvite(
+      membership.user.email,
+      membership.user.name,
+      org.name,
+      role,
+    );
+
     return {
       id: membership.id,
       role: membership.role,

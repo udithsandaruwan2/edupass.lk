@@ -9,7 +9,7 @@ import {
 } from '../api/auth';
 import { useMocks } from '../api/client';
 import { usePersistentState } from '../hooks/usePersistentState';
-import type { Role } from '../types';
+import type { Role, StaffRole } from '../types';
 
 export interface SessionUser {
   role: Role;
@@ -22,12 +22,20 @@ export interface SessionUser {
   entitlements?: { code: string; status: string }[];
   /** Ticket commission % for the active org membership (API). */
   commissionPercent?: number;
+  /** Organisation staff role from /auth/me (API). */
+  staffRole?: StaffRole;
+  studentProfile?: {
+    school?: string | null;
+    district?: string | null;
+    stream?: string | null;
+    examYear?: number | null;
+  };
 }
 
 /** @deprecated use SessionUser — kept for mock demo accounts */
 export type DemoUser = SessionUser;
 
-export const DEMO_ACCOUNTS: Record<Role, SessionUser> = {
+export const DEMO_ACCOUNTS: Partial<Record<Role, SessionUser>> = {
   student: { role: 'student', id: 'stu-demo', name: 'Nethmi Perera', email: 'student@edupass.demo' },
   organiser: { role: 'organiser', id: 'org-lumina', name: 'Ayesha Silva', email: 'organiser@edupass.demo' },
   admin: { role: 'admin', id: 'admin-1', name: 'Platform Admin', email: 'admin@edupass.demo' },
@@ -37,13 +45,23 @@ export const ROLE_HOME: Record<Role, string> = {
   student: '/student',
   organiser: '/organiser',
   admin: '/admin',
+  lecturer: '/lecturer',
+  scanner: '/organiser/check-in',
 };
 
 export const ROLE_LABEL: Record<Role, string> = {
   student: 'Student',
   organiser: 'Organiser',
   admin: 'Admin',
+  lecturer: 'Lecturer',
+  scanner: 'Scanner',
 };
+
+function staffRoleToUi(role: string): Role {
+  if (role === 'SCANNER') return 'scanner';
+  if (role === 'TEACHER') return 'lecturer';
+  return 'organiser';
+}
 
 function mapApiUser(user: ApiUser, accessToken: string): SessionUser {
   if (user.isPlatformAdmin) {
@@ -58,8 +76,11 @@ function mapApiUser(user: ApiUser, accessToken: string): SessionUser {
   }
   const membership = user.memberships[0];
   if (membership) {
+    const staffRole = membership.role as StaffRole;
+    const isOwnerAdmin = staffRole === 'OWNER' || staffRole === 'ADMIN';
+    const role = isOwnerAdmin ? 'organiser' : staffRoleToUi(staffRole);
     return {
-      role: 'organiser',
+      role,
       id: user.id,
       name: user.name,
       email: user.email,
@@ -68,8 +89,18 @@ function mapApiUser(user: ApiUser, accessToken: string): SessionUser {
       organisationType: membership.organisation.type,
       entitlements: membership.entitlements,
       commissionPercent: membership.commissionPercent,
+      staffRole,
     };
   }
+  const student = user.student as
+    | {
+        school?: string | null;
+        district?: string | null;
+        stream?: string | null;
+        examYear?: number | null;
+      }
+    | null
+    | undefined;
   return {
     role: 'student',
     id: user.id,
@@ -77,6 +108,7 @@ function mapApiUser(user: ApiUser, accessToken: string): SessionUser {
     email: user.email,
     accessToken,
     entitlements: [],
+    studentProfile: student ?? undefined,
   };
 }
 
@@ -200,7 +232,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const switchRole = useCallback(
     (role: Role) => {
       if (!usingMocks) return;
-      setUser(DEMO_ACCOUNTS[role]);
+      const acc = DEMO_ACCOUNTS[role];
+      if (acc) setUser(acc);
     },
     [setUser, usingMocks],
   );

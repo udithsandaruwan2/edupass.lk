@@ -149,7 +149,8 @@ export const SeminarManagementPage: React.FC = () => {
         orders: d.orders.map((o) => (o.status === 'paid' && o.lines.some((l) => l.seminarId === s.id) ? { ...o, status: 'refunded' } : o)),
         tickets: d.tickets.map((t) => (t.seminarId === s.id && t.status === 'valid' ? { ...t, status: 'cancelled', checkedInAt: undefined } : t)),
       }));
-      if (tickets.some((t) => t.seminarId === s.id && t.studentId === DEMO_ACCOUNTS.student.id)) {
+      const demoStudentId = DEMO_ACCOUNTS.student?.id;
+      if (demoStudentId && tickets.some((t) => t.seminarId === s.id && t.studentId === demoStudentId)) {
         notify('student', 'Seminar cancelled', `${s.title} was cancelled. Your booking has been refunded (demo).`, '/student/history');
       }
       notify('admin', 'Seminar cancelled', `${organiser?.name} cancelled ${s.title} on ${formatDate(cancelledAt)}.`, '/admin/seminars');

@@ -120,6 +120,7 @@ fi
 echo "== institute ops =="
 OUT=$(req POST /institute/batches "$INST_TOKEN" "{\"organisationId\":\"$INST_ORG\",\"name\":\"Smoke Batch ${TS}\"}")
 split "$OUT"; expect "$CODE" 201 "create batch"
+BATCH_ID=$(printf '%s' "$BODY" | jget "d['id']")
 
 OUT=$(req POST /institute/batches "$LECT_TOKEN" "{\"organisationId\":\"$LECT_ORG\",\"name\":\"Should Fail\"}")
 split "$OUT"; expect "$CODE" 403 "lecturer institute blocked"
@@ -146,6 +147,54 @@ if [[ -n "${ADMIN_TOKEN:-}" ]]; then
   split "$OUT"; expect "$CODE" 200 "subscription invoices"
 else
   bad "admin login"
+fi
+
+echo "== phase8 auth profile contact =="
+OUT=$(req POST /auth/change-password "$STU_TOKEN" "{\"currentPassword\":\"$PASS\",\"newPassword\":\"Password1234!\"}")
+split "$OUT"
+if [[ "$CODE" == "201" || "$CODE" == "200" ]]; then ok "change-password ($CODE)"; else bad "change-password ($CODE)"; fi
+PASS='Password1234!'
+OUT=$(req PUT /auth/profile "$STU_TOKEN" '{"name":"Smoke Student Updated","school":"Smoke HS","district":"Colombo"}')
+split "$OUT"; expect "$CODE" 200 "update profile"
+OUT=$(req POST /auth/contact "" "{\"name\":\"Smoke\",\"email\":\"smoke-contact-${TS}@edupass.test\",\"topic\":\"booking\",\"message\":\"Smoke contact message long enough for validation.\"}")
+split "$OUT"
+if [[ "$CODE" == "201" || "$CODE" == "200" ]]; then ok "contact ($CODE)"; else bad "contact ($CODE)"; fi
+
+echo "== phase8 lecturer profile =="
+OUT=$(req POST "/organiser/lecturers?organisationId=${LECT_ORG}" "$LECT_TOKEN" "{\"organisationId\":\"$LECT_ORG\",\"name\":\"Smoke Co-Lect\",\"title\":\"BSc\",\"subjects\":[\"Economics\"],\"bio\":\"Smoke bio\",\"email\":\"smoke-colect-${TS}@edupass.test\"}")
+split "$OUT"
+if [[ "$CODE" == "201" || "$CODE" == "200" ]]; then ok "create lecturer ($CODE)"; else bad "create lecturer ($CODE)"; fi
+OUT=$(req GET /lecturers "" "")
+split "$OUT"; expect "$CODE" 200 "public lecturers"
+
+echo "== phase8 cms + admin lists =="
+if [[ -n "${ADMIN_TOKEN:-}" ]]; then
+  OUT=$(req GET /admin/users "$ADMIN_TOKEN" "")
+  split "$OUT"; expect "$CODE" 200 "admin users"
+  OUT=$(req GET /cms/faqs "" "")
+  split "$OUT"; expect "$CODE" 200 "public faqs"
+  OUT=$(req POST /admin/faqs "$ADMIN_TOKEN" '{"question":"Smoke Q?","answer":"Smoke A long enough.","active":true}')
+  split "$OUT"
+  if [[ "$CODE" == "201" || "$CODE" == "200" ]]; then ok "admin create faq ($CODE)"; else bad "admin create faq ($CODE)"; fi
+fi
+
+echo "== phase8 lms =="
+OUT=$(req POST /institute/lms/modules "$INST_TOKEN" "{\"organisationId\":\"$INST_ORG\",\"batchId\":\"$BATCH_ID\",\"title\":\"Smoke Module ${TS}\"}")
+split "$OUT"
+if [[ "$CODE" == "201" || "$CODE" == "200" ]]; then ok "lms module ($CODE)"; else bad "lms module ($CODE)"; fi
+
+echo "== phase8 seat layout =="
+OUT=$(req PUT "/organiser/seminars/${SEM_ID}/venue-layout?organisationId=${LECT_ORG}" "$LECT_TOKEN" '{"name":"Hall A","rows":2,"cols":2}')
+split "$OUT"
+if [[ "$CODE" == "200" || "$CODE" == "201" ]]; then ok "venue layout ($CODE)"; else bad "venue layout ($CODE)"; fi
+OUT=$(req GET /seminars "" "")
+split "$OUT"
+SEM_SLUG=$(printf '%s' "$BODY" | jget "next((s.get('slug','') for s in (d if isinstance(d,list) else d.get('items',[])) if s.get('id')=='$SEM_ID'), '')")
+if [[ -n "$SEM_SLUG" ]]; then
+  OUT=$(req GET "/seminars/${SEM_SLUG}/seats" "" "")
+  split "$OUT"; expect "$CODE" 200 "seminar seats"
+else
+  bad "seminar slug missing for seats"
 fi
 
 echo "== card still disabled =="
