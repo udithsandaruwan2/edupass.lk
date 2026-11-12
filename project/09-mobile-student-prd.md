@@ -1,83 +1,97 @@
-# PRD addendum — Phase 9 Student React Native
+# PRD addendum — Phase 9 EduPass mobile (Student + Staff gate)
 
-> Gate G2 proposed · 2026-11-12 · Complements `project/02-prd.md` (does not replace v0.1/Phase 8)
+> Gate G2 proposed · Updated 2026-11-12 · Complements `project/02-prd.md`
 
 ## Summary
 
-Ship an **EduPass Student** mobile app (Expo / React Native) that covers **every student-facing journey** already live on the web API: auth, catalogue, cart/checkout (bank + seats), slips, tickets/QR, bookings/refunds, tuition, LMS, profile/settings, notifications, support. Organiser/admin remain web-only. PayHere stays held.
+Ship one **Expo / React Native** app with **two versions (shells)** after login:
+
+1. **Student** — every student web journey (discover, bank buy, seats, slips, tickets/QR, bookings, tuition, LMS, profile, support).
+2. **Staff (institute / seminar)** — gate mode: select seminar → scan or type ticket code → **verify admit/reject** via Nest check-in (role-scoped).
+
+Organiser admin CRUD and platform admin stay on web. PayHere held.
 
 ## Outcomes
 
-- Student completes Flow C (buy → slip → QR) entirely on phone
-- Enrolled student pays class fees and uses LMS on phone
-- Parity checklist vs web `StudentRoutes` is green for Must items
-- Same Nest `/api`; no duplicate business logic
+- Student completes Flow C entirely on phone
+- Staff at the door verifies QR without a laptop
+- Wrong-tenant / duplicate scan rejected with clear UX
+- Same Nest `/api`; no duplicate business rules
 
 ## Scope
 
-**In scope (student mobile)**
+### Student shell (Must)
 
-| Area | Must include |
+| Area | Include |
 |---|---|
-| Auth | Login, register student, forgot/reset, change password, secure token store |
-| Discover | Public seminars list/detail, categories, search/filter, seat map view |
+| Auth | Login, register student, forgot/reset, change password, SecureStore |
+| Discover | Seminars list/detail, categories, search, seat map |
 | Commerce | Cart, bank checkout, seat holds, slip upload, order status |
-| Attendance | My tickets, ticket detail, offline-displayable QR |
-| Account | Profile, settings, notifications inbox, support/contact |
-| Institute | Class-fees balance + slip; LMS modules/assignments/submit/grades |
-| Bookings | Upcoming/past, history, refund request |
-| Saved | Saved seminars (if API/local persistence exists on web) |
+| Tickets | List/detail, large QR for gate |
+| Institute | Class fees + LMS |
+| Account | Profile, settings, notifications, support |
+| Bookings | History / refund (Should) |
 
-**Out of scope**
+### Staff shell — gate verify (Must)
 
-- Organiser / teacher / scanner-as-primary / admin (scanner may remain a hidden staff mode or separate build flavor later)
+| Area | Include |
+|---|---|
+| Auth | Same login; membership role from `/auth/me` |
+| Entry | If role ∈ {OWNER, ADMIN, TEACHER, SCANNER, CASHIER} with org → offer **Staff / Gate** home |
+| Seminar | Pick published seminar for active organisation |
+| Scan | Camera QR + manual code entry |
+| Verify | `POST /organiser/check-in` → large Admitted / Not admitted + reason |
+| History | Recent scans on device (session list) |
+| Switch | If user is also a student, allow switch to Student shell |
+
+### Out of scope
+
+- Staff: seminar create/edit, slip approve, earnings, institute billing on mobile
+- Platform admin mobile
 - Live PayHere card
-- Push notifications provider (design hook; ship in-app list first)
-- Multi-account family profiles
+- Push provider (in-app list first)
 
 ## Journeys
 
-### J-M1 — Buy and attend
-Register/login → browse → add to cart → bank checkout (+ seats if any) → upload slip → tickets → show QR at gate
+### J-M1 — Student buy and attend
+Browse → cart → bank (+ seats) → slip → tickets → show QR
 
-### J-M2 — Class portal
-Login → class fees → upload tuition slip → learning → submit assignment → see grade
+### J-M2 — Staff gate
+Login as staff → Gate → choose seminar → scan → admit once / reject
 
-### J-M3 — Account hygiene
-Profile edit · change password · notifications · contact support
+### J-M3 — Student class portal
+Class fees + LMS submit/grades
+
+### J-M4 — Account
+Profile · password · support
 
 ## Functional requirements
 
 | ID | Requirement | Priority |
 |---|---|---|
-| FR-M01 | Auth against Nest; tokens in SecureStore | Must |
-| FR-M02 | Catalogue + seminar detail from public API | Must |
-| FR-M03 | Cart + bank checkout + slip upload | Must |
-| FR-M04 | Tickets list/detail + QR render | Must |
-| FR-M05 | Seat picker when layout exists | Must |
-| FR-M06 | Tuition balance + slip | Must |
-| FR-M07 | LMS list/submit/grades | Must |
-| FR-M08 | Bookings/history + refund request | Should |
-| FR-M09 | Profile + change-password + contact | Must |
-| FR-M10 | Notifications list (API or client inbox) | Should |
-| FR-M11 | Deep link to ticket / seminar | Could |
+| FR-M01…M11 | Student Must/Should from prior list | as before |
 | FR-M12 | Card checkout | Must later (Phase F) |
+| FR-M13 | Role-based shell: Student vs Staff Gate after login | Must |
+| FR-M14 | Staff seminar list scoped to membership org | Must |
+| FR-M15 | Camera + manual check-in against Nest | Must |
+| FR-M16 | Duplicate / wrong seminar / other-tenant → clear fail | Must |
+| FR-M17 | SCANNER role lands on Gate by default (no student chrome) | Must |
 
 ## NFRs
 
 | ID | Target |
 |---|---|
-| NFR-M01 | Cold start to home &lt; 3s on mid Android |
-| NFR-M02 | QR readable on gate camera in daylight |
-| NFR-M03 | No secrets in JS bundle; API base via env |
-| NFR-M04 | A11y: large check-in ticket contrast; form labels |
+| NFR-M01 | Cold start &lt; 3s mid Android |
+| NFR-M02 | Student QR readable; staff camera works in hall lighting |
+| NFR-M03 | Tokens in SecureStore only |
+| NFR-M04 | Gate result usable at arm’s length (large type/color) |
 
-## Release criteria (Phase 9)
+## Release criteria
 
-- [ ] Must FRs demoable on device/emulator against staging/local Nest
-- [ ] Student parity matrix Must rows green
-- [ ] Automated smoke or Detox/Maestro critical path
+- [ ] Student Must path green on device
+- [ ] Staff scan admit-once green on device
+- [ ] Device smoke covers both shells
 - [ ] PayHere still off
-- [ ] Human G4 Phase-9 approved before build; G5 when merge-ready
+- [ ] G4 Phase-9 approved before build
 
-**G2 Phase-9 proposed:** 2026-11-12 — awaiting human approve
+**G2 Phase-9 proposed:** 2026-11-12 (dual shell) — awaiting human approve

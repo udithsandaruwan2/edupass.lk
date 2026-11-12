@@ -1,47 +1,46 @@
-# ADR-0009 — Full Student Expo (React Native) app
+# ADR-0009 — EduPass Expo app (Student shell + Staff gate)
 
 - **Status:** proposed
 - **Date:** `2026-11-12`
 - **Deciders:** human (pending G3)
-- **Supersedes:** extends ADR-0008 (companion remains origin; this expands scope)
+- **Supersedes:** extends ADR-0008
 
 ## Context
 
-Phase 8 delivered a thin Expo companion (tickets + scanner). Owner wants a **full student React Native app** with every student feature. Web SPA stays for organisers/admin. Nest `/api` is the source of truth.
+Owner requires both a **student** mobile experience and an **institute/seminar staff** experience to **scan and verify** QR tickets. Web remains the full organiser/admin product. Nest check-in and student APIs already exist.
 
 ## Decision
 
-1. **Evolve `mobile/`** into **EduPass Student** (Expo SDK, TypeScript, **Expo Router** file-based nav).
-2. **Student-first IA:** tabs = Home / Explore / Tickets / Learning / Account (exact labels TBD in UI pass).
-3. **API:** typed client wrapping Nest (reuse contracts from `frontend/src/api/*` patterns; extract shared package later if duplication hurts).
-4. **Auth:** JWT in `expo-secure-store`; same register/login/reset/change-password endpoints.
-5. **Media:** `expo-image-picker` / document picker for bank + tuition slips; `expo-camera` only if scanner flavor kept.
-6. **Scanner:** demote to optional staff entry or separate build profile — not the student home.
-7. **Stores:** internal distribution first; Play/App Store as Phase 9b after G5 mobile.
+1. **One Expo app** at `mobile/` (Expo Router, TypeScript).
+2. **Two shells** after `/auth/me`:
+   - **Student** — tab IA: Home / Explore / Tickets / Learning / Account
+   - **Staff Gate** — seminar picker + camera/manual check-in + result feed
+3. Shell choice: default Student if no staff membership; default Gate if `SCANNER` (or only staff roles); others with both roles get a switcher.
+4. Staff mobile **does not** include seminar CRUD, slip approve, or billing — web only.
+5. Auth JWT in `expo-secure-store`; check-in via existing `POST /organiser/check-in`.
+6. Optional later: EAS build flavors (`student` / `staff`) with same codebase; v1 = runtime shells.
 
 ## Alternatives
 
 | Option | Why not |
 |---|---|
-| New `apps/student-native` repo | Split monorepo; slower |
-| Capacitor wrap of Vite | Weaker native QR/slip UX; owner asked RN |
-| Flutter | Second language |
-| Include organiser mobile now | XL; web already complete |
+| Two separate apps | Double store listing / auth maintenance |
+| Staff-only companion + student web | Owner asked student app too |
+| Full organiser mobile | XL; out of Phase 9 |
 
 ## Consequences
 
-**Positive** — one codebase path from ADR-0008; full student journey on device  
-**Negative** — larger `mobile/`; store compliance work later  
-**Neutral** — web still required for sellers/admin
+**Positive** — door staff and students share one install; roles already in Nest  
+**Negative** — larger IA; camera permission copy must cover both use cases  
+**Neutral** — web still required for selling/admin
 
 ## Revisit if
 
-- Need organiser mobile within 90 days
-- Shared TS package extraction becomes urgent
-- Offline-first demanded by institutes
+- Institutes demand slip-approve on phone
+- Store policies force separate staff APK
 
 ## References
 
 - `project/09-mobile-student-discovery.md`
 - `project/09-mobile-student-prd.md`
-- ADR-0008
+- ADR-0008, StaffRole enum
