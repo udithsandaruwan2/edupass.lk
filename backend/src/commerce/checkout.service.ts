@@ -233,6 +233,16 @@ export class CheckoutService {
     return rows.map(mapOrder);
   }
 
+  async listOrdersForOrganisation(organisationId: string) {
+    const rows = await this.prisma.order.findMany({
+      where: { organisationId },
+      include: { lines: true },
+      orderBy: { createdAt: 'desc' },
+      take: 500,
+    });
+    return rows.map(mapOrder);
+  }
+
   async getOrder(orderId: string, studentUserId: string, isAdmin = false) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },

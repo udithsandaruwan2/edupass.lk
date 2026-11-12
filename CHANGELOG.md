@@ -20,6 +20,9 @@ All notable changes to this project are documented here. Format follows [Keep a 
 - SMTP `MailModule` (welcome, slip approve/reject, tuition invoice, password reset) (T-010).
 - Forgot/reset password API + FE wire (T-010).
 - Admin **Platform fee revenue** UI from live `PlatformFeeLine` + subscription invoices.
+- Student My Tickets / bookings hydrate from `/tickets` + `/orders` in API mode.
+- Organiser bookings hydrate from `GET /organiser/orders`.
+- Product API smoke script: `scripts/smoke-product.sh`.
 
 ### Changed
 

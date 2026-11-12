@@ -431,7 +431,7 @@ export const PaymentFailedPage: React.FC = () => {
         <XCircle className="mx-auto size-14 text-danger" aria-hidden="true" />
         <h1 className="mt-4 text-2xl font-bold text-fg">Payment declined</h1>
         <p className="mt-2 text-sm text-muted">
-          The demo payment for order <span className="font-semibold text-fg">{orderId}</span> was declined, so no tickets were issued. Your cart has been kept.
+          Payment for order <span className="font-semibold text-fg">{orderId}</span> was declined, so no tickets were issued. Your cart has been kept.
         </p>
         <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
           <Button to="/checkout">Try again</Button>

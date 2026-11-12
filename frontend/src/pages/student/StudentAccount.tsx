@@ -101,10 +101,10 @@ export const AccountSettingsPage: React.FC<{ role: 'student' | 'organiser' }> = 
     setPwErrors(errs);
     if (Object.keys(errs).length) return;
     setPw({ current: '', next: '', confirm: '' });
-    toast(usingMocks ? 'Password updated (demo)' : 'Password change requested', {
+    toast(usingMocks ? 'Password updated (mock)' : 'Use forgot password to reset by email', {
       description: usingMocks
         ? 'Nothing is stored in mock mode.'
-        : 'Use forgot-password if you need a reset link by email.',
+        : 'Open Forgot password from the login page to receive a reset code.',
     });
   };
 
