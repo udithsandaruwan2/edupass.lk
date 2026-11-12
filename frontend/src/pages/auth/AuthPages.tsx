@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
+import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { Building2, CheckCircle2, Eye, EyeOff, GraduationCap, KeyRound, LogOut, MailCheck, ShieldCheck } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Checkbox, Input, Select } from '../../components/ui/Field';
 import { Card, Notice } from '../../components/ui/Primitives';
 import { Tabs } from '../../components/ui/Tabs';
+import { forgotPasswordRequest, resetPasswordRequest } from '../../api/auth';
 import { DEMO_ACCOUNTS, ROLE_HOME, ROLE_LABEL, useAuth, type DemoUser } from '../../contexts/AuthContext';
 import { useData } from '../../contexts/DataContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -15,6 +16,7 @@ import { slugify } from '../../utils/format';
 import { makeId } from '../../utils/random';
 import { email, minLength, password, phone, required, runValidators } from '../../utils/validation';
 
+/** Fixed OTP used only when VITE_USE_MOCKS=true (offline UI demos). */
 export const DEMO_OTP = '246810';
 
 const AuthHeader: React.FC<{ title: string; description?: React.ReactNode; icon?: React.ReactNode }> = ({ title, description, icon }) => (
@@ -46,8 +48,8 @@ export const LoginPage: React.FC = () => {
   const [params] = useSearchParams();
   const [role, setRole] = useState<Role>('student');
   const [values, setValues] = useState({
-    email: usingMocks ? DEMO_ACCOUNTS.student.email : 'student@edupass.lk',
-    password: usingMocks ? 'demo1234' : 'Password123!',
+    email: usingMocks ? DEMO_ACCOUNTS.student.email : '',
+    password: usingMocks ? 'demo1234' : '',
   });
   const [errors, setErrors] = useState<Partial<Record<'email' | 'password', string>>>({});
   const [remember, setRemember] = useState(true);
@@ -103,13 +105,11 @@ export const LoginPage: React.FC = () => {
       {usingMocks && (
         <Tabs label="Account type" value={role} onChange={pickRole} tabs={(['student', 'organiser', 'admin'] as Role[]).map((r) => ({ id: r, label: ROLE_LABEL[r] }))} className="mb-6" />
       )}
-      <Notice tone="info" className="mb-5">
-        {usingMocks ? (
-          <><strong>Demo sign-in.</strong> Any password of 8+ characters works; nothing is checked or sent.</>
-        ) : (
-          <><strong>API sign-in.</strong> Use seeded accounts (e.g. student@edupass.lk / Password123!).</>
-        )}
-      </Notice>
+      {usingMocks && (
+        <Notice tone="info" className="mb-5">
+          <strong>Demo sign-in.</strong> Any password of 8+ characters works; nothing is checked or sent.
+        </Notice>
+      )}
       <form onSubmit={submit} noValidate className="space-y-4">
         <Input label="Email" type="email" autoComplete="email" required value={values.email} onValueChange={(v) => setValues({ ...values, email: v })} error={errors.email} />
         <PasswordInput label="Password" autoComplete="current-password" value={values.password} onChange={(v) => setValues({ ...values, password: v })} error={errors.password} />
@@ -123,7 +123,7 @@ export const LoginPage: React.FC = () => {
       </form>
       {usingMocks && (
         <p className="mt-6 text-center text-sm text-muted">
-          Or <Link to={`/select-account${params.get('next') ? `?next=${encodeURIComponent(params.get('next')!)}` : ''}`} className="font-semibold text-brand hover:underline">choose a demo account</Link>
+          Or <Link to={`/select-account${params.get('next') ? `?next=${encodeURIComponent(params.get('next')!)}` : ''}`} className="font-semibold text-brand hover:underline">choose a mock account</Link>
         </p>
       )}
     </>
@@ -132,14 +132,17 @@ export const LoginPage: React.FC = () => {
 
 export const SelectAccountPage: React.FC = () => {
   useDocumentTitle('Choose an account');
-  const { login, user } = useAuth();
+  const { login, user, usingMocks } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const icons = { student: GraduationCap, organiser: Building2, admin: ShieldCheck };
   const blurbs = { student: 'Book seminars, manage tickets and favourites.', organiser: 'Lumina Academy — manage seminars, sales and check-in.', admin: 'Oversee users, seminars, payments and content.' };
+  if (!usingMocks) {
+    return <Navigate to="/login" replace />;
+  }
   return (
     <>
-      <AuthHeader title="Choose a demo account" description="Switch between the three sample accounts at any time. There are no real permissions in this demo." />
+      <AuthHeader title="Choose a mock account" description="Offline demo accounts for local UI walkthroughs. Not used in production." />
       <ul className="space-y-3">
         {(Object.keys(DEMO_ACCOUNTS) as Role[]).map((r) => {
           const Icon = icons[r];
@@ -176,22 +179,49 @@ const STREAMS = ['Commerce', 'Physical Science', 'Biological Science', 'Arts', '
 export const RegisterStudentPage: React.FC = () => {
   useDocumentTitle('Create a student account');
   const { upsert, data } = useData();
+  const { registerStudent, usingMocks } = useAuth();
+  const toast = useToast();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const year = new Date().getFullYear();
   const [v, setV] = useState({ name: '', email: '', phone: '', school: '', district: 'Colombo', stream: 'Commerce', examYear: String(year + 1), password: '', confirm: '' });
   const [agree, setAgree] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
   const set = (k: keyof typeof v) => (x: string) => setV({ ...v, [k]: x });
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errs: Record<string, string> = runValidators(v, { name: [required('Full name')], email: [required('Email'), email], phone: [required('Mobile number'), phone], school: [required('School')], password: [password] });
     if (v.confirm !== v.password) errs.confirm = 'Passwords do not match';
-    if (data.students.some((s) => s.email.toLowerCase() === v.email.toLowerCase())) errs.email = 'An account with this email already exists';
+    if (usingMocks && data.students.some((s) => s.email.toLowerCase() === v.email.toLowerCase())) errs.email = 'An account with this email already exists';
     if (!agree) errs.agree = 'Please accept the terms';
     setErrors(errs);
     if (Object.keys(errs).length) return;
+
+    if (!usingMocks) {
+      setSubmitting(true);
+      try {
+        const session = await registerStudent({
+          email: v.email.trim(),
+          password: v.password,
+          name: v.name.trim(),
+          district: v.district,
+          school: v.school,
+        });
+        toast('Account created', { tone: 'success', description: 'Check your email for a welcome message.' });
+        navigate(safeNext(params.get('next'), ROLE_HOME[session.role]), { replace: true });
+      } catch (err) {
+        toast('Could not create account', {
+          tone: 'error',
+          description: err instanceof Error ? err.message : 'Try again',
+        });
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+
     const student: Student = { id: makeId('stu'), name: v.name.trim(), email: v.email.trim(), phone: v.phone, school: v.school, district: v.district, stream: v.stream, examYear: Number(v.examYear), status: 'active', joinedAt: new Date().toISOString() };
     upsert('students', student);
     const pending: DemoUser = { role: 'student', id: student.id, name: student.name, email: student.email };
@@ -212,7 +242,9 @@ export const RegisterStudentPage: React.FC = () => {
         <PasswordInput label="Password" autoComplete="new-password" value={v.password} onChange={set('password')} error={errors.password} hint="8+ characters with a letter and a number" />
         <PasswordInput label="Confirm password" autoComplete="new-password" value={v.confirm} onChange={set('confirm')} error={errors.confirm} />
         <Checkbox className="sm:col-span-2" checked={agree} onChange={setAgree} error={errors.agree} label={<>I agree to the <Link to="/terms" className="font-semibold text-brand hover:underline">Terms</Link> and <Link to="/privacy" className="font-semibold text-brand hover:underline">Privacy Policy</Link></>} />
-        <Button type="submit" size="lg" className="w-full sm:col-span-2">Create account</Button>
+        <Button type="submit" size="lg" className="w-full sm:col-span-2" disabled={submitting}>
+          {submitting ? 'Creating…' : 'Create account'}
+        </Button>
       </form>
     </>
   );
@@ -221,18 +253,52 @@ export const RegisterStudentPage: React.FC = () => {
 export const RegisterOrganiserPage: React.FC = () => {
   useDocumentTitle('Register as an organiser');
   const { upsert, notify } = useData();
+  const { registerInstitution, registerLecturer, usingMocks } = useAuth();
+  const toast = useToast();
   const navigate = useNavigate();
   const [v, setV] = useState({ orgName: '', type: 'Institute', city: '', contact: '', email: '', phone: '', password: '' });
   const [agree, setAgree] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
   const set = (k: keyof typeof v) => (x: string) => setV({ ...v, [k]: x });
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errs: Record<string, string> = runValidators(v, { orgName: [required('Organisation name')], city: [required('City')], contact: [required('Contact person')], email: [required('Email'), email], phone: [required('Phone'), phone], password: [password] });
     if (!agree) errs.agree = 'Please accept the organiser terms';
     setErrors(errs);
     if (Object.keys(errs).length) return;
+
+    if (!usingMocks) {
+      setSubmitting(true);
+      try {
+        const isInstitute = v.type === 'Institute' || v.type === 'School society';
+        const session = isInstitute
+          ? await registerInstitution({
+              email: v.email.trim(),
+              password: v.password,
+              name: v.contact.trim(),
+              organisationName: v.orgName.trim(),
+            })
+          : await registerLecturer({
+              email: v.email.trim(),
+              password: v.password,
+              name: v.contact.trim(),
+              organisationName: v.orgName.trim(),
+            });
+        toast('Organiser account created', { tone: 'success', description: 'Check your email for a welcome message.' });
+        navigate(ROLE_HOME[session.role], { replace: true });
+      } catch (err) {
+        toast('Could not create account', {
+          tone: 'error',
+          description: err instanceof Error ? err.message : 'Try again',
+        });
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+
     const org: Organiser = { id: makeId('org'), slug: slugify(v.orgName), name: v.orgName.trim(), type: v.type as Organiser['type'], city: v.city, about: `${v.orgName} is a new organiser on EduPass.`, email: v.email, phone: v.phone, verified: false, status: 'pending', joinedAt: new Date().toISOString() };
     upsert('organisers', org);
     notify('admin', 'Organiser awaiting approval', `${org.name} registered and needs verification.`, '/admin/organisers');
@@ -254,7 +320,9 @@ export const RegisterOrganiserPage: React.FC = () => {
         </div>
         <Notice className="sm:col-span-2">New organisers are reviewed by an admin before their first seminar goes live. You can set up seminars as drafts straight away.</Notice>
         <Checkbox className="sm:col-span-2" checked={agree} onChange={setAgree} error={errors.agree} label={<>I agree to the <Link to="/terms" className="font-semibold text-brand hover:underline">organiser terms</Link></>} />
-        <Button type="submit" size="lg" className="w-full sm:col-span-2">Create organiser account</Button>
+        <Button type="submit" size="lg" className="w-full sm:col-span-2" disabled={submitting}>
+          {submitting ? 'Creating…' : 'Create organiser account'}
+        </Button>
       </form>
     </>
   );
@@ -262,21 +330,43 @@ export const RegisterOrganiserPage: React.FC = () => {
 
 export const ForgotPasswordPage: React.FC = () => {
   useDocumentTitle('Forgot password');
+  const { usingMocks } = useAuth();
+  const toast = useToast();
   const navigate = useNavigate();
   const [value, setValue] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const submit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const msg = required('Email')(value) ?? email(value);
     setError(msg);
-    if (!msg) navigate('/verify-otp', { state: { purpose: 'reset', email: value } });
+    if (msg) return;
+    if (usingMocks) {
+      navigate('/verify-otp', { state: { purpose: 'reset', email: value } });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await forgotPasswordRequest(value.trim());
+      toast('Check your email', { description: 'If an account exists, a 6-digit reset code was sent.' });
+      navigate('/verify-otp', { state: { purpose: 'reset', email: value.trim() } });
+    } catch (err) {
+      toast('Could not send reset code', {
+        tone: 'error',
+        description: err instanceof Error ? err.message : 'Try again',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
   return (
     <>
       <AuthHeader icon={<KeyRound className="size-5" aria-hidden="true" />} title="Forgot your password?" description="Enter your account email and we'll send a 6-digit code to reset it." />
       <form onSubmit={submit} noValidate className="space-y-4">
         <Input label="Email" type="email" autoComplete="email" required value={value} onValueChange={setValue} error={error ?? undefined} />
-        <Button type="submit" size="lg" className="w-full">Send reset code</Button>
+        <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+          {submitting ? 'Sending…' : 'Send reset code'}
+        </Button>
       </form>
       <p className="mt-6 text-center text-sm text-muted"><Link to="/login" className="font-semibold text-brand hover:underline">Back to log in</Link></p>
     </>
@@ -295,7 +385,7 @@ export const VerifyOtpPage: React.FC = () => {
   const location = useLocation();
   const state = (location.state ?? { purpose: 'reset' }) as OtpState;
   const target = state.user?.email ?? state.email ?? 'your email';
-  const { login } = useAuth();
+  const { login, usingMocks } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
   const [digits, setDigits] = useState<string[]>(Array(6).fill(''));
@@ -329,20 +419,34 @@ export const VerifyOtpPage: React.FC = () => {
     e.preventDefault();
     const code = digits.join('');
     if (code.length < 6) return setError('Enter all 6 digits');
-    if (code !== DEMO_OTP) return setError('That code is not correct. The demo code is shown above.');
+    if (usingMocks) {
+      if (code !== DEMO_OTP) return setError('That code is not correct. The mock code is shown above.');
+      if (state.purpose === 'register' && state.user) {
+        login(state.user);
+        toast('Email verified', { description: 'Your mock account is ready.' });
+        navigate(state.next ?? ROLE_HOME[state.user.role], { replace: true });
+      } else {
+        navigate('/reset-password', { state: { email: state.email, code }, replace: true });
+      }
+      return;
+    }
+    // API mode: registration skips OTP (account already created). Reset carries code forward.
     if (state.purpose === 'register' && state.user) {
       login(state.user);
-      toast('Email verified', { description: 'Your demo account is ready.' });
       navigate(state.next ?? ROLE_HOME[state.user.role], { replace: true });
-    } else {
-      navigate('/reset-password', { state: { email: state.email }, replace: true });
+      return;
     }
+    navigate('/reset-password', { state: { email: state.email, code }, replace: true });
   };
 
   return (
     <>
       <AuthHeader icon={<MailCheck className="size-5" aria-hidden="true" />} title="Check your email" description={<>We sent a 6-digit code to <span className="font-semibold text-fg">{target}</span>.</>} />
-      <Notice tone="warning" className="mb-5">No email is sent in this demo. Use code <strong className="tracking-widest">{DEMO_OTP}</strong>.</Notice>
+      {usingMocks ? (
+        <Notice tone="warning" className="mb-5">No email is sent in mock mode. Use code <strong className="tracking-widest">{DEMO_OTP}</strong>.</Notice>
+      ) : (
+        <Notice tone="info" className="mb-5">Enter the code from your email. It expires in 15 minutes.</Notice>
+      )}
       <form onSubmit={submit} noValidate>
         <fieldset>
           <legend className="mb-2 text-sm font-semibold text-fg">Verification code</legend>
@@ -373,7 +477,21 @@ export const VerifyOtpPage: React.FC = () => {
       </form>
       <p className="mt-5 text-center text-sm text-muted">
         Didn't get it?{' '}
-        <button type="button" disabled={cooldown > 0} onClick={() => { setCooldown(30); toast('Code resent (demo)', { tone: 'info', description: `Use ${DEMO_OTP}.` }); }} className="font-semibold text-brand hover:underline disabled:text-muted disabled:no-underline">
+        <button
+          type="button"
+          disabled={cooldown > 0}
+          onClick={() => {
+            setCooldown(30);
+            if (usingMocks) {
+              toast('Code resent', { tone: 'info', description: `Use ${DEMO_OTP}.` });
+            } else if (state.email) {
+              void forgotPasswordRequest(state.email).then(() =>
+                toast('Code resent', { tone: 'info', description: 'Check your inbox again.' }),
+              );
+            }
+          }}
+          className="font-semibold text-brand hover:underline disabled:text-muted disabled:no-underline"
+        >
           {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend code'}
         </button>
       </p>
@@ -383,23 +501,55 @@ export const VerifyOtpPage: React.FC = () => {
 
 export const ResetPasswordPage: React.FC = () => {
   useDocumentTitle('Reset password');
+  const location = useLocation();
+  const resetState = (location.state ?? {}) as { email?: string; code?: string };
+  const { usingMocks } = useAuth();
+  const toast = useToast();
   const navigate = useNavigate();
   const [v, setV] = useState({ password: '', confirm: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [done, setDone] = useState(false);
-  const submit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errs: Record<string, string> = runValidators(v, { password: [password] });
     if (v.confirm !== v.password) errs.confirm = 'Passwords do not match';
     setErrors(errs);
-    if (!Object.keys(errs).length) setDone(true);
+    if (Object.keys(errs).length) return;
+    if (usingMocks) {
+      setDone(true);
+      return;
+    }
+    if (!resetState.email || !resetState.code) {
+      toast('Reset session expired', { tone: 'error', description: 'Request a new code from forgot password.' });
+      navigate('/forgot-password', { replace: true });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await resetPasswordRequest({
+        email: resetState.email,
+        code: resetState.code,
+        password: v.password,
+      });
+      setDone(true);
+    } catch (err) {
+      toast('Could not update password', {
+        tone: 'error',
+        description: err instanceof Error ? err.message : 'Try again',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
   if (done) {
     return (
       <div role="status" className="text-center">
         <CheckCircle2 className="mx-auto size-12 text-success" aria-hidden="true" />
         <h1 className="mt-4 text-2xl font-bold text-fg">Password updated</h1>
-        <p className="mt-2 text-sm text-muted">In this demo nothing was stored — log in with any demo account.</p>
+        <p className="mt-2 text-sm text-muted">
+          {usingMocks ? 'Mock mode does not persist passwords — continue with any mock account.' : 'You can now log in with your new password.'}
+        </p>
         <Button className="mt-6 w-full" size="lg" onClick={() => navigate('/login')}>Back to log in</Button>
       </div>
     );
@@ -410,7 +560,9 @@ export const ResetPasswordPage: React.FC = () => {
       <form onSubmit={submit} noValidate className="space-y-4">
         <PasswordInput label="New password" autoComplete="new-password" value={v.password} onChange={(x) => setV({ ...v, password: x })} error={errors.password} hint="8+ characters with a letter and a number" />
         <PasswordInput label="Confirm new password" autoComplete="new-password" value={v.confirm} onChange={(x) => setV({ ...v, confirm: x })} error={errors.confirm} />
-        <Button type="submit" size="lg" className="w-full">Update password</Button>
+        <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+          {submitting ? 'Updating…' : 'Update password'}
+        </Button>
       </form>
     </>
   );
@@ -418,7 +570,7 @@ export const ResetPasswordPage: React.FC = () => {
 
 export const LogoutPage: React.FC = () => {
   useDocumentTitle('Log out');
-  const { user, logout } = useAuth();
+  const { user, logout, usingMocks } = useAuth();
   const navigate = useNavigate();
   if (!user) {
     return (
@@ -436,7 +588,8 @@ export const LogoutPage: React.FC = () => {
       <LogOut className="mx-auto size-10 text-brand" aria-hidden="true" />
       <h1 className="mt-4 text-2xl font-bold text-fg">Log out of EduPass?</h1>
       <p className="mt-2 text-sm text-muted">
-        You're signed in as <span className="font-semibold text-fg">{user.name}</span> ({ROLE_LABEL[user.role].toLowerCase()}). Your demo cart and saved seminars stay on this device.
+        You're signed in as <span className="font-semibold text-fg">{user.name}</span> ({ROLE_LABEL[user.role].toLowerCase()}).
+        {usingMocks ? ' Mock cart and saved seminars stay on this device.' : ' You can sign back in anytime.'}
       </p>
       <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
         <Button variant="secondary" onClick={() => navigate(-1)}>Cancel</Button>

@@ -46,7 +46,7 @@ export const AboutPage: React.FC = () => {
     <div className={`${container} max-w-5xl py-10 sm:py-14`}>
       <SectionHeader as="h1" eyebrow="About EduPass" title="Making exam seminars easy to find and book" description="EduPass brings A/L and O/L seminars, paper classes and revision days into one place, with QR tickets that make entry quick." />
       <Notice tone="warning" className="mb-10">
-        <strong>This is a demonstration build.</strong> The statistics below are counted from the sample data in this demo, not from real activity.
+        Platform statistics reflect live catalogue activity on EduPass.
       </Notice>
       <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map((s) => (

@@ -8,6 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Field';
 import { Card, EmptyState, Notice } from '../../components/ui/Primitives';
 import { Tabs } from '../../components/ui/Tabs';
+import { useMocks } from '../../api/client';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useCatalog } from '../../hooks/useCatalog';
@@ -76,6 +77,7 @@ export const TicketDetailPage: React.FC = () => {
   const { tickets } = useStudent();
   const { organiserById, orders } = useCatalog();
   const toast = useToast();
+  const mocks = useMocks();
   const qrRef = useRef<HTMLDivElement>(null);
   const t = tickets.find((x) => x.id === ticketId);
   useDocumentTitle(t ? `Ticket ${t.code}` : 'Ticket');
@@ -86,18 +88,21 @@ export const TicketDetailPage: React.FC = () => {
   const download = () => {
     const svg = qrRef.current?.querySelector('svg')?.outerHTML ?? '';
     const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
-    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EduPass demo ticket ${esc(t.code)}</title>
+    const warn = mocks
+      ? 'MOCK TICKET — not valid for entry to any real event.'
+      : 'Present this QR at the venue for check-in.';
+    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EduPass ticket ${esc(t.code)}</title>
 <style>body{font-family:system-ui,sans-serif;background:#f3f4f6;margin:0;padding:24px;color:#172033}.t{max-width:420px;margin:auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb}.h{background:#c2410c;color:#fff;padding:16px 20px}.b{padding:20px;text-align:center}.d{border-top:1px dashed #e5e7eb;padding:16px 20px;font-size:14px}.d p{margin:4px 0}.w{background:#fef3c7;color:#92400e;font-size:12px;padding:10px 20px;font-weight:600}</style></head>
-<body><div class="t"><div class="h"><strong>EduPass</strong> · Admission ticket</div><div class="w">DEMO TICKET — not valid for entry to any real event.</div><div class="b">${svg}<p style="font-family:monospace">${esc(t.code)}</p></div>
+<body><div class="t"><div class="h"><strong>EduPass</strong> · Admission ticket</div><div class="w">${warn}</div><div class="b">${svg}<p style="font-family:monospace">${esc(t.code)}</p></div>
 <div class="d"><p><strong>${esc(t.seminar.title)}</strong></p><p>${esc(formatLongDate(t.seminar.startsAt))} · ${esc(formatTime(t.seminar.startsAt))}</p><p>${esc(t.seminar.venue)}</p><p>Holder: ${esc(t.holderName)}</p><p>Ticket: ${esc(t.typeName)}</p></div></div></body></html>`;
-    downloadFile(`edupass-demo-ticket-${t.code}.html`, html, 'text/html;charset=utf-8');
-    toast('Demo ticket downloaded', { description: 'Open the file to view or print it.' });
+    downloadFile(`edupass-ticket-${t.code}.html`, html, 'text/html;charset=utf-8');
+    toast('Ticket downloaded', { description: 'Open the file to view or print it.' });
   };
 
   const addToCalendar = () => {
     downloadFile(
       `${t.seminar.slug}.ics`,
-      toIcs({ uid: t.id, title: t.seminar.title, start: t.seminar.startsAt, hours: t.seminar.durationHours, location: t.seminar.venue, description: `EduPass demo ticket ${t.code}` }),
+      toIcs({ uid: t.id, title: t.seminar.title, start: t.seminar.startsAt, hours: t.seminar.durationHours, location: t.seminar.venue, description: `EduPass ticket ${t.code}` }),
       'text/calendar;charset=utf-8',
     );
   };
@@ -130,14 +135,18 @@ export const TicketDetailPage: React.FC = () => {
             <div><dt className="text-xs text-muted">Holder</dt><dd className="font-semibold text-fg">{t.holderName}</dd></div>
             <div><dt className="text-xs text-muted">Ticket type</dt><dd className="font-semibold text-fg">{t.typeName}</dd></div>
           </dl>
-          <p className="border-t border-line bg-warning/10 px-5 py-3 text-xs font-semibold text-fg">Demo ticket — not valid for entry to any real event.</p>
+          {mocks ? (
+            <p className="border-t border-line bg-warning/10 px-5 py-3 text-xs font-semibold text-fg">Mock ticket — not valid for entry to any real event.</p>
+          ) : (
+            <p className="border-t border-line bg-brand/5 px-5 py-3 text-xs font-semibold text-fg">Show this QR at the gate for check-in.</p>
+          )}
         </Card>
 
         <div className="space-y-4">
           <Card className="p-5">
             <h2 className="text-base font-semibold text-fg">Ticket actions</h2>
             <div className="mt-4 grid gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-              <Button variant="secondary" onClick={download} disabled={t.status === 'cancelled'}><Download className="size-4" aria-hidden="true" />Download (demo)</Button>
+              <Button variant="secondary" onClick={download} disabled={t.status === 'cancelled'}><Download className="size-4" aria-hidden="true" />Download</Button>
               <Button variant="secondary" onClick={() => window.print()} disabled={t.status === 'cancelled'}><Printer className="size-4" aria-hidden="true" />Print</Button>
               <Button variant="secondary" onClick={addToCalendar}><CalendarPlus className="size-4" aria-hidden="true" />Add to calendar</Button>
             </div>

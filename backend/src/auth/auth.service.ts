@@ -1,10 +1,12 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { randomInt } from 'crypto';
 import {
   EntitlementCode,
   EntitlementStatus,
@@ -14,13 +16,20 @@ import {
   StaffRole,
   SubscriptionStatus,
 } from '@prisma/client';
+import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
+  ForgotPasswordDto,
   LoginDto,
   RegisterInstitutionDto,
   RegisterLecturerDto,
   RegisterStudentDto,
+  ResetPasswordDto,
 } from './dto/auth.dto';
+
+type ResetEntry = { code: string; expiresAt: number };
+
+const RESET_TTL_MS = 15 * 60 * 1000;
 
 function slugify(input: string): string {
   const base = input
@@ -33,9 +42,12 @@ function slugify(input: string): string {
 
 @Injectable()
 export class AuthService {
+  private readonly resetCodes = new Map<string, ResetEntry>();
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
+    private readonly mail: MailService,
   ) {}
 
   async registerStudent(dto: RegisterStudentDto) {
@@ -55,6 +67,7 @@ export class AuthService {
         },
       },
     });
+    void this.mail.welcome(user.email, user.name, 'student');
     return this.issueTokens(user.id, user.email, false);
   }
 
@@ -104,6 +117,7 @@ export class AuthService {
       return { user: created, organisationId: org.id };
     });
 
+    void this.mail.welcome(user.user.email, user.user.name, 'institution');
     return this.issueTokens(user.user.id, user.user.email, false);
   }
 
@@ -141,6 +155,7 @@ export class AuthService {
       return created;
     });
 
+    void this.mail.welcome(user.email, user.name, 'lecturer');
     return this.issueTokens(user.id, user.email, false);
   }
 
@@ -156,6 +171,40 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
     return this.issueTokens(user.id, user.email, user.isPlatformAdmin);
+  }
+
+  /** Always returns ok to avoid email enumeration. */
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const email = dto.email.toLowerCase();
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (user) {
+      const code = String(randomInt(100000, 999999));
+      this.resetCodes.set(email, {
+        code,
+        expiresAt: Date.now() + RESET_TTL_MS,
+      });
+      void this.mail.passwordReset(user.email, user.name, code);
+    }
+    return { ok: true as const };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const email = dto.email.toLowerCase();
+    const entry = this.resetCodes.get(email);
+    if (!entry || entry.expiresAt < Date.now() || entry.code !== dto.code.trim()) {
+      throw new BadRequestException('Invalid or expired reset code');
+    }
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      throw new BadRequestException('Invalid or expired reset code');
+    }
+    const passwordHash = await bcrypt.hash(dto.password, 10);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash },
+    });
+    this.resetCodes.delete(email);
+    return { ok: true as const };
   }
 
   async me(userId: string) {

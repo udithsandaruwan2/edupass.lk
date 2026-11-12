@@ -98,3 +98,53 @@ export function uploadPlatformSlip(
 ) {
   return apiRequest('/institute/billing/slips', { method: 'POST', token, body });
 }
+
+export type ApiPlatformFeeLine = {
+  id: string;
+  orderId: string;
+  organisationId: string;
+  organisationName: string;
+  organisationSlug: string;
+  commissionPercent: number;
+  ticketSubtotalLkr: number;
+  feeAmountLkr: number;
+  status: 'ACTIVE' | 'VOID' | string;
+  createdAt: string;
+};
+
+export type ApiPlatformFeesResponse = {
+  summary: {
+    activeFeeLkr: number;
+    voidedFeeLkr: number;
+    activeTicketSubtotalLkr: number;
+    lineCount: number;
+    activeCount: number;
+  };
+  lines: ApiPlatformFeeLine[];
+};
+
+export type ApiSubscriptionInvoice = {
+  id: string;
+  organisationId: string;
+  organisationName: string;
+  planCode: string;
+  amountLkr: number;
+  status: string;
+  slipReference: string | null;
+  paidAt: string | null;
+  createdAt: string;
+};
+
+export function listAdminPlatformFees(token: string) {
+  return apiRequest<ApiPlatformFeesResponse>('/admin/revenue/platform-fees', {
+    method: 'GET',
+    token,
+  });
+}
+
+export function listAdminSubscriptionInvoices(token: string) {
+  return apiRequest<ApiSubscriptionInvoice[]>('/admin/revenue/subscriptions', {
+    method: 'GET',
+    token,
+  });
+}

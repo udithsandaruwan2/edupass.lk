@@ -8,9 +8,9 @@ export function toIcs(event: { uid: string; title: string; start: string; hours:
   return [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//EduPass Demo//EN',
+    'PRODID:-//EduPass//EN',
     'BEGIN:VEVENT',
-    `UID:${event.uid}@edupass.demo`,
+    `UID:${event.uid}@edupass.lk`,
     `DTSTAMP:${stamp(new Date())}`,
     `DTSTART:${stamp(start)}`,
     `DTEND:${stamp(end)}`,

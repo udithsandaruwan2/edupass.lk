@@ -2,6 +2,9 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterEach, beforeEach, vi } from 'vitest';
 
+// Unit tests use the offline mock dataset; product default is API mode.
+vi.stubEnv('VITE_USE_MOCKS', 'true');
+
 // jsdom gaps used by the app
 Object.defineProperty(window, 'matchMedia', {
   writable: true,

@@ -8,6 +8,7 @@ import {
   TuitionPaymentMethod,
   TuitionPaymentStatus,
 } from '@prisma/client';
+import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateTuitionFeePlanDto,
@@ -20,7 +21,10 @@ import {
 
 @Injectable()
 export class TuitionService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mail: MailService,
+  ) {}
 
   listFeePlans(organisationId: string) {
     return this.prisma.tuitionFeePlan.findMany({
@@ -94,6 +98,22 @@ export class TuitionService {
         payments: true,
       },
     });
+
+    if (enrollment.studentUserId) {
+      const student = await this.prisma.user.findUnique({
+        where: { id: enrollment.studentUserId },
+        select: { email: true, name: true },
+      });
+      if (student) {
+        void this.mail.tuitionInvoice(
+          student.email,
+          student.name,
+          title!,
+          amountLkr!,
+        );
+      }
+    }
+
     return this.mapInvoice(invoice);
   }
 

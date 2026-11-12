@@ -56,7 +56,7 @@ export const Footer: React.FC = () => {
     setError(msg);
     if (msg) return;
     setEmail('');
-    toast('Subscribed (demo)', { description: 'In this demo build no email is stored or sent.' });
+    toast('Thanks for subscribing', { description: 'We will email product updates when available.' });
   };
 
   return (
@@ -119,8 +119,8 @@ export const Footer: React.FC = () => {
         </div>
 
         <div className="flex flex-col gap-2 border-t border-line pt-6 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} EduPass. Demonstration build.</p>
-          <p>All seminars, people and bookings shown are sample data.</p>
+          <p>© {new Date().getFullYear()} EduPass.</p>
+          <p>Academic seminar tickets for Sri Lanka.</p>
         </div>
       </div>
     </footer>

@@ -15,7 +15,6 @@ import { Logo } from '../components/Navbar';
 import { IconButton } from '../components/ui/Button';
 import { MenuItem, Popover } from '../components/ui/Menu';
 import { Avatar } from '../components/ui/Primitives';
-import { DemoBanner } from './common';
 
 interface NavItem {
   to: string;
@@ -262,15 +261,15 @@ const NotificationsMenu: React.FC<{ role: Role }> = ({ role }) => {
   );
 };
 
-/** Demo-only role switcher: jumps between the three sample accounts. */
+/** Mock-only role switcher for offline UI demos. Hidden in API / production mode. */
 export const RoleSwitcher: React.FC<{ compact?: boolean }> = ({ compact }) => {
   const { user, switchRole, usingMocks } = useAuth();
   const navigate = useNavigate();
-  if (!usingMocks && !import.meta.env.DEV) return null;
+  if (!usingMocks) return null;
   return (
     <div className="flex items-center gap-2">
       <label htmlFor="role-switch" className={compact ? 'sr-only' : 'hidden text-xs font-semibold text-muted xl:block'}>
-        Demo role
+        Mock role
       </label>
       <select
         id="role-switch"
@@ -317,7 +316,6 @@ export const DashboardLayout: React.FC<{ role: Role }> = ({ role }) => {
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-md focus:bg-brand-solid focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-on-brand">
         Skip to content
       </a>
-      <DemoBanner />
       <div className="flex">
         {/* Desktop sidebar */}
         <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-line bg-surface lg:flex">

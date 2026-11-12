@@ -68,7 +68,7 @@ const UserMenu: React.FC = () => {
         <>
           <div className="border-b border-line px-3 pb-2.5 pt-1.5">
             <p className="truncate text-sm font-semibold text-fg">{user.name}</p>
-            <p className="truncate text-xs text-muted">{ROLE_LABEL[user.role]} · demo account</p>
+            <p className="truncate text-xs text-muted">{ROLE_LABEL[user.role]}</p>
           </div>
           <div className="pt-1.5">
             <MenuItem icon={<LayoutDashboard className="size-4" aria-hidden="true" />} onClick={() => { close(); navigate(ROLE_HOME[user.role]); }}>
@@ -277,7 +277,7 @@ export const Navbar: React.FC<{ onOpenSearch: () => void }> = ({ onOpenSearch })
                 </div>
               )}
             </div>
-            {user && <Badge tone="neutral">Signed in as {ROLE_LABEL[user.role]} (demo)</Badge>}
+            {user && <Badge tone="neutral">Signed in as {ROLE_LABEL[user.role]}</Badge>}
           </div>
         )}
       </div>

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Check, CircleDollarSign, CreditCard, RotateCcw, TriangleAlert, Wallet, X } from 'lucide-react';
+import { Check, CircleDollarSign, CreditCard, RotateCcw, Wallet, X } from 'lucide-react';
 import { StatusBadge } from '../../components/StatusBadge';
 import { Button } from '../../components/ui/Button';
 import { DataTable, type Column } from '../../components/ui/DataTable';
 import { ConfirmDialog } from '../../components/ui/Dialog';
 import { Select } from '../../components/ui/Field';
-import { Card, Notice } from '../../components/ui/Primitives';
+import { Card } from '../../components/ui/Primitives';
 import { StatCard, StatGrid } from '../../components/ui/StatCard';
 import { Tabs } from '../../components/ui/Tabs';
 import { DEMO_ACCOUNTS } from '../../contexts/AuthContext';
@@ -109,8 +109,7 @@ export const PaymentRecordsPage: React.FC = () => {
   ];
   return (
     <>
-      <PageHeader title="Payment records" description="Simulated payment transactions. No gateway is connected." />
-      <Notice tone="warning" icon={<TriangleAlert className="size-4 text-warning" aria-hidden="true" />} className="mb-6">Demo records only — these are not real payments and contain no card data.</Notice>
+      <PageHeader title="Payment records" description="Bank-slip and ticket payment history. Card gateway held until PayHere." />
       <StatGrid>
         <StatCard label="Successful payments" value={formatNumber(paid.length)} icon={CreditCard} />
         <StatCard label="Collected (incl. fees)" value={formatLKR(paid.reduce((n, o) => n + o.total, 0))} icon={CircleDollarSign} />

@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import { Link, Outlet } from 'react-router';
 import { BadgeCheck, QrCode, Ticket } from 'lucide-react';
 import { Logo } from '../components/Navbar';
-import { DemoBanner, PageFallback } from './common';
+import { PageFallback } from './common';
 
 const POINTS = [
   { icon: Ticket, text: 'Book seminars, paper classes and revision days in a few taps' },
@@ -12,7 +12,6 @@ const POINTS = [
 
 export const AuthLayout: React.FC = () => (
   <div className="flex min-h-screen flex-col bg-page text-fg">
-    <DemoBanner />
     <div className="grid flex-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
       <aside className="relative hidden flex-col justify-between overflow-hidden border-r border-line bg-surface p-10 lg:flex">
         <Link to="/" className="w-fit rounded-md" aria-label="EduPass home">
@@ -33,7 +32,7 @@ export const AuthLayout: React.FC = () => (
             ))}
           </ul>
         </div>
-        <p className="text-xs text-muted">Simulated sign-in for demonstration. No credentials are sent anywhere.</p>
+        <p className="text-xs text-muted">Secure sign-in for students, organisers, and platform admins.</p>
         <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 -right-40 size-[28rem] rounded-full bg-brand/8 blur-3xl" />
       </aside>
       <main id="main" className="flex flex-col items-center justify-center px-4 py-10 sm:px-8">

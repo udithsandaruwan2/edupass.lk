@@ -4,7 +4,7 @@ import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { SearchModal } from '../components/SearchModal';
 import { useData } from '../contexts/DataContext';
-import { DemoBanner, PageFallback } from './common';
+import { PageFallback } from './common';
 
 export interface PublicOutletContext {
   openSearch: () => void;
@@ -36,7 +36,6 @@ export const PublicLayout: React.FC = () => {
       >
         Skip to content
       </a>
-      <DemoBanner />
       {data.announcement.active && (
         <div className="bg-brand-solid px-4 py-2 text-center text-sm font-semibold text-on-brand">{data.announcement.message}</div>
       )}

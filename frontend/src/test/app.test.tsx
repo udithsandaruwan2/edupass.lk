@@ -53,7 +53,7 @@ describe('booking journey', () => {
     // Simulated processing, then confirmation with 2 tickets
     expect(await screen.findByRole('heading', { name: 'Booking confirmed' }, { timeout: 4000 })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Your tickets (2)' })).toBeInTheDocument();
-    expect(screen.getAllByTitle(/Demo QR code for ticket EDP-/)).toHaveLength(2);
+    expect(screen.getAllByTitle(/QR code for ticket EDP-/)).toHaveLength(2);
 
     // Inventory and cart were updated
     const stored = JSON.parse(localStorage.getItem('edupass-demo-data-v1')!);
@@ -108,7 +108,7 @@ describe('access & roles', () => {
   it('offers a role switch when the role does not match', async () => {
     const user = userEvent.setup();
     renderApp('/admin', 'student');
-    await user.click(await screen.findByRole('button', { name: 'Switch to Admin demo' }, { timeout: 4000 }));
+    await user.click(await screen.findByRole('button', { name: 'Switch to Admin' }, { timeout: 4000 }));
     expect(await screen.findByRole('heading', { level: 1, name: 'Admin overview' }, { timeout: 4000 })).toBeInTheDocument();
   });
 

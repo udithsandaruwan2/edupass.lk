@@ -115,7 +115,7 @@ export const CartPage: React.FC = () => {
             <Lock className="size-4" aria-hidden="true" />
             Checkout
           </Button>
-          <p className="mt-2 text-center text-xs text-muted">Demo checkout — no payment is taken.</p>
+          <p className="mt-2 text-center text-xs text-muted">Secure checkout — pay by bank transfer.</p>
         </Summary>
       </div>
     </div>

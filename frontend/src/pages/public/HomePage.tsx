@@ -19,13 +19,33 @@ export const HomePage: React.FC = () => {
   const { listed, banners, seminarById, categories } = useCatalog();
   const [activeCategory, setActiveCategory] = useState('all');
 
-  const slides = banners
+  /** Banner carousel needs seminar IDs that exist in the live catalogue.
+   * With mocks off, Nest replaces seminars but banners stay demo-local — fall
+   * back to featured/upcoming seminars so the hero card still appears. */
+  const slidesFromBanners = banners
     .filter((b) => b.active)
     .sort((a, b) => a.order - b.order)
     .flatMap((banner) => {
       const seminar = seminarById.get(banner.seminarId);
       return seminar && listed.includes(seminar) ? [{ banner, seminar }] : [];
     });
+  const slides =
+    slidesFromBanners.length > 0
+      ? slidesFromBanners
+      : listed
+          .filter((s) => s.featured)
+          .concat(listed.filter((s) => !s.featured))
+          .slice(0, 5)
+          .map((seminar, order) => ({
+            banner: {
+              id: `live-${seminar.id}`,
+              seminarId: seminar.id,
+              headline: seminar.summary,
+              active: true,
+              order,
+            },
+            seminar,
+          }));
   const usedCategories = categories.filter((c) => listed.some((s) => s.categoryId === c.id));
   const filtered = activeCategory === 'all' ? listed : listed.filter((s) => s.categoryId === activeCategory);
   const activeName = categories.find((c) => c.id === activeCategory)?.name;

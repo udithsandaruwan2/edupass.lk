@@ -20,6 +20,8 @@ export interface SessionUser {
   organisationId?: string;
   organisationType?: string;
   entitlements?: { code: string; status: string }[];
+  /** Ticket commission % for the active org membership (API). */
+  commissionPercent?: number;
 }
 
 /** @deprecated use SessionUser — kept for mock demo accounts */
@@ -65,6 +67,7 @@ function mapApiUser(user: ApiUser, accessToken: string): SessionUser {
       organisationId: membership.organisationId,
       organisationType: membership.organisation.type,
       entitlements: membership.entitlements,
+      commissionPercent: membership.commissionPercent,
     };
   }
   return {
@@ -196,7 +199,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const switchRole = useCallback(
     (role: Role) => {
-      if (!usingMocks && !import.meta.env.DEV) return;
+      if (!usingMocks) return;
       setUser(DEMO_ACCOUNTS[role]);
     },
     [setUser, usingMocks],

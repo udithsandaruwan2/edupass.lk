@@ -1,9 +1,9 @@
 ---
 project: "edupass.lk"
-phase: 5-build
-phase_name: "Build"
-status: authorized
-updated: "2026-11-10"
+phase: 6-release
+phase_name: "Release"
+status: ready_for_g6
+updated: "2026-11-12"
 owner: "human"
 gates:
   G0: approved 2026-11-10 by human
@@ -13,16 +13,16 @@ gates:
   G4: approved 2026-11-10 by human
   G5: approved 2026-11-10 by human
   G6: pending
-next_action: "Merged to development for local test. G6 / production / PayHere still held."
+next_action: "Human smoke QA on development, then approve G6 to ship. PayHere (Phase F) held."
 ---
 
 # Project state
 
-> Product: **edupass.lk**. Scope: `docs/product/`. Gates G0–G5 approved. Framework: **DevOpt 1.4.1**. On `development` for local QA.
+> Product: **edupass.lk**. Scope: `docs/product/`. Gates G0–G5 approved. Framework: **DevOpt 1.4.1**. Pre-PayHere build complete; awaiting **G6**.
 
 ## Current focus
 
-**T-001…T-009 complete. G5 approved** (human: finalize development + local test). G6 / Phase F held.
+**Release-ready candidate.** T-001…T-010 done; admin fee revenue + organiser earnings polish done. Human **G6** required before production. Phase F (PayHere) held.
 
 ## Gate log
 
@@ -32,13 +32,13 @@ next_action: "Merged to development for local test. G6 / production / PayHere st
 | G1 Discovery | approved | 2026-11-10 | human | `01-discovery.md` |
 | G2 Product | approved | 2026-11-10 | human | `02-prd.md`, `02-product-catalog.md` |
 | G3 Architecture | approved | 2026-11-10 | human | `03-architecture.md`, ADR 0001–0004 |
-| G4 Plan / build | approved | 2026-11-10 | human | `05-plan.md`, T-001…T-009 |
+| G4 Plan / build | approved | 2026-11-10 | human | `05-plan.md`, T-001…T-010 |
 | G5 Merge | approved | 2026-11-10 | human | Finalize → development + local QA |
-| G6 Release | pending | | | After staging smoke / explicit ask |
+| G6 Release | pending | | | Changelog + rollback drafted; needs human approve |
 
 ## Blockers
 
-- none (paused by human until implement asked)
+- none (PayHere intentionally held)
 
 ## Recent decisions
 
@@ -51,7 +51,7 @@ next_action: "Merged to development for local test. G6 / production / PayHere st
 
 ## Next action
 
-See frontmatter. First build task when resumed: `05-plan/tasks/T-001-foundation-auth.md`.
+See frontmatter.
 
 ## Links
 
@@ -59,6 +59,7 @@ See frontmatter. First build task when resumed: `05-plan/tasks/T-001-foundation-
 - Architecture: `03-architecture.md`, `04-adr/`
 - Plan: `05-plan.md`, `05-plan/tasks/`
 - Product docs: `../docs/product/README.md`
+- Rollback: `07-runbook.md` (G6 section)
 
 ## Rules for updating this file
 

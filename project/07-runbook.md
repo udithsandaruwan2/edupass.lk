@@ -35,6 +35,19 @@ npm run start:prod
 
 Required env: `DATABASE_URL`, `JWT_SECRET`, `PORT` (default 3000). Never commit `.env*`.
 
+Optional SMTP (dry-run logs without host): `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`.
+
+Seed: set `SEED_QA=false` in production to skip sample users/seminars (plans/bank/categories still seed).
+
+## G6 release checklist (human)
+
+- [ ] Smoke bank path + self-register on `development` / staging
+- [ ] Changelog reviewed (`CHANGELOG.md` Unreleased)
+- [ ] Env: `VITE_USE_MOCKS=false`, SMTP if mail required, `SEED_QA=false` for prod seed
+- [ ] Approve G6 in `project/STATE.md`
+- [ ] Deploy FE (Netlify) + API; run smoke below
+- [ ] Do **not** enable PayHere until Phase F brief
+
 ## Smoke after deploy
 
 ```bash

@@ -1,22 +1,31 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { BookOpenCheck, Building2, CircleDollarSign, ClipboardList, Download, GraduationCap, Landmark, Percent, RotateCcw, Ticket } from 'lucide-react';
+import {
+  listAdminPlatformFees,
+  listAdminSubscriptionInvoices,
+  type ApiPlatformFeeLine,
+  type ApiPlatformFeesResponse,
+  type ApiSubscriptionInvoice,
+} from '../../api/billing';
+import { ApiError } from '../../api/client';
 import { StatusBadge } from '../../components/StatusBadge';
 import { Button } from '../../components/ui/Button';
 import { AreaChart, BarChart, ChartCard, DonutChart } from '../../components/ui/Charts';
 import { DataTable } from '../../components/ui/DataTable';
 import { Select } from '../../components/ui/Field';
-import { Card, CardHeader } from '../../components/ui/Primitives';
+import { Card, CardHeader, Notice } from '../../components/ui/Primitives';
 import { StatCard, StatGrid } from '../../components/ui/StatCard';
+import { useAuth } from '../../contexts/AuthContext';
 import { useCatalog, isUpcoming } from '../../hooks/useCatalog';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { PageHeader } from '../../layouts/DashboardLayout';
 import { changePct, dailyRevenue, monthlySeries, paidOrders, revenueBy, seminarStats } from '../../utils/analytics';
 import { downloadFile, toCsv } from '../../utils/csv';
-import { lastMonths, monthKey, relativeTime } from '../../utils/date';
+import { formatDateTime, lastMonths, monthKey, relativeTime } from '../../utils/date';
 import { formatCompact, formatLKR, formatNumber } from '../../utils/format';
 
-/** Platform earnings: booking fees plus the demo 5% commission on ticket sales. */
+/** Mock-mode estimate only — live revenue uses PlatformFeeLine rows from Nest. */
 const COMMISSION = 0.05;
 const platformRevenue = (o: { fee: number; subtotal: number }) => o.fee + Math.round(o.subtotal * COMMISSION);
 
@@ -31,7 +40,7 @@ export const AdminOverview: React.FC = () => {
 
   return (
     <>
-      <PageHeader title="Admin overview" description="Platform health across students, organisers and sales (demo data)." />
+      <PageHeader title="Admin overview" description="Platform health across students, organisers and sales." />
       <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
         <StatCard label="Total students" value={formatNumber(c.students.length)} icon={GraduationCap} delta={{ value: changePct(studentsByMonth), period: 'last month' }} trend={studentsByMonth} to="/admin/users" />
         <StatCard label="Total organisers" value={formatNumber(c.organisers.length)} icon={Building2} hint={`${pendingOrgs.length} awaiting approval`} to="/admin/organisers" />
@@ -83,12 +92,136 @@ export const AdminOverview: React.FC = () => {
 
 export const RevenueOverviewPage: React.FC = () => {
   useDocumentTitle('Revenue overview');
+  const { user, usingMocks } = useAuth();
   const c = useCatalog();
+  const [fees, setFees] = useState<ApiPlatformFeesResponse | null>(null);
+  const [subs, setSubs] = useState<ApiSubscriptionInvoice[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (usingMocks || !user?.accessToken) return;
+    let cancelled = false;
+    void Promise.all([
+      listAdminPlatformFees(user.accessToken),
+      listAdminSubscriptionInvoices(user.accessToken),
+    ])
+      .then(([feeRows, subRows]) => {
+        if (cancelled) return;
+        setFees(feeRows);
+        setSubs(subRows);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err instanceof ApiError ? err.message : 'Could not load revenue');
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [usingMocks, user?.accessToken]);
+
+  const byOrg = useMemo(() => {
+    if (!fees) return [];
+    const map = new Map<string, { name: string; slug: string; fee: number; gmv: number; lines: number }>();
+    for (const line of fees.lines.filter((l) => l.status === 'ACTIVE')) {
+      const cur = map.get(line.organisationId) ?? {
+        name: line.organisationName,
+        slug: line.organisationSlug,
+        fee: 0,
+        gmv: 0,
+        lines: 0,
+      };
+      cur.fee += line.feeAmountLkr;
+      cur.gmv += line.ticketSubtotalLkr;
+      cur.lines += 1;
+      map.set(line.organisationId, cur);
+    }
+    return [...map.entries()].map(([id, v]) => ({ id, ...v }));
+  }, [fees]);
+
+  if (!usingMocks) {
+    return (
+      <>
+        <PageHeader
+          title="Platform fee revenue"
+          description="Ticket commission lines from approved bank slips (PlatformFeeLine). Subscription invoices listed separately."
+        />
+        {error && <Notice tone="danger" className="mb-6">{error}</Notice>}
+        <StatGrid>
+          <StatCard label="Active commission" value={formatLKR(fees?.summary.activeFeeLkr ?? 0)} icon={Percent} hint={`${fees?.summary.activeCount ?? 0} fee lines`} />
+          <StatCard label="Ticket GMV (fee base)" value={formatLKR(fees?.summary.activeTicketSubtotalLkr ?? 0)} icon={Landmark} hint="Subtotals on active lines" />
+          <StatCard label="Voided commission" value={formatLKR(fees?.summary.voidedFeeLkr ?? 0)} icon={RotateCcw} hint="Refunded / voided lines" />
+          <StatCard
+            label="Plan invoices paid"
+            value={formatLKR(subs.filter((s) => s.status === 'PAID').reduce((n, s) => n + s.amountLkr, 0))}
+            icon={CircleDollarSign}
+            hint={`${subs.length} subscription invoices`}
+          />
+        </StatGrid>
+        <Card className="mt-6">
+          <CardHeader title="Fee lines" description="Newest 200 platform commission rows" />
+          <DataTable
+            rows={fees?.lines ?? []}
+            rowKey={(r: ApiPlatformFeeLine) => r.id}
+            caption="Platform fee lines"
+            searchText={(r) => `${r.orderId} ${r.organisationName}`}
+            searchPlaceholder="Order or organiser"
+            initialSort={{ key: 'created', dir: 'desc' }}
+            exportName="edupass-platform-fees"
+            pageSize={15}
+            columns={[
+              { key: 'created', header: 'When', sortValue: (r) => r.createdAt, render: (r) => formatDateTime(r.createdAt), hideBelow: 'md' },
+              { key: 'org', header: 'Organiser', sortValue: (r) => r.organisationName, render: (r) => r.organisationName },
+              { key: 'order', header: 'Order', sortValue: (r) => r.orderId, render: (r) => <span className="font-mono text-xs">{r.orderId.slice(0, 10)}…</span> },
+              { key: 'pct', header: '%', align: 'right', sortValue: (r) => r.commissionPercent, render: (r) => `${r.commissionPercent}%`, hideBelow: 'sm' },
+              { key: 'gmv', header: 'Ticket subtotal', align: 'right', sortValue: (r) => r.ticketSubtotalLkr, render: (r) => formatLKR(r.ticketSubtotalLkr) },
+              { key: 'fee', header: 'Fee', align: 'right', sortValue: (r) => r.feeAmountLkr, render: (r) => formatLKR(r.feeAmountLkr) },
+              { key: 'status', header: 'Status', sortValue: (r) => r.status, render: (r) => <StatusBadge status={r.status === 'ACTIVE' ? 'paid' : 'refunded'} /> },
+            ]}
+          />
+        </Card>
+        <Card className="mt-6">
+          <CardHeader title="By organiser (active fees)" />
+          <DataTable
+            rows={byOrg}
+            rowKey={(r) => r.id}
+            caption="Platform fees by organiser"
+            initialSort={{ key: 'fee', dir: 'desc' }}
+            exportName="edupass-fees-by-organiser"
+            columns={[
+              { key: 'org', header: 'Organiser', sortValue: (r) => r.name, render: (r) => r.name },
+              { key: 'lines', header: 'Lines', align: 'right', sortValue: (r) => r.lines, render: (r) => formatNumber(r.lines), hideBelow: 'sm' },
+              { key: 'gmv', header: 'Ticket subtotal', align: 'right', sortValue: (r) => r.gmv, render: (r) => formatLKR(r.gmv) },
+              { key: 'fee', header: 'Commission', align: 'right', sortValue: (r) => r.fee, render: (r) => formatLKR(r.fee) },
+            ]}
+          />
+        </Card>
+        <Card className="mt-6">
+          <CardHeader title="Subscription invoices" description="Institute plan upgrades billed to the platform bank account" />
+          <DataTable
+            rows={subs}
+            rowKey={(r) => r.id}
+            caption="Platform subscription invoices"
+            initialSort={{ key: 'created', dir: 'desc' }}
+            exportName="edupass-subscription-invoices"
+            columns={[
+              { key: 'created', header: 'When', sortValue: (r) => r.createdAt, render: (r) => formatDateTime(r.createdAt), hideBelow: 'md' },
+              { key: 'org', header: 'Organisation', sortValue: (r) => r.organisationName, render: (r) => r.organisationName },
+              { key: 'plan', header: 'Plan', sortValue: (r) => r.planCode, render: (r) => r.planCode },
+              { key: 'amount', header: 'Amount', align: 'right', sortValue: (r) => r.amountLkr, render: (r) => formatLKR(r.amountLkr) },
+              { key: 'status', header: 'Status', sortValue: (r) => r.status, render: (r) => r.status },
+            ]}
+          />
+        </Card>
+      </>
+    );
+  }
+
   const months = monthlySeries(c.orders, 6);
   const daily = dailyRevenue(c.orders, 30);
   const paid = paidOrders(c.orders);
   const gmv = paid.reduce((n, o) => n + o.subtotal, 0);
-  const fees = paid.reduce((n, o) => n + o.fee, 0);
+  const bookingFees = paid.reduce((n, o) => n + o.fee, 0);
   const commission = Math.round(gmv * COMMISSION);
   const refunded = c.orders.filter((o) => o.status === 'refunded').reduce((n, o) => n + o.total, 0);
   const byCategory = revenueBy(c.orders, c.seminarById, (s) => c.categoryById.get(s.categoryId)?.name ?? 'Other', 4);
@@ -99,11 +232,12 @@ export const RevenueOverviewPage: React.FC = () => {
 
   return (
     <>
-      <PageHeader title="Revenue overview" description="Gross ticket sales (GMV) and what the platform earns. Demo figures." />
+      <PageHeader title="Revenue overview" description="Mock estimate — turn off VITE_USE_MOCKS for live PlatformFeeLine revenue." />
+      <Notice tone="info" className="mb-6">Mock mode estimates platform take as booking fees + 5% of ticket subtotals.</Notice>
       <StatGrid>
         <StatCard label="Gross ticket sales" value={formatLKR(gmv)} icon={Landmark} delta={{ value: changePct(months.map((m) => m.revenue)), period: 'last month' }} trend={months.map((m) => m.revenue)} />
-        <StatCard label="Booking fees" value={formatLKR(fees)} icon={Ticket} hint="Charged to students" />
-        <StatCard label="Commission (5%)" value={formatLKR(commission)} icon={Percent} hint="Demo assumption" />
+        <StatCard label="Booking fees" value={formatLKR(bookingFees)} icon={Ticket} hint="Charged to students" />
+        <StatCard label="Commission (5%)" value={formatLKR(commission)} icon={Percent} hint="Mock estimate" />
         <StatCard label="Refunded" value={formatLKR(refunded)} icon={RotateCcw} hint="Including booking fees" />
       </StatGrid>
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
@@ -153,7 +287,7 @@ export const ReportsPage: React.FC = () => {
 
   return (
     <>
-      <PageHeader title="Reports & analytics" description="Platform-wide trends. Every export contains demo data only." actions={<Select label="Period" hideLabel value={months} onValueChange={setMonths} options={[{ value: '3', label: 'Last 3 months' }, { value: '6', label: 'Last 6 months' }, { value: '12', label: 'Last 12 months' }]} className="w-44" />} />
+      <PageHeader title="Reports & analytics" description="Platform-wide trends from live bookings and catalogue data." actions={<Select label="Period" hideLabel value={months} onValueChange={setMonths} options={[{ value: '3', label: 'Last 3 months' }, { value: '6', label: 'Last 6 months' }, { value: '12', label: 'Last 12 months' }]} className="w-44" />} />
       <StatGrid>
         <StatCard label="Orders in period" value={formatNumber(series.reduce((n, m) => n + m.orders, 0))} icon={ClipboardList} />
         <StatCard label="Tickets in period" value={formatNumber(series.reduce((n, m) => n + m.tickets, 0))} icon={Ticket} />
