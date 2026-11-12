@@ -1,6 +1,6 @@
 # Development plan
 
-> Phase 8 · Gate G4 proposed · Continuous build on `development` (no G6 freeze)
+> Phase 8 · Gate G4-delta **approved 2026-11-12 by human** · Continuous build on `development` (no G6 freeze)
 
 ## Summary
 
@@ -78,4 +78,4 @@ Progress checklist (beginning → end): `project/PROGRESS.md`
 | Q1 | Blob store | Local `uploads/` + env path; Netlify Blobs when FE host needs it |
 | Q2 | G6 | Human when ready; does not block Phase 8 |
 
-**G4 Phase-8 proposed:** 2026-11-12
+**G4 Phase-8 approved by:** human on 2026-11-12

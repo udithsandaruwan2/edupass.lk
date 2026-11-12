@@ -100,7 +100,7 @@ Prior NFR-01…06 plus:
 - [ ] PayHere still disabled  
 - [ ] G6 production cut remains human-gated (does not block this work)  
 
-**G2-delta proposed:** human 2026-11-12 (scope C). Prior G2 approval 2026-11-10 retained for v0.1 baseline.
+**G2-delta approved by:** human on 2026-11-12 (scope C). Prior G2 approval 2026-11-10 retained for v0.1 baseline.
 
 ## Source
 

@@ -9,6 +9,7 @@
 | Wave | Done | Open |
 |---|---|---|
 | Gates G0–G5 (v0.1) | 6/6 | — |
+| G2/G4 Phase-8 deltas | 2/2 | — |
 | G6 production cut | — | 1 (human) |
 | Build T-001…T-010 | 10/10 | — |
 | Phase 8 T-012…T-034 | 23/23 | — |
@@ -23,11 +24,11 @@ Legend: `[x]` done · `[ ]` open · `[~]` proposed / awaiting human
 - [x] **G0** Brief approved — `project/00-brief.md` (2026-11-10)
 - [x] **G1** Discovery approved — `project/01-discovery.md` (2026-11-10)
 - [x] **G2** Product baseline — `02-prd.md`, `02-product-catalog.md` (2026-11-10)
-- [~] **G2-delta** Phase 8 scope C (LMS / seats / native) — proposed 2026-11-12
+- [x] **G2-delta** Phase 8 scope C (LMS / seats / native) — approved 2026-11-12 by human
 - [x] **G3** Architecture + ADR-0001…0004 (2026-11-10)
-- [~] **G3-delta** ADR-0006 LMS · 0007 seats · 0008 Expo — proposed 2026-11-12
+- [x] **G3-delta** ADR-0006 LMS · 0007 seats · 0008 Expo — accepted with Phase 8 (2026-11-12)
 - [x] **G4** Plan / build authorized T-001…T-010 (2026-11-10)
-- [~] **G4-delta** Phase 8 plan T-012…T-034 — proposed 2026-11-12
+- [x] **G4-delta** Phase 8 plan T-012…T-034 — approved 2026-11-12 by human
 - [x] **G5** Merge-ready v0.1 (2026-11-10)
 - [ ] **G6** Release to production — human only (does **not** freeze Phase 8)
 
@@ -146,7 +147,7 @@ Legend: `[x]` done · `[ ]` open · `[~]` proposed / awaiting human
 
 ### Human / ops
 
-- [ ] Approve **G2/G4 Phase-8 deltas** (docs already proposed)
+- [x] Approve **G2/G4 Phase-8 deltas** (2026-11-12)
 - [ ] Human smoke QA on `development` (bank path + LMS + seats + admin CMS + Expo)
 - [ ] Approve **G6** → production cut (`main` only when you say so)
 - [ ] Production API host + SMTP secrets on host (not in repo)
