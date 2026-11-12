@@ -90,14 +90,19 @@ export function resetPasswordRequest(body: {
   });
 }
 
+/** Builds Nest DTO keys inside the client so UI code never names password fields. */
 export function changePasswordRequest(
   token: string,
-  body: { currentPassword: string; newPassword: string },
+  current: string,
+  next: string,
 ) {
   return apiRequest<{ ok: true }>('/auth/change-password', {
     method: 'POST',
     token,
-    body,
+    body: {
+      currentPassword: current,
+      newPassword: next,
+    },
   });
 }
 
