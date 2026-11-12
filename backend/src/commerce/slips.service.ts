@@ -9,6 +9,7 @@ import {
   FeeLineStatus,
   SlipStatus,
 } from '@prisma/client';
+import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CheckoutService } from './checkout.service';
 import { CommissionService } from './commission.service';
@@ -20,6 +21,7 @@ export class SlipsService {
     private readonly prisma: PrismaService,
     private readonly checkout: CheckoutService,
     private readonly commission: CommissionService,
+    private readonly mail: MailService,
   ) {}
 
   async upload(studentUserId: string, dto: UploadSlipDto) {
@@ -135,6 +137,12 @@ export class SlipsService {
         });
         return s;
       });
+      void this.mail.slipRejected(
+        slip.order.buyerEmail,
+        slip.order.buyerName,
+        slip.orderId,
+        dto.reason,
+      );
       return this.mapSlip(updated);
     }
 
@@ -174,6 +182,12 @@ export class SlipsService {
 
       return { slip: s, feeAmount };
     });
+
+    void this.mail.slipApproved(
+      slip.order.buyerEmail,
+      slip.order.buyerName,
+      slip.orderId,
+    );
 
     return {
       ...this.mapSlip(result.slip),

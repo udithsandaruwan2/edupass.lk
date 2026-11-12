@@ -8,6 +8,7 @@ import { FavoriteButton, SeminarGrid } from '../../components/SeminarCard';
 import { Button } from '../../components/ui/Button';
 import { QuantityStepper } from '../../components/ui/Field';
 import { Avatar, Badge, Card, Notice, ProgressBar, container } from '../../components/ui/Primitives';
+import { useMocks } from '../../api/client';
 import { useCart } from '../../contexts/CartContext';
 import { useToast } from '../../contexts/ToastContext';
 import { calcFee } from '../../data/mock';
@@ -24,6 +25,7 @@ export const TicketSelector: React.FC<{ seminar: Seminar; preview?: boolean }> =
   const { settings } = useCatalog();
   const toast = useToast();
   const navigate = useNavigate();
+  const mocks = useMocks();
   const [qty, setQty] = useState<Record<string, number>>({});
 
   const bookable = seminar.status === 'published' && isUpcoming(seminar);
@@ -107,7 +109,9 @@ export const TicketSelector: React.FC<{ seminar: Seminar; preview?: boolean }> =
               Book now
             </Button>
           </div>
-          <p className="text-center text-xs text-muted">Demo checkout — no payment is taken.</p>
+          <p className="text-center text-xs text-muted">
+            {mocks ? 'Mock checkout — no payment is taken.' : 'Pay by bank transfer after checkout.'}
+          </p>
         </div>
       )}
     </Card>

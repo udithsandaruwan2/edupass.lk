@@ -240,4 +240,21 @@ describe('Plans admin + PlanLimitService (e2e)', () => {
     });
     expect(b3.statusCode).toBe(201);
   });
+
+  it('admin can list platform fee revenue summary', async () => {
+    const token = await adminToken();
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/admin/revenue/platform-fees',
+      headers: { authorization: `Bearer ${token}` },
+    });
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.payload) as {
+      summary: { activeFeeLkr: number; lineCount: number };
+      lines: unknown[];
+    };
+    expect(body.summary).toBeDefined();
+    expect(Array.isArray(body.lines)).toBe(true);
+    expect(typeof body.summary.activeFeeLkr).toBe('number');
+  });
 });

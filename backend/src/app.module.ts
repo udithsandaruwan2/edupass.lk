@@ -11,11 +11,13 @@ import { CheckInModule } from './check-in/check-in.module';
 import { BillingModule } from './billing/billing.module';
 import { InstituteModule } from './institute/institute.module';
 import { TuitionModule } from './tuition/tuition.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
+    MailModule,
     AuthModule,
     OrganisationsModule,
     SeminarsModule,

@@ -10,7 +10,7 @@ interface FavoritesContextValue {
 const FavoritesContext = createContext<FavoritesContextValue | null>(null);
 
 export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [ids, setIds] = usePersistentState<string[]>('edupass-demo-saved', () => ['sem-cmaths-paper', 'sem-econ-paper']);
+  const [ids, setIds] = usePersistentState<string[]>('edupass-saved-seminars', () => []);
 
   const isFavorite = useCallback((id: string) => ids.includes(id), [ids]);
   const toggle = useCallback(

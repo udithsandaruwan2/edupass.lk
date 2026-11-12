@@ -179,6 +179,16 @@ describe('Bank checkout → slip → tickets (e2e)', () => {
   });
 
   it('snapshots commission, approves slip, issues tickets + fee line', async () => {
+    // Re-assert platform rate — other e2e files share the DB and may mutate settings.
+    await prisma.platformSettings.upsert({
+      where: { id: 'default' },
+      update: { ticketCommissionPercent: 5, payhereEnabled: false },
+      create: {
+        id: 'default',
+        ticketCommissionPercent: 5,
+        payhereEnabled: false,
+      },
+    });
     const student = await registerStudent();
     const seller = await registerSellerWithSeminar();
 

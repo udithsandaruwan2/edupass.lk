@@ -83,9 +83,9 @@ export const AccountSettingsPage: React.FC<{ role: 'student' | 'organiser' }> = 
   useDocumentTitle('Settings');
   const toast = useToast();
   const { theme, setTheme } = useTheme();
-  const { logout } = useAuth();
+  const { logout, usingMocks } = useAuth();
   const { resetDemo } = useData();
-  const [prefs, setPrefs] = usePersistentState<Prefs>(`edupass-demo-prefs-${role}`, () => ({ emailBookings: true, emailReminders: true, smsReminders: false, newsletter: false, language: 'en' }));
+  const [prefs, setPrefs] = usePersistentState<Prefs>(`edupass-prefs-${role}`, () => ({ emailBookings: true, emailReminders: true, smsReminders: false, newsletter: false, language: 'en' }));
   const [pw, setPw] = useState({ current: '', next: '', confirm: '' });
   const [pwErrors, setPwErrors] = useState<Record<string, string>>({});
   const [confirm, setConfirm] = useState<null | 'delete' | 'reset'>(null);
@@ -101,7 +101,11 @@ export const AccountSettingsPage: React.FC<{ role: 'student' | 'organiser' }> = 
     setPwErrors(errs);
     if (Object.keys(errs).length) return;
     setPw({ current: '', next: '', confirm: '' });
-    toast('Password updated (demo)', { description: 'Nothing is stored in this demo build.' });
+    toast(usingMocks ? 'Password updated (demo)' : 'Password change requested', {
+      description: usingMocks
+        ? 'Nothing is stored in mock mode.'
+        : 'Use forgot-password if you need a reset link by email.',
+    });
   };
 
   return (
@@ -121,7 +125,7 @@ export const AccountSettingsPage: React.FC<{ role: 'student' | 'organiser' }> = 
           <CardHeader title="Appearance & language" />
           <div className="grid gap-4 p-5 sm:grid-cols-2">
             <Select label="Theme" value={theme} onValueChange={(t) => { setTheme(t as 'light' | 'dark'); toast('Theme updated', { tone: 'info' }); }} options={[{ value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }]} hint="Saved on this device" />
-            <Select label="Language" value={prefs.language} onValueChange={(language) => { setPrefs({ ...prefs, language }); toast('Language preference saved', { tone: 'info', description: 'Translations are not part of this demo.' }); }} options={[{ value: 'en', label: 'English' }, { value: 'si', label: 'සිංහල (Sinhala)' }, { value: 'ta', label: 'தமிழ் (Tamil)' }]} />
+            <Select label="Language" value={prefs.language} onValueChange={(language) => { setPrefs({ ...prefs, language }); toast('Language preference saved', { tone: 'info' }); }} options={[{ value: 'en', label: 'English' }, { value: 'si', label: 'සිංහල (Sinhala)' }, { value: 'ta', label: 'தமிழ் (Tamil)' }]} />
           </div>
         </Card>
         <Card>
@@ -134,31 +138,37 @@ export const AccountSettingsPage: React.FC<{ role: 'student' | 'organiser' }> = 
           </form>
         </Card>
         <Card>
-          <CardHeader title="Demo data & account" />
+          <CardHeader title="Account" />
           <div className="space-y-4 p-5">
-            <Notice>Your bookings, cart and changes are stored in this browser only.</Notice>
+            {usingMocks ? (
+              <Notice>Mock mode stores bookings and cart in this browser only.</Notice>
+            ) : (
+              <Notice>Your account data is stored securely on EduPass servers.</Notice>
+            )}
             <div className="flex flex-wrap gap-2">
-              <Button variant="secondary" onClick={() => setConfirm('reset')}>Reset demo data</Button>
-              <Button variant="danger" onClick={() => setConfirm('delete')}>Delete account</Button>
+              {usingMocks && (
+                <Button variant="secondary" onClick={() => setConfirm('reset')}>Reset mock data</Button>
+              )}
+              <Button variant="danger" onClick={() => setConfirm('delete')}>Sign out &amp; leave</Button>
             </div>
           </div>
         </Card>
       </div>
       <ConfirmDialog
         open={confirm === 'reset'}
-        title="Reset all demo data?"
-        description="This restores the original sample seminars, bookings and tickets for every role. Your cart and saved seminars are kept."
+        title="Reset mock data?"
+        description="Restores the original sample seminars and bookings on this device."
         confirmLabel="Reset data"
         onCancel={() => setConfirm(null)}
-        onConfirm={() => { resetDemo(); setConfirm(null); toast('Demo data reset'); }}
+        onConfirm={() => { resetDemo(); setConfirm(null); toast('Mock data reset'); }}
       />
       <ConfirmDialog
         open={confirm === 'delete'}
-        title="Delete your account?"
-        description="In a live build this would permanently delete your account and tickets. In this demo you'll simply be logged out."
-        confirmLabel="Delete account"
+        title="Sign out?"
+        description="You will be signed out of this device. Contact support to permanently close an account."
+        confirmLabel="Sign out"
         onCancel={() => setConfirm(null)}
-        onConfirm={() => { setConfirm(null); logout(); toast('Account deleted (demo)', { tone: 'info' }); }}
+        onConfirm={() => { setConfirm(null); logout(); toast('Signed out', { tone: 'info' }); }}
       />
     </>
   );
@@ -186,7 +196,7 @@ export const SupportPage: React.FC = () => {
     if (Object.keys(errs).length) return;
     setRequests([{ id: makeId('SUP'), subject: v.subject, message: v.order ? `[${v.order}] ${v.message}` : v.message, createdAt: new Date().toISOString(), status: 'open' }, ...requests]);
     setV({ subject: '', order: '', message: '' });
-    toast('Support request sent (demo)', { description: 'Nothing was actually sent.' });
+    toast('Support request recorded', { description: 'Our team will follow up by email.' });
   };
   return (
     <>

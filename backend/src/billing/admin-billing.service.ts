@@ -226,17 +226,31 @@ export class AdminBillingService {
     const rows = await this.prisma.platformFeeLine.findMany({
       orderBy: { createdAt: 'desc' },
       take: 200,
+      include: { organisation: { select: { id: true, name: true, slug: true } } },
     });
-    return rows.map((r) => ({
-      id: r.id,
-      orderId: r.orderId,
-      organisationId: r.organisationId,
-      commissionPercent: Number(r.commissionPercent),
-      ticketSubtotalLkr: r.ticketSubtotalLkr,
-      feeAmountLkr: r.feeAmountLkr,
-      status: r.status,
-      createdAt: r.createdAt.toISOString(),
-    }));
+    const active = rows.filter((r) => r.status === 'ACTIVE');
+    const voided = rows.filter((r) => r.status === 'VOID');
+    return {
+      summary: {
+        activeFeeLkr: active.reduce((n, r) => n + r.feeAmountLkr, 0),
+        voidedFeeLkr: voided.reduce((n, r) => n + r.feeAmountLkr, 0),
+        activeTicketSubtotalLkr: active.reduce((n, r) => n + r.ticketSubtotalLkr, 0),
+        lineCount: rows.length,
+        activeCount: active.length,
+      },
+      lines: rows.map((r) => ({
+        id: r.id,
+        orderId: r.orderId,
+        organisationId: r.organisationId,
+        organisationName: r.organisation.name,
+        organisationSlug: r.organisation.slug,
+        commissionPercent: Number(r.commissionPercent),
+        ticketSubtotalLkr: r.ticketSubtotalLkr,
+        feeAmountLkr: r.feeAmountLkr,
+        status: r.status,
+        createdAt: r.createdAt.toISOString(),
+      })),
+    };
   }
 
   async listSubscriptionInvoices() {

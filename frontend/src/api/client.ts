@@ -57,8 +57,9 @@ export function getApiBaseUrl() {
   return API_URL;
 }
 
+/** Production default is API mode. Opt into mocks only with VITE_USE_MOCKS=true. */
 export function useMocks(): boolean {
   const flag = import.meta.env.VITE_USE_MOCKS;
-  if (flag === 'false' || flag === '0') return false;
-  return true;
+  if (flag === 'true' || flag === '1') return true;
+  return false;
 }

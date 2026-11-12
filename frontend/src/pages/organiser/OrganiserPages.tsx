@@ -58,7 +58,7 @@ export const OrganiserOverview: React.FC = () => {
       </StatGrid>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-        <ChartCard title="Daily revenue" description="Ticket subtotals, last 30 days (demo data)" table={{ headers: ['Day', 'Revenue'], rows: daily.map((d) => [d.label, formatLKR(d.value)]) }}>
+        <ChartCard title="Daily revenue" description="Ticket subtotals, last 30 days" table={{ headers: ['Day', 'Revenue'], rows: daily.map((d) => [d.label, formatLKR(d.value)]) }}>
           <AreaChart data={daily} seriesName="Revenue" format={formatCompact} ariaLabel="Line chart of daily revenue over the last 30 days" />
         </ChartCard>
         <Card>

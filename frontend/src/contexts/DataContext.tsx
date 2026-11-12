@@ -37,8 +37,28 @@ interface DataContextValue {
 
 const DataContext = createContext<DataContextValue | null>(null);
 
+function emptyCatalogue(): DemoData {
+  const base = buildDemoData();
+  return {
+    ...base,
+    seminars: [],
+    lecturers: [],
+    organisers: [],
+    students: [],
+    orders: [],
+    tickets: [],
+    banners: [],
+    notifications: [],
+    refunds: [],
+    announcement: { id: 'ann-off', active: false, message: '' },
+  };
+}
+
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [data, setData] = useState<DemoData>(() => readStorage(STORAGE_KEY, buildDemoData));
+  const mocks = useMocks();
+  const [data, setData] = useState<DemoData>(() =>
+    mocks ? readStorage(STORAGE_KEY, buildDemoData) : emptyCatalogue(),
+  );
   const first = useRef(true);
   useEffect(() => {
     if (first.current) {
@@ -48,7 +68,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (useMocks()) writeStorage(STORAGE_KEY, data);
   }, [data]);
 
-  /** When mocks are off, hydrate public catalogue from Nest. */
+  /** When mocks are off, hydrate public catalogue from Nest only. */
   useEffect(() => {
     if (useMocks()) return;
     let cancelled = false;
@@ -63,9 +83,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           ...d,
           seminars,
           categories: categories.length ? categories : d.categories,
+          banners: [],
+          orders: [],
+          tickets: [],
+          notifications: [],
+          refunds: [],
+          announcement: { id: 'ann-off', active: false, message: '' },
         }));
       } catch {
-        // Keep local demo snapshot if API is unreachable during UI tests.
+        // Leave empty catalogue if API is unreachable.
       }
     })();
     return () => {

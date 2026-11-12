@@ -119,6 +119,47 @@ async function main() {
   const free = await prisma.subscriptionPlan.findUniqueOrThrow({
     where: { code: 'free' },
   });
+
+  const categories = [
+    {
+      slug: 'economics',
+      name: 'Economics',
+      description: 'A/L Economics revision and model papers',
+      icon: 'chart',
+    },
+    {
+      slug: 'science',
+      name: 'Science',
+      description: 'Physics, Chemistry, Biology',
+      icon: 'flask',
+    },
+    {
+      slug: 'mathematics',
+      name: 'Mathematics',
+      description: 'Combined Maths and Pure Maths',
+      icon: 'sigma',
+    },
+  ];
+  for (const c of categories) {
+    await prisma.category.upsert({
+      where: { slug: c.slug },
+      update: {
+        name: c.name,
+        description: c.description,
+        icon: c.icon,
+      },
+      create: c,
+    });
+  }
+
+  const seedQa = process.env.SEED_QA !== 'false';
+  if (!seedQa) {
+    console.log(
+      'Seed complete (plans, bank, categories). SEED_QA=false — skipped sample users/seminars.',
+    );
+    return;
+  }
+
   const passwordHash = await bcrypt.hash('Password123!', 10);
 
   await prisma.user.upsert({
@@ -261,48 +302,17 @@ async function main() {
 
   await prisma.user.upsert({
     where: { email: 'student@edupass.lk' },
-    update: { passwordHash, name: 'Demo Student' },
+    update: { passwordHash, name: 'QA Student' },
     create: {
       email: 'student@edupass.lk',
       passwordHash,
-      name: 'Demo Student',
+      name: 'QA Student',
       student: {
-        create: { district: 'Colombo', school: 'Demo School' },
+        create: { district: 'Colombo', school: 'QA School' },
       },
     },
   });
 
-  const categories = [
-    {
-      slug: 'economics',
-      name: 'Economics',
-      description: 'A/L Economics revision and model papers',
-      icon: 'chart',
-    },
-    {
-      slug: 'science',
-      name: 'Science',
-      description: 'Physics, Chemistry, Biology',
-      icon: 'flask',
-    },
-    {
-      slug: 'mathematics',
-      name: 'Mathematics',
-      description: 'Combined Maths and Pure Maths',
-      icon: 'sigma',
-    },
-  ];
-  for (const c of categories) {
-    await prisma.category.upsert({
-      where: { slug: c.slug },
-      update: {
-        name: c.name,
-        description: c.description,
-        icon: c.icon,
-      },
-      create: c,
-    });
-  }
   const economics = await prisma.category.findUniqueOrThrow({
     where: { slug: 'economics' },
   });
@@ -404,7 +414,12 @@ async function main() {
     },
   });
 
-  console.log('Seed complete. Demo password for all: Password123!');
+  console.log(
+    'Seed complete (plans, categories, QA users/seminars). Password for seeded users: Password123!',
+  );
+  console.log(
+    'Self-serve product accounts: /register and /register/organiser. Set SEED_QA=false to skip sample users.',
+  );
 }
 
 main()

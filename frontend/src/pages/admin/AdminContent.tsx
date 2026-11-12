@@ -304,7 +304,7 @@ export const PlatformSettingsPage: React.FC = () => {
               value={String(ticketCommissionPercent)}
               onValueChange={(x) => setTicketCommissionPercent(Number(x))}
               error={errors.ticketCommissionPercent}
-              hint={!usingMocks ? 'Saved to Nest PlatformSettings — snapshotted on next order' : 'Demo local only unless mocks are off'}
+              hint={!usingMocks ? 'Saved to Nest PlatformSettings — snapshotted on next order' : 'Mock mode — local browser only'}
               className="sm:col-span-2"
             />
           </div>
@@ -316,18 +316,20 @@ export const PlatformSettingsPage: React.FC = () => {
             <Switch label="Maintenance mode" description="In a live build this would pause new bookings" checked={v.maintenanceMode} onChange={(x) => setV({ ...v, maintenanceMode: x })} />
           </div>
         </Card>
-        <Card>
-          <CardHeader title="Demo data" />
-          <div className="space-y-4 p-5">
-            <Notice>All data lives in this browser's storage. Resetting restores the original sample dataset for every role.</Notice>
-            <Button variant="danger" onClick={() => setConfirmReset(true)}>Reset demo data</Button>
-          </div>
-        </Card>
+        {usingMocks && (
+          <Card>
+            <CardHeader title="Mock data" />
+            <div className="space-y-4 p-5">
+              <Notice>Mock mode stores data in this browser. Resetting restores the original sample dataset.</Notice>
+              <Button variant="danger" onClick={() => setConfirmReset(true)}>Reset mock data</Button>
+            </div>
+          </Card>
+        )}
         <div className="flex justify-end xl:col-span-2">
           <Button type="submit" size="lg"><Save className="size-4" aria-hidden="true" />Save settings</Button>
         </div>
       </form>
-      <ConfirmDialog open={confirmReset} title="Reset all demo data?" description="Seminars, bookings, tickets, users and content return to the original sample data." confirmLabel="Reset" onCancel={() => setConfirmReset(false)} onConfirm={() => { resetDemo(); setConfirmReset(false); setV(DEFAULT_SETTINGS); toast('Demo data reset'); }} />
+      <ConfirmDialog open={confirmReset} title="Reset all mock data?" description="Seminars, bookings, tickets, users and content return to the original sample data." confirmLabel="Reset" onCancel={() => setConfirmReset(false)} onConfirm={() => { resetDemo(); setConfirmReset(false); setV(DEFAULT_SETTINGS); toast('Mock data reset'); }} />
     </>
   );
 };

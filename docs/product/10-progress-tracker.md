@@ -1,12 +1,12 @@
 # 10 — Progress tracker
 
-Checkboxes · Updated **2026-11-10** · Source of truth also: `project/05-plan.md` + `project/05-plan/tasks/`
+Checkboxes · Updated **2026-11-11** · Source of truth also: `project/05-plan.md` + `project/05-plan/tasks/`
 
-**Scoreboard:** **9 / 9** build tasks done · **M1–M4 complete (pre-PayHere)** · **G5 proposed** · Phase F held
+**Scoreboard:** **10 / 10** build tasks done · **M1–M5 complete (pre-PayHere)** · **G5 approved** · **G6 pending human** · Phase F held
 
 ---
 
-## Build tasks (T-001…T-009)
+## Build tasks (T-001…T-010)
 
 ### M1 — Foundation + tenancy
 - [x] **T-001** Prisma + auth + register kinds + seed
@@ -24,6 +24,9 @@ Checkboxes · Updated **2026-11-10** · Source of truth also: `project/05-plan.m
 
 ### M4 — Polish
 - [x] **T-009** Stream / camera / Playwright / mocks off on staging
+
+### M5 — Production harden
+- [x] **T-010** Demo purge + API-default catalogue + SMTP + self-serve register
 
 ### Phase F — PayHere
 - [ ] Blocked pending owner finance brief
@@ -63,8 +66,8 @@ Checkboxes · Updated **2026-11-10** · Source of truth also: `project/05-plan.m
 ### Phase 3 — Slips + platform fee lines
 - [x] Slip approve → tickets + PlatformFeeLine
 - [x] Card disabled / PayHere stub
-- [~] Earnings + refund fee adjust *(refund voids tickets + fee line; earnings UI later)*
-- [ ] Admin view fee revenue
+- [x] Earnings + refund fee adjust *(refund voids tickets + fee line; organiser % from membership)*
+- [x] Admin view fee revenue *(PlatformFeeLine + subscription invoices)*
 
 ### Phase 4 — Plans & upgrades
 - [x] Admin plans CRUD + edit global %
@@ -81,6 +84,7 @@ Checkboxes · Updated **2026-11-10** · Source of truth also: `project/05-plan.m
 
 ### Phase 7 — Polish
 - [x] Stream / camera / Playwright / mocks off
+- [x] Production harden (demo purge, SMTP, self-register)
 
 ---
 
@@ -88,10 +92,10 @@ Checkboxes · Updated **2026-11-10** · Source of truth also: `project/05-plan.m
 
 | Ahead | Work |
 |---|---|
-| Next | Local QA on `development` → human **G6** when ready |
+| Next | Human smoke on `development` → approve **G6** |
 | Later | PayHere (Phase F) |
 
-Branch tip: **`development`** (merged `feat/frontend/t009-polish`; push remote when you ask).
+Branch tip: **`development`** (T-010 + fee revenue).
 
 ## Notes
 
@@ -102,3 +106,5 @@ Branch tip: **`development`** (merged `feat/frontend/t009-polish`; push remote w
 | 2026-11-10 | T-007: institute batches/roster/AttendanceRecord gated; lecturer 403; ≠ CheckInEvent. |
 | 2026-11-10 | T-008: TuitionFeePlan/Invoice/Payment cash+slip; student balance; labels “class fees”. |
 | 2026-11-10 | T-009: streamJoinUrl, BarcodeDetector camera QR, Playwright bank-path smoke, Netlify VITE_USE_MOCKS=false. |
+| 2026-11-11 | T-010: API-default (VITE_USE_MOCKS=false), empty catalogue, SMTP welcome/slip/tuition/reset, self-register, SEED_QA gate. |
+| 2026-11-12 | Admin PlatformFeeLine revenue UI + organiser commission % polish; G6 changelog/rollback ready. |

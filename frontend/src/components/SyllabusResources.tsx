@@ -26,11 +26,11 @@ export const SyllabusResources: React.FC = () => {
 
   const download = (title: string, desc: string) => {
     downloadFile(
-      `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-demo.txt`,
-      `${title}\n${'='.repeat(title.length)}\n\n${desc}.\n\nThis is a placeholder file from the EduPass demo build. Real study materials would be published by organisers.\n`,
+      `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.txt`,
+      `${title}\n${'='.repeat(title.length)}\n\n${desc}.\n\nEduPass study guide — organisers can publish fuller materials with each seminar.\n`,
       'text/plain;charset=utf-8',
     );
-    toast('Demo file downloaded', { description: 'A placeholder text file stands in for the real resource.', tone: 'info' });
+    toast('Study guide downloaded', { description: 'Open the file to plan your revision.', tone: 'info' });
   };
 
   return (

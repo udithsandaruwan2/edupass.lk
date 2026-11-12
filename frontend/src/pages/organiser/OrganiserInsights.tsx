@@ -14,19 +14,19 @@ import { changePct, monthlySeries, paidOrders, revenueBy, seminarStats, ticketsI
 import { downloadFile, toCsv } from '../../utils/csv';
 import { formatShortDate } from '../../utils/date';
 import { PAYMENT_LABELS, formatCompact, formatLKR, formatNumber } from '../../utils/format';
+import { useAuth } from '../../contexts/AuthContext';
 import { useOrganiser } from './useOrganiser';
-
-/** EduPass keeps the booking fee; this demo also assumes a 5% platform commission on ticket sales. */
-const COMMISSION = 0.05;
 
 export const RevenueAnalyticsPage: React.FC = () => {
   useDocumentTitle('Revenue analytics');
-  const { orders, catalog, seminars } = useOrganiser();
+  const { user } = useAuth();
+  const { orders, catalog, seminars, usingApi } = useOrganiser();
   const [range, setRange] = useState('6');
   const months = monthlySeries(orders, Number(range));
   const paid = paidOrders(orders);
   const gross = paid.reduce((n, o) => n + o.subtotal, 0);
-  const commission = Math.round(gross * COMMISSION);
+  const ratePct = user?.commissionPercent ?? 5;
+  const commission = Math.round(gross * (ratePct / 100));
   const bySubject = revenueBy(orders, catalog.seminarById, (s) => s.subject, 4);
   const methods = Object.entries(
     paid.reduce<Record<string, number>>((acc, o) => ({ ...acc, [PAYMENT_LABELS[o.paymentMethod]]: (acc[PAYMENT_LABELS[o.paymentMethod]] ?? 0) + o.subtotal }), {}),
@@ -35,10 +35,14 @@ export const RevenueAnalyticsPage: React.FC = () => {
 
   return (
     <>
-      <PageHeader title="Revenue analytics" description="All figures are generated demo data." actions={<Select label="Range" hideLabel value={range} onValueChange={setRange} options={[{ value: '3', label: 'Last 3 months' }, { value: '6', label: 'Last 6 months' }, { value: '12', label: 'Last 12 months' }]} className="w-44" />} />
+      <PageHeader
+        title="Revenue analytics"
+        description={usingApi ? 'Earnings from your paid ticket orders after platform commission.' : 'Mock earnings estimate from local orders.'}
+        actions={<Select label="Range" hideLabel value={range} onValueChange={setRange} options={[{ value: '3', label: 'Last 3 months' }, { value: '6', label: 'Last 6 months' }, { value: '12', label: 'Last 12 months' }]} className="w-44" />}
+      />
       <StatGrid>
         <StatCard label="Gross ticket sales" value={formatLKR(gross)} icon={CircleDollarSign} delta={{ value: changePct(months.map((m) => m.revenue)), period: 'last month' }} trend={months.map((m) => m.revenue)} />
-        <StatCard label="Platform commission (5%)" value={formatLKR(commission)} icon={Percent} hint="Demo assumption" />
+        <StatCard label={`Platform commission (${ratePct}%)`} value={formatLKR(commission)} icon={Percent} hint="From your plan / platform settings" />
         <StatCard label="Net payout" value={formatLKR(gross - commission)} icon={ReceiptText} hint="Before bank charges" />
         <StatCard label="Paid orders" value={formatNumber(paid.length)} icon={Ticket} hint={`Avg ${formatLKR(paid.length ? Math.round(gross / paid.length) : 0)}`} />
       </StatGrid>

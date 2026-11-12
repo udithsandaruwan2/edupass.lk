@@ -146,7 +146,7 @@ export const OrganiserProfileSettingsPage: React.FC = () => {
 
 export const OrganiserSettingsPage: React.FC = () => {
   const toast = useToast();
-  const [payout, setPayout] = usePersistentState('edupass-demo-payout', () => ({ bank: 'Demo Bank', branch: 'Nugegoda', account: '', holder: '' }));
+  const [payout, setPayout] = usePersistentState('edupass-payout-draft', () => ({ bank: '', branch: '', account: '', holder: '' }));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const save = (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,13 +154,13 @@ export const OrganiserSettingsPage: React.FC = () => {
     if (!/^\d{8,16}$/.test(payout.account)) errs.account = 'Enter 8–16 digits';
     setErrors(errs);
     if (Object.keys(errs).length) return;
-    toast('Payout details saved (demo)', { description: 'Stored in this browser only. Never enter real bank details.' });
+    toast('Payout details saved', { description: 'Stored on this device until bank payout profiles ship in a later release.' });
   };
   return (
     <>
       <AccountSettingsPage role="organiser" />
       <Card className="mt-6">
-        <CardHeader title="Payout account" description="Where ticket revenue would be paid. Demo only — do not enter real details." />
+        <CardHeader title="Payout account" description="Where ticket revenue should be paid after settlements." />
         <form onSubmit={save} noValidate className="grid gap-4 p-5 sm:grid-cols-2">
           <Input label="Bank" value={payout.bank} onValueChange={(x) => setPayout({ ...payout, bank: x })} error={errors.bank} />
           <Input label="Branch" value={payout.branch} onValueChange={(x) => setPayout({ ...payout, branch: x })} />

@@ -47,7 +47,7 @@ export const StudentOverview: React.FC = () => {
         <StatCard label="Upcoming tickets" value={String(upcoming.length)} icon={Ticket} hint={next ? `Next in ${daysUntil(next.seminar.startsAt)} days` : 'No upcoming seminars'} to="/student/tickets" />
         <StatCard label="Bookings" value={String(orders.length)} icon={ClipboardList} hint={`${paid.length} paid`} to="/student/bookings" />
         <StatCard label="Saved seminars" value={String(ids.length)} icon={Heart} hint="Your shortlist" to="/student/saved" />
-        <StatCard label="Total spent" value={formatLKR(spent)} icon={CircleDollarSign} hint="Demo amounts" to="/student/history" />
+        <StatCard label="Total spent" value={formatLKR(spent)} icon={CircleDollarSign} hint="Paid bookings" to="/student/history" />
       </StatGrid>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
