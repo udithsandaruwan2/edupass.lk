@@ -98,15 +98,18 @@ describe('Bank checkout → slip → tickets (e2e)', () => {
     };
     const organisationId = body.user.memberships[0].organisationId;
 
-    await prisma.bankAccount.create({
-      data: {
-        organisationId,
+    const bankPut = await app.inject({
+      method: 'PUT',
+      url: `/api/organisations/${organisationId}/bank-account`,
+      headers: { authorization: `Bearer ${body.accessToken}` },
+      payload: {
         bankName: 'Test Bank',
         accountName: 'Seller',
         accountNumber: '111222333',
         branch: 'Colombo',
       },
     });
+    expect(bankPut.statusCode).toBe(200);
 
     const starts = new Date();
     starts.setDate(starts.getDate() + 30);

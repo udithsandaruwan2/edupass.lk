@@ -58,6 +58,12 @@ split "$OUT"; expect "$CODE" 201 "login student"
 OUT=$(req POST /auth/forgot-password "" "{\"email\":\"smoke-stu-${TS}@edupass.test\"}")
 split "$OUT"; expect "$CODE" 201 "forgot-password"
 
+echo "== organiser bank account =="
+OUT=$(req PUT "/organisations/${LECT_ORG}/bank-account" "$LECT_TOKEN" '{"bankName":"Commercial Bank","accountName":"Smoke Lect","accountNumber":"8001234567","branch":"Colombo 07"}')
+split "$OUT"; expect "$CODE" 200 "upsert bank account"
+ACCT=$(printf '%s' "$BODY" | jget "d.get('accountNumber','')")
+[[ "$ACCT" == "8001234567" ]] && ok "bank number saved" || bad "bank number $ACCT"
+
 echo "== seminar create + publish =="
 OUT=$(req POST /organiser/seminars "$LECT_TOKEN" "{\"organisationId\":\"$LECT_ORG\",\"title\":\"Smoke Seminar ${TS}\",\"subject\":\"Economics\",\"level\":\"AL\",\"mode\":\"PHYSICAL\",\"venue\":\"Hall A\",\"district\":\"Colombo\",\"startsAt\":\"$STARTS\",\"durationHours\":3,\"summary\":\"Summary long enough for smoke seminar create.\",\"description\":\"Desc\",\"ticketTypes\":[{\"name\":\"Standard\",\"description\":\"Seat\",\"priceLkr\":1500,\"capacity\":50}]}")
 split "$OUT"; expect "$CODE" 201 "create seminar"
@@ -79,6 +85,8 @@ STATUS=$(printf '%s' "$BODY" | jget "d['status']")
 
 OUT=$(req GET "/checkout/${ORDER_ID}/bank-instructions" "$STU_TOKEN" "")
 split "$OUT"; expect "$CODE" 200 "bank instructions"
+BANK_NO=$(printf '%s' "$BODY" | jget "(d.get('bankAccount') or {}).get('accountNumber','')")
+[[ "$BANK_NO" == "8001234567" ]] && ok "checkout shows organiser bank" || bad "checkout bank $BANK_NO"
 
 OUT=$(req POST /payments/slips "$STU_TOKEN" "{\"orderId\":\"$ORDER_ID\",\"slipReference\":\"SMOKE-${TS}\"}")
 split "$OUT"; expect "$CODE" 201 "upload slip"

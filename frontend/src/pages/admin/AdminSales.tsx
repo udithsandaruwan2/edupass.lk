@@ -39,7 +39,7 @@ export const AdminBookingsPage: React.FC = () => {
   ];
   return (
     <>
-      <PageHeader title="Booking management" description={`${formatNumber(c.orders.length)} orders across the platform (demo)`} />
+      <PageHeader title="Booking management" description={`${formatNumber(c.orders.length)} orders across the platform`} />
       <Card>
         <DataTable rows={rows} columns={columns} rowKey={(o) => o.id} caption="All bookings" searchText={(o) => `${o.id} ${o.buyer.name} ${o.buyer.email} ${title(o)}`} searchPlaceholder="Order, student or seminar" initialSort={{ key: 'date', dir: 'desc' }} exportName="edupass-all-bookings" pageSize={15}
           toolbar={<Select label="Status" hideLabel value={status} onValueChange={setStatus} options={STATUS_OPTIONS} className="w-40" />} />
@@ -77,7 +77,7 @@ export const AdminTicketsPage: React.FC = () => {
   ];
   return (
     <>
-      <PageHeader title="Ticket management" description={`${formatNumber(c.tickets.length)} tickets issued (demo)`} />
+      <PageHeader title="Ticket management" description={`${formatNumber(c.tickets.length)} tickets issued`} />
       <Card>
         <DataTable rows={rows} columns={columns} rowKey={(t) => t.id} caption="Tickets" searchText={(t) => `${t.code} ${t.holderName} ${t.orderId}`} searchPlaceholder="Code, holder or order" initialSort={{ key: 'holder', dir: 'asc' }} exportName="edupass-tickets" pageSize={15}
           toolbar={<Select label="Status" hideLabel value={status} onValueChange={setStatus} options={[{ value: '', label: 'All statuses' }, { value: 'valid', label: 'Valid' }, { value: 'checked_in', label: 'Checked in' }, { value: 'cancelled', label: 'Cancelled' }]} className="w-40" />} />
@@ -156,7 +156,7 @@ export const RefundRequestsPage: React.FC = () => {
         : {}),
     }));
     if (r.studentId === DEMO_ACCOUNTS.student.id) {
-      notify('student', approve ? 'Refund approved (demo)' : 'Refund request declined', `Order ${r.orderId}: ${approve ? `${formatLKR(r.amount)} refunded.` : 'see the Refund Policy for details.'}`, '/student/history');
+      notify('student', approve ? 'Refund approved' : 'Refund request declined', `Order ${r.orderId}: ${approve ? `${formatLKR(r.amount)} refunded.` : 'see the Refund Policy for details.'}`, '/student/history');
     }
     toast(approve ? 'Refund approved' : 'Refund rejected', { tone: approve ? 'success' : 'info', description: approve ? 'Order refunded and tickets voided (simulated).' : undefined });
     setDeciding(null);

@@ -58,7 +58,7 @@ export const UserManagementPage: React.FC = () => {
 
   return (
     <>
-      <PageHeader title="User management" description={`${formatNumber(c.students.length)} student accounts (demo)`} />
+      <PageHeader title="User management" description={`${formatNumber(c.students.length)} student accounts`} />
       <Card>
         <Tabs label="Filter users" value={tab} onChange={setTab} className="px-3" tabs={[{ id: 'all', label: 'All', count: c.students.length }, { id: 'active', label: 'Active', count: c.students.filter((s) => s.status === 'active').length }, { id: 'suspended', label: 'Suspended', count: c.students.filter((s) => s.status === 'suspended').length }]} />
         <DataTable
