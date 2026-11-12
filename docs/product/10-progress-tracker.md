@@ -1,8 +1,8 @@
 # 10 — Progress tracker
 
-Checkboxes · Updated **2026-11-11** · Source of truth also: `project/05-plan.md` + `project/05-plan/tasks/`
+Checkboxes · Updated **2026-11-12** · **Canonical beginning→end plan:** [`project/PROGRESS.md`](../../project/PROGRESS.md)
 
-**Scoreboard:** **10 / 10** build tasks done · **M1–M5 complete (pre-PayHere)** · **G5 approved** · **G6 pending human** · Phase F held
+**Scoreboard:** T-001…T-010 **10/10** · Phase 8 T-012…T-034 **23/23** · **G5** approved · **G6** pending human · Phase F held · Branch **`development`**
 
 ---
 
@@ -33,79 +33,89 @@ Checkboxes · Updated **2026-11-11** · Source of truth also: `project/05-plan.m
 
 ---
 
+## Phase 8 build tasks (T-012…T-034)
+
+### M1 — Real account surfaces
+- [x] **T-012** change-password API + FE
+- [x] **T-013** Contact → MailModule; demo scrub
+- [x] **T-014** LecturerProfile CRUD + public API/FE
+- [x] **T-015** Student/organiser profile GET/PUT
+
+### M2 — Staff roles
+- [x] **T-016** StaffRoleGuard + role ACL
+- [x] **T-017** FE `/lecturer` + scanner shell
+- [x] **T-018** Institute staff invite UI + email
+
+### M3 — Admin CMS
+- [x] **T-019** Admin list APIs
+- [x] **T-020** CMS Prisma + CRUD
+- [x] **T-021** Rewire Admin* to API
+- [x] **T-022** Category admin CRUD FE
+
+### M4 — Institute LMS
+- [x] **T-023** LMS schema
+- [x] **T-024** LMS APIs
+- [x] **T-025** LMS FE portals
+- [x] **T-026** File storage for LMS
+
+### M5 — Seat maps
+- [x] **T-027** Seat schema + holds
+- [x] **T-028** Seat-map editor FE
+- [x] **T-029** Checkout seat picker + smoke
+
+### M6 — Expo native
+- [x] **T-030** Expo workspace + auth
+- [x] **T-031** Expo student tickets
+- [x] **T-032** Expo scanner
+
+### M7 — Harden
+- [x] **T-033** Smoke expand
+- [x] **T-034** Docs/STATE/PROGRESS
+
+---
+
 ## Phase checklist (product)
 
 ### Phase 0 — Documentation
 - [x] README + index
-- [x] 01 Vision
-- [x] 02 Research
-- [x] 03 Domain
-- [x] 04 Architecture
-- [x] 05 API
-- [x] 06 Flows
-- [x] 07 Frontend
-- [x] 08 Backend
-- [x] 09 Roadmap
-- [x] 10 Tracker
-- [x] 11 Playbook
-- [x] 12 Platform billing & tenancy
+- [x] 01 Vision … 12 Platform billing & tenancy
 
 ### Phase 1 — Tenancy foundation
-- [x] Prisma + auth
-- [x] Register institution / lecturer / student
-- [x] Tenant isolation guards
-- [x] Seed Free/Premium/Platinum + commission %
-- [x] FE actor-aware nav
+- [x] Prisma + auth + register + guards + FE nav
 
 ### Phase 2 — Seminar Ops
-- [x] Catalogue + CRUD + checkInMode
-- [x] Checkout + commission snapshot
-- [x] Tickets + check-in attendance
-- [x] FE seller + student paths
+- [x] Catalogue + checkout snapshot + tickets + check-in
 
 ### Phase 3 — Slips + platform fee lines
-- [x] Slip approve → tickets + PlatformFeeLine
-- [x] Card disabled / PayHere stub
-- [x] Earnings + refund fee adjust *(refund voids tickets + fee line; organiser % from membership)*
-- [x] Admin view fee revenue *(PlatformFeeLine + subscription invoices)*
+- [x] Slip approve → tickets + PlatformFeeLine; card disabled; admin fee revenue
 
 ### Phase 4 — Plans & upgrades
-- [x] Admin plans CRUD + edit global %
-- [x] Usage meter + upgrade + platform invoice slip
-- [x] PlanLimitService
+- [x] Admin plans + usage/upgrade + PlanLimitService
 
 ### Phase 5 — Institute ops
-- [x] Staff / batches / roster / class attendance
-- [x] FE gated institute panel
+- [x] Staff / batches / roster / class attendance + FE
 
 ### Phase 6 — Tuition
-- [x] TuitionFeePlan / invoices / payments
-- [x] FE tuition UI (named distinctly)
+- [x] TuitionFeePlan / invoices / payments + FE
 
 ### Phase 7 — Polish
-- [x] Stream / camera / Playwright / mocks off
-- [x] Production harden (demo purge, SMTP, self-register)
+- [x] Stream / camera / Playwright / mocks off / production harden
+
+### Phase 8 — Complete real product
+- [x] Auth/profile/contact, staff roles, admin CMS, LMS, seats, Expo
+- [x] Extended smoke green on `development`
+
+### Phase F — PayHere
+- [ ] Owner finance brief → live card
 
 ---
 
-## What’s left (rough)
+## What’s left
 
 | Ahead | Work |
 |---|---|
-| Next | Human smoke on `development` → approve **G6** |
+| Next | Human QA Phase 8 on `development`; approve G2/G4 deltas |
+| Then | Approve **G6** for production |
 | Later | PayHere (Phase F) |
 
-Branch tip: **`development`** (T-010 + fee revenue).
-
-## Notes
-
-| Date | Note |
-|---|---|
-| 2026-11-10 | Platform fees = plans + ticket %; multi-institution + individual lecturers; tuition separate. |
-| 2026-11-10 | M2 demo path works in API: publish → bank checkout → slip approve → QR → check-in once. |
-| 2026-11-10 | T-007: institute batches/roster/AttendanceRecord gated; lecturer 403; ≠ CheckInEvent. |
-| 2026-11-10 | T-008: TuitionFeePlan/Invoice/Payment cash+slip; student balance; labels “class fees”. |
-| 2026-11-10 | T-009: streamJoinUrl, BarcodeDetector camera QR, Playwright bank-path smoke, Netlify VITE_USE_MOCKS=false. |
-| 2026-11-11 | T-010: API-default (VITE_USE_MOCKS=false), empty catalogue, SMTP welcome/slip/tuition/reset, self-register, SEED_QA gate. |
-| 2026-11-12 | Admin PlatformFeeLine revenue UI + organiser commission % polish; G6 changelog/rollback ready. |
-| 2026-11-12 | FE wire: student tickets/orders + organiser orders from API; full smoke-product.sh green. |
+Full tick list: **`project/PROGRESS.md`**.
