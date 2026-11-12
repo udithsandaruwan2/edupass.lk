@@ -150,10 +150,7 @@ export const AccountSettingsPage: React.FC<{ role: 'student' | 'organiser' }> = 
     if (!usingMocks && user?.accessToken) {
       setPwSaving(true);
       try {
-        await changePasswordRequest(user.accessToken, {
-          currentPassword: pw.current,
-          newPassword: pw.next,
-        });
+        await changePasswordRequest(user.accessToken, pw.current, pw.next);
         setPw({ current: '', next: '', confirm: '' });
         toast('Password updated');
       } catch (err) {

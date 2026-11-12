@@ -1,0 +1,5 @@
+# GitGuardian / ggshield — edupass.lk
+# Password *form* fields are runtime user input, not committed secrets.
+# Real credentials live only in .env* (gitignored). Mark Generic Password
+# hits on change-password UI as false positive in the GitGuardian dashboard.
+version: 2
